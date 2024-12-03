@@ -91,7 +91,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Color(0xFF673AB7).withOpacity(0.10),
+                    color: const Color(0xFF673AB7).withOpacity(0.10),
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
                       color: Colors.black.withOpacity(0.30),
@@ -129,7 +129,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   height: 8,
                 ),
                 TextInputWidget(
-                  labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                  labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                   labelText: 'Amount to Withdraw',
                   fontSize: 15,
                   validator: (val) {
@@ -159,7 +159,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   visible: checkBoxVisible,
                   child: CheckboxListTile(
                     value: checkboxValue,
-                    shape: CircleBorder(),
+                    shape: const CircleBorder(),
                     controlAffinity: ListTileControlAffinity.leading,
                     //side: BorderSide.none,
                     onChanged: (val) {
@@ -204,7 +204,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           style: TextStyle(
                             fontSize: 15,
                             fontFamily: 'Raleway',
-                            color: Color(0xFF673AB7).withOpacity(0.50),
+                            color: const Color(0xFF673AB7).withOpacity(0.50),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -217,7 +217,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                               vertical: 4, horizontal: 4),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Color(0xFFf5f5f5),
+                            color: const Color(0xFFf5f5f5),
                             // border: Border.all(
                             //   color: Colors.black54,
                             //   width: 0.5,
@@ -243,7 +243,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           style: TextStyle(
                             fontSize: 15,
                             fontFamily: 'Raleway',
-                            color: Color(0xFF673AB7).withOpacity(0.50),
+                            color: const Color(0xFF673AB7).withOpacity(0.50),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -256,7 +256,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                               vertical: 4, horizontal: 4),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Color(0xFFf5f5f5),
+                            color: const Color(0xFFf5f5f5),
                             // border: Border.all(
                             //   color: Colors.black54,
                             //   width: 0.8,
@@ -282,7 +282,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           style: TextStyle(
                             fontSize: 15,
                             fontFamily: 'Raleway',
-                            color: Color(0xFF673AB7).withOpacity(0.50),
+                            color: const Color(0xFF673AB7).withOpacity(0.50),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -295,7 +295,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                               vertical: 4, horizontal: 4),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Color(0xFFf5f5f5),
+                            color: const Color(0xFFf5f5f5),
                             // border: Border.all(
                             //   color: Colors.black54,
                             //   width: 0.8,
@@ -320,7 +320,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   visible:
                       checkboxValue == false || vendorAccountDetails == null,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.white,
@@ -348,7 +348,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           height: 4,
                         ),
                         TextInputWidget(
-                          labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                          labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                           fontSize: 15,
                           labelText: 'Account Name',
                           validator: (val) {
@@ -371,7 +371,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           height: 8,
                         ),
                         TextInputWidget(
-                          labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                          labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                           labelText: 'Account Number',
                           validator: (val) {
                             if (val!.isEmpty) {
@@ -399,7 +399,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           height: 8,
                         ),
                         TextInputWidget(
-                          labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                          labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                           labelText: 'Bank Name',
                           fontSize: 15,
                           validator: (val) {

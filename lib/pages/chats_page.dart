@@ -4,11 +4,11 @@ import 'package:hair_main_street/blankPage.dart';
 import 'package:hair_main_street/controllers/chatController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/auxModels.dart';
-import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -31,11 +31,16 @@ class _ChatPageState extends State<ChatPage> {
   //check which member the person is
   String? whoToDisplay(int index) {
     String? currentUserUid = userController.userState.value!.uid!;
-    if (currentUserUid == chatController.myChats[index]!.member1) {
-      return chatController.myChats[index]!.member2;
-    } else if (currentUserUid == chatController.myChats[index]!.member2) {
-      return chatController.myChats[index]!.member1;
+    for (var participant in chatController.myChats[index]!.participants!) {
+      if (currentUserUid != participant) {
+        return participant;
+      }
     }
+    // if (currentUserUid == chatController.myChats[index]!.participants[0]) {
+    //   return chatController.myChats[index]!.member2;
+    // } else if (currentUserUid == chatController.myChats[index]!.member2) {
+    //   return chatController.myChats[index]!.member1;
+    // }
     return null;
   }
 
@@ -75,7 +80,7 @@ class _ChatPageState extends State<ChatPage> {
         backgroundColor: Colors.white,
         body: StreamBuilder(
           stream: DataBaseService()
-              .getUserChats(userController.userState.value!.uid!),
+              .getAllUserChats(userController.userState.value!.uid!),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               //print("hello");
@@ -98,12 +103,12 @@ class _ChatPageState extends State<ChatPage> {
                       String? nameToDisplay = "";
                       Future<Map<String, MessagePageData>>
                           someFunction() async {
-                        MessagePageData member1 =
-                            await chatController.resolveNameToDisplay(
-                                chatController.myChats[index]!.member1!);
-                        MessagePageData member2 =
-                            await chatController.resolveNameToDisplay(
-                                chatController.myChats[index]!.member2!);
+                        MessagePageData member1 = await chatController
+                            .resolveNameToDisplay(chatController
+                                .myChats[index]!.participants![0]);
+                        MessagePageData member2 = await chatController
+                            .resolveNameToDisplay(chatController
+                                .myChats[index]!.participants![1]);
 
                         return {"member1": member1, "member2": member2};
                       }
@@ -112,7 +117,15 @@ class _ChatPageState extends State<ChatPage> {
                         future: someFunction(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) {
-                            return const Text("Loading...");
+                            return SizedBox(
+                              width: Get.width,
+                              height: 65,
+                              child: Shimmer.fromColors(
+                                baseColor: Colors.black12,
+                                highlightColor: Colors.grey,
+                                child: ColoredBox(color: Colors.yellow),
+                              ),
+                            );
                           } else {
                             return ChatsCard(
                               index: index,

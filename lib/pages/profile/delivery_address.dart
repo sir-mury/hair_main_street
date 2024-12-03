@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/userController.dart';
@@ -31,6 +30,95 @@ class _DeliveryAddressPageState extends State<DeliveryAddressPage> {
 
   @override
   Widget build(BuildContext context) {
+    showDeliveryAddressDeleteDialog(String addressID) {
+      Get.dialog(
+        AlertDialog(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          titlePadding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+          contentPadding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
+          title: const Text(
+            "Delete Delivery Address?",
+            style: TextStyle(
+              fontSize: 19,
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          content: Text(
+            "Are you sure you want to delete this delivery address?",
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w400,
+              color: Colors.black.withOpacity(0.65),
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 32),
+                //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    color: Colors.black,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text(
+                "Cancel",
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.black,
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF673AB7),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 32),
+                //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    color: Color(0xFF673AB7),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                String userID = userController.userState.value!.uid!;
+                await userController.deleteDeliveryAddress(userID, addressID);
+              },
+              child: const Text(
+                "Confirm",
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.white,
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        barrierDismissible: true,
+      );
+    }
+
     MyUser user = userController.userState.value!;
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +131,7 @@ class _DeliveryAddressPageState extends State<DeliveryAddressPage> {
         title: const Text(
           'Delivery Address',
           style: TextStyle(
-            fontSize: 25,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
             fontFamily: 'Lato',
             color: Colors.black,
@@ -73,7 +161,8 @@ class _DeliveryAddressPageState extends State<DeliveryAddressPage> {
                               Iconify(
                                 Carbon.location,
                                 size: 156,
-                                color: Color(0xFF673AB7).withOpacity(0.30),
+                                color:
+                                    const Color(0xFF673AB7).withOpacity(0.30),
                               ),
                               const SizedBox(
                                 height: 16,
@@ -81,7 +170,8 @@ class _DeliveryAddressPageState extends State<DeliveryAddressPage> {
                               Text(
                                 "Oops No Delivery Address Added Yet",
                                 style: TextStyle(
-                                  color: Color(0xFF673AB7).withOpacity(0.70),
+                                  color:
+                                      const Color(0xFF673AB7).withOpacity(0.70),
                                   fontSize: 30,
                                   fontFamily: 'Lato',
                                   fontWeight: FontWeight.w600,
@@ -96,89 +186,174 @@ class _DeliveryAddressPageState extends State<DeliveryAddressPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         itemCount: userController.deliveryAddresses.length,
                         itemBuilder: (context, index) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Iconify(
-                                Carbon.location,
-                                size: 28,
-                                color: Colors.black,
-                              ),
-                              const SizedBox(
-                                width: 8,
-                              ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "${userController.deliveryAddresses[index]!.landmark ?? ""},${userController.deliveryAddresses[index]!.streetAddress},${userController.deliveryAddresses[index]!.lGA},${userController.deliveryAddresses[index]!.state}.${userController.deliveryAddresses[index]!.zipCode ?? ""}",
-                                      style: const TextStyle(
-                                        fontFamily: 'Lato',
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      "${userController.deliveryAddresses[index]!.contactName ?? ""},${userController.deliveryAddresses[index]!.contactPhoneNumber}",
-                                      style: const TextStyle(
-                                        fontFamily: 'Raleway',
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 12,
-                                    ),
-                                    InkWell(
-                                      onTap: () {
-                                        Get.to(
-                                          () => EditDeliveryAddressPage(
-                                            addressID: userController
-                                                .deliveryAddresses[index]!
-                                                .addressID!,
-                                          ),
-                                        );
-                                      },
-                                      child: SizedBox(
-                                        height: 30,
-                                        width: 60,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            SvgPicture.asset(
-                                              "assets/Icons/edit.svg",
-                                              color: Color(0xFF673AB7),
-                                              height: 24,
-                                              width: 24,
-                                            ),
-                                            const SizedBox(
-                                              width: 4,
-                                            ),
-                                            const Text(
-                                              "Edit",
-                                              style: TextStyle(
-                                                fontFamily: 'Lato',
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF673AB7),
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
+                          final deliveryAddress =
+                              userController.deliveryAddresses[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 1,
+                                  spreadRadius: 0,
+                                  color:
+                                      const Color(0xFF673AB7).withOpacity(0.10),
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Iconify(
+                                  Carbon.location,
+                                  size: 24,
+                                  color: Colors.black,
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        [
+                                          if (deliveryAddress?.landmark != null)
+                                            deliveryAddress?.landmark!,
+                                          deliveryAddress?.streetAddress,
+                                          deliveryAddress?.lGA,
+                                          deliveryAddress?.state,
+                                          if (deliveryAddress?.zipCode != null)
+                                            deliveryAddress?.zipCode!,
+                                        ]
+                                            .where((element) => element != null)
+                                            .join(', '),
+                                        style: const TextStyle(
+                                          fontFamily: 'Lato',
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                          fontSize: 20,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            ],
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      Text(
+                                        "${userController.deliveryAddresses[index]!.contactName ?? ""},${userController.deliveryAddresses[index]!.contactPhoneNumber}",
+                                        style: const TextStyle(
+                                          fontFamily: 'Raleway',
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 12,
+                                      ),
+                                      Row(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              Get.to(
+                                                () => EditDeliveryAddressPage(
+                                                  addressID: userController
+                                                      .deliveryAddresses[index]!
+                                                      .addressID!,
+                                                ),
+                                              );
+                                            },
+                                            child: SizedBox(
+                                              height: 30,
+                                              width: 60,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                    "assets/Icons/edit.svg",
+                                                    color:
+                                                        const Color(0xFF673AB7),
+                                                    height: 24,
+                                                    width: 24,
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 4,
+                                                  ),
+                                                  const Text(
+                                                    "Edit",
+                                                    style: TextStyle(
+                                                      fontFamily: 'Lato',
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Color(0xFF673AB7),
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 12,
+                                          ),
+                                          SizedBox(
+                                            height: 30,
+                                            child: TextButton.icon(
+                                              style: TextButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 0),
+                                                backgroundColor: Colors.white,
+                                                elevation: 5,
+                                                shape: RoundedRectangleBorder(
+                                                  side: BorderSide(
+                                                    width: 1,
+                                                    color: Color(0xFF673AB7),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                    8,
+                                                  ),
+                                                ),
+                                              ),
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                size: 14,
+                                                color: Color(0xFF673AB7),
+                                              ),
+                                              onPressed: () {
+                                                String? addressID =
+                                                    userController
+                                                        .deliveryAddresses[
+                                                            index]!
+                                                        .addressID!;
+                                                showDeliveryAddressDeleteDialog(
+                                                    addressID);
+                                              },
+                                              label: const Text(
+                                                "Delete",
+                                                style: TextStyle(
+                                                  fontFamily: 'Lato',
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                           );
                         },
                       );

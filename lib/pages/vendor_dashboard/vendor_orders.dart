@@ -10,7 +10,7 @@ import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class VendorOrdersPage extends StatefulWidget {
-  VendorOrdersPage({super.key});
+  const VendorOrdersPage({super.key});
 
   @override
   State<VendorOrdersPage> createState() => _VendorOrdersPageState();
@@ -72,8 +72,8 @@ class _VendorOrdersPageState extends State<VendorOrdersPage>
           title: const Text(
             'Orders',
             style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
               color: Colors.black,
               fontFamily: 'Lato',
             ),

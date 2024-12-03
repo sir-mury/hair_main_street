@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hair_main_street/models/productModel.dart';
 import 'package:hair_main_street/models/userModel.dart';
 
 Orders ordersFromJson(String str) => Orders.fromJson(json.decode(str));
@@ -86,8 +85,10 @@ class Orders {
       'installment paid': installmentPaid,
       'order status': orderStatus,
       'refund status': refundStatus,
-      'created at': createdAt?.millisecondsSinceEpoch,
-      'updated at': updatedAt?.millisecondsSinceEpoch,
+      'created at': Timestamp.fromMillisecondsSinceEpoch(
+          createdAt!.millisecondsSinceEpoch),
+      'updated at': Timestamp.fromMillisecondsSinceEpoch(
+          updatedAt!.millisecondsSinceEpoch),
       'payment method': paymentMethod,
       'payment status': paymentStatus,
       'transactionID': transactionID,

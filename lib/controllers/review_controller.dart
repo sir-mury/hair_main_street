@@ -20,10 +20,11 @@ class ReviewController extends GetxController {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
-      gravity: ToastGravity.BOTTOM, // Position at the bottom of the screen
+      gravity: ToastGravity.CENTER, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
-      backgroundColor: Colors.white, // Optional: Set background color
-      textColor: Colors.black, // Optional: Set text color
+      backgroundColor:
+          const Color(0xFFf5f5f5), // Optional: Set background color
+      textColor: Colors.black,
       fontSize: 14.0, // Optional: Set font size
     );
   }
@@ -58,7 +59,7 @@ class ReviewController extends GetxController {
         "Successful",
         "Review Submitted",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -74,7 +75,7 @@ class ReviewController extends GetxController {
         "Error",
         "Review Submission Failed",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: const Color.fromARGB(255, 221, 179, 178),
@@ -97,7 +98,7 @@ class ReviewController extends GetxController {
         "Successful",
         "Review Edited",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -115,7 +116,7 @@ class ReviewController extends GetxController {
         "Error",
         "Failed to Edit Review",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: const Color.fromARGB(255, 221, 179, 178),
@@ -138,7 +139,7 @@ class ReviewController extends GetxController {
         "Successful",
         "Review Deleted",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -155,7 +156,7 @@ class ReviewController extends GetxController {
         "Error",
         "Failed to Delete Review",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: const Color.fromARGB(255, 221, 179, 178),

@@ -129,8 +129,9 @@ exports.notifyBuyerOnOrderStatusChange = onDocumentUpdated(
       if (buyerData && buyerData['email']) {
         const emailSubject = 'Order Status Update'
         const emailBody = `
-        <p>Dear ${buyerData['fullname']},</p>
-        <p>Your order with ID: ${orderID} has been ${newOrderData['order status']}, Kindly Confirm.</p>
+        <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+        <p style="font-size: 18px">Dear ${buyerData['fullname']},</p>
+        <p style="font-size: 18px">Your order with ID: ${orderID} has been ${newOrderData['order status']}, Kindly Confirm.</p>
       `
         await sendEmail(buyerData['email'], emailSubject, emailBody)
       }
@@ -156,12 +157,14 @@ exports.notifyOnOrderCreation = onDocumentCreated(
     const buyerFcmBody = 'Your order has been created'
     const emailSubject = 'New Order Created'
     const buyerEmailBody = `
-    <p>Dear ${buyerData['fullname']},</p>
-    <p>Your order with ID: ${orderID} has been successfully created.</p>
-  `
+    <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+    <p style="font-size: 18px">Dear ${buyerData['fullname']},</p>
+    <p style="font-size: 18px">Your order with ID: ${orderID} has been successfully created.</p>
+    `
     const vendorEmailBody = `
-    <p>Dear ${vendorData['fullname']},</p>
-    <p>You have a new order for your product with ID: ${orderID}.</p>
+    <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+    <p style="font-size: 18px">Dear ${vendorData['fullname']},</p>
+    <p style="font-size: 18px">You have a new order for your product with ID: ${orderID}.</p>
   `
 
     await db
@@ -255,11 +258,122 @@ exports.updateWalletAfterOrderPlacement = onDocumentCreated(
   }
 )
 
+exports.updateWalletAfterInstallmentPayment = onDocumentUpdated(
+  'orders/{orderID}',
+  async event => {
+    try {
+      const orderID = event.params.orderID
+      const previousData = event.data.before.data()
+      const newData = event.data.after.data()
+
+      const previousAmountPaid = previousData['payment price']
+      const newAmountPaid = newData['payment price']
+      const difference = newAmountPaid - previousAmountPaid
+
+      const walletRef = db.collection('wallet').doc(newData.vendorID)
+      const vendorID = newData.vendorID
+      const walletSnapshot = await walletRef.get()
+
+      if (walletSnapshot.exists) {
+        const walletData = walletSnapshot.data()
+        const currentBalance = walletData['balance']
+
+        //update wallet balance
+        await walletRef.update({
+          balance: currentBalance + difference
+        })
+
+        const transactionRef = db
+          .collection('wallet')
+          .doc(vendorID)
+          .collection('transactions')
+          .doc(orderID)
+        await transactionRef.set({
+          orderId: orderID,
+          type: 'credit',
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          amount: difference
+        })
+
+        if (difference === 0) {
+          const buyerId = newData.buyerID
+          const buyerDoc = await db.collection('userProfile').doc(buyerId).get()
+          const buyerData = buyerDoc.data()
+          const vendorDoc = await db
+            .collection('userProfile')
+            .doc(vendorID)
+            .get()
+          const vendorData = vendorDoc.data()
+          const fcmTitle = 'Installment Payment Complete'
+          const vendorFcmBody =
+            'The buyer has completed his installment payment for your product'
+          const buyerFcmBody = 'You have completed your installment payment'
+          const emailSubject = 'Installment Payment Complete'
+          const buyerEmailBody = `
+          <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+          <p style="font-size: 18px">Dear ${buyerData['fullname']},</p>
+          <p style="font-size: 18px">You have successfully completed your installment payment for the order with ID: ${orderID}. Open the app to review.</p>
+        `
+          const vendorEmailBody = `
+          <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+          <p style="font-size: 18px">Dear ${vendorData['fullname']},</p>
+          <p style="font-size: 18px">The buyer has completed the installment payment for the order with ID: ${orderID}. Open the app to review</p>
+        `
+
+          await db
+            .collection('notifications')
+            .doc(vendorID)
+            .collection('notifications')
+            .add({
+              userID: vendorID,
+              'extra data': { orderID: orderID, receiver: 'vendor' },
+              title: fcmTitle,
+              body: vendorFcmBody,
+              'time stamp': admin.firestore.FieldValue.serverTimestamp()
+            })
+          await db
+            .collection('notifications')
+            .doc(buyerId)
+            .collection('notifications')
+            .add({
+              userID: buyerId,
+              'extra data': { orderID: orderID, receiver: 'buyer' },
+              title: fcmTitle,
+              body: buyerFcmBody,
+              'time stamp': admin.firestore.FieldValue.serverTimestamp()
+            })
+          await sendFcmNotification(
+            `vendor_${vendorID}`,
+            vendorFcmBody,
+            fcmTitle,
+            orderID,
+            'vendor'
+          )
+          await sendEmail(vendorData['email'], emailSubject, vendorEmailBody)
+          await sendFcmNotification(
+            `buyer_${buyerId}`,
+            buyerFcmBody,
+            fcmTitle,
+            orderID,
+            'buyer'
+          )
+          await sendEmail(buyerData['email'], emailSubject, buyerEmailBody)
+        }
+
+        logger.info('Wallet updated successfully')
+      } else {
+        logger.error('Wallet does not exist')
+      }
+    } catch (error) {
+      logger.error('Entire function failed in its implementation')
+    }
+  }
+)
+
 exports.updateProductStockOnOrderPlacement = onDocumentCreated(
   'orders/{orderId}',
   async event => {
     const orderId = event.params.orderId
-    const orderData = event.data.after.data()
 
     try {
       await db.runTransaction(async transaction => {
@@ -274,9 +388,9 @@ exports.updateProductStockOnOrderPlacement = onDocumentCreated(
           .collection('products')
           .doc(orderItemData['productID'])
         const snapshot = transaction.get(productRef)
-        const subtractingQuantity = Number(orderItemData['quantity'])
+        const quantityOrdered = Number(orderItemData['quantity'])
         const previousQuantity = (await snapshot).data().quantity
-        const newQuantity = previousQuantity - subtractingQuantity
+        const newQuantity = previousQuantity - quantityOrdered
 
         transaction.update(productRef, { quantity: newQuantity })
       })
@@ -332,12 +446,14 @@ exports.processConfirmedOrder = onDocumentUpdated(
           'Your order has been confirmed, kindly leave a review'
         const emailSubject = 'Order Confirmed'
         const buyerEmailBody = `
-        <p>Dear ${buyerData['fullname']},</p>
-        <p>Your order with ID: ${orderID} has been successfully confirmed. Kindly the app to leave a review</p>
+        <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+        <p style="font-size: 18px">Dear ${buyerData['fullname']},</p>
+        <p style="font-size: 18px">Your order with ID: ${orderID} has been successfully confirmed. Kindly the app to leave a review</p>
       `
         const vendorEmailBody = `
-        <p>Dear ${vendorData['fullname']},</p>
-        <p>The buyer has confirmed the receipt of the order for your product with ID: ${orderID}.</p>
+        <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+        <p style="font-size: 18px">Dear ${vendorData['fullname']},</p>
+        <p style="font-size: 18px">The buyer has confirmed the receipt of the order for your product with ID: ${orderID}.</p>
       `
 
         await db
@@ -467,18 +583,20 @@ exports.processExpiredOrder = onDocumentUpdated(
       const buyerFcmBody = `Your order with ID: ${orderId} has expired, The amount paid for the order will be refunded according to terms and conditions.`
       const emailSubject = 'Order Expired'
       const buyerEmailBody = `
-    <p>Dear ${buyerData['fullname']},</p>
-    <p>Your order with ID: ${orderId} has expired.</p>
-    <p>The amount paid for the order will be refunded according to terms and conditions.</p>
+      <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+    <p style="font-size: 18px">Dear ${buyerData['fullname']},</p>
+    <p style="font-size: 18px">Your order with ID: ${orderId} has expired.</p>
+    <p style="font-size: 18px">The amount paid for the order will be refunded according to terms and conditions.</p>
   `
       const vendorEmailBody = `
-    <p>Dear ${vendorData['fullname']},</p>
-    <p>The order for your product with ID: ${orderId} has expired. Amount paid already would be refunded back to the buyers account </p>
+      <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+    <p style="font-size: 18px">Dear ${vendorData['fullname']},</p>
+    <p style="font-size: 18px">The order for your product with ID: ${orderId} has expired. Amount paid already would be refunded back to the buyers account </p>
     
   `
 
       const adminEmail = process.env.ADMIN_EMAIL
-      const adminBody = `An order with ID : ${orderId} from the vendor ${vendorData['shop name']} has expired`
+      const adminBody = `<p style="font-size: 18px">An order with ID : ${orderId} from the vendor ${vendorData['shop name']} has expired</p>`
       const adminSubject = `Order Expired`
 
       await db
@@ -541,89 +659,60 @@ exports.checkInstallmentPayments = onSchedule(
       .where('payment method', '==', 'installment')
       .get()
 
-    installmentOrdersSnapshot.forEach(async doc => {
-      const order = doc.data()
-      const orderID = doc.id
-      const vendorRef = await db
-        .collection('vendors')
-        .doc(order['vendorID'])
-        .get()
-      const buyerRef = await db
-        .collection('userProfile')
-        .doc(order['buyerID'])
-        .get()
-      const totalInstallments = order['installment number'] || 1 // Default to 1 if not specified
-      const installmentDuration = vendorRef.data()['installment duration'] || 0 // Default to 0 days if not specified
-      const installmentsMade = order['installment paid'] || 1
-      const firstInstallmentTime =
-        order['created at'].seconds * 1000 +
-        order['created at'].nanoseconds / 1000000
+    if (installmentOrdersSnapshot.exists) {
+      installmentOrdersSnapshot.forEach(async doc => {
+        const order = doc.data()
+        const orderID = doc.id
+        const vendorRef = await db
+          .collection('vendors')
+          .doc(order['vendorID'])
+          .get()
+        const buyerRef = await db
+          .collection('userProfile')
+          .doc(order['buyerID'])
+          .get()
+        const totalInstallments = order['installment number'] || 1 // Default to 1 if not specified
+        const installmentDuration =
+          vendorRef.data()['installment duration'] || 0 // Default to 0 days if not specified
+        const installmentsMade = order['installment paid'] || 1
+        const firstInstallmentTime =
+          order['created at'].seconds * 1000 +
+          order['created at'].nanoseconds / 1000000
 
-      // Calculate the deadline for the next installment
-      const nextInstallmentDeadline =
-        firstInstallmentTime + installmentsMade * installmentDuration
+        // Calculate the deadline for the next installment
+        const nextInstallmentDeadline =
+          firstInstallmentTime + installmentsMade * installmentDuration
 
-      // If the current time exceeds the deadline for the next installment, update order status to "expired"
-      if (
-        currentTime > nextInstallmentDeadline &&
-        installmentsMade < totalInstallments
-      ) {
-        const reminderDoc = await db.collection('reminders').doc(orderID).get()
-        const reminderData = reminderDoc.data()
-
-        if (!reminderData || !reminderData['expirationReminderSent']) {
-          await db
-            .collection('orders')
-            .doc(orderID)
-            .update({ 'order status': 'expired' })
-
-          // Optionally, send notification to buyer about order expiration
-          // sendExpirationNotification(order.buyerID, orderID);
-          const fcmTitle = 'Order Expired'
-          const fcmBody = `Your Order with ID: ${orderID} has expired, Kindly Order Again`
-
-          await sendFcmNotification(
-            `buyer_${order['buyerID']}`,
-            fcmBody,
-            fcmTitle,
-            orderID,
-            'buyer'
-          )
-          await db
-            .collection('notifications')
-            .doc(order['buyerID'])
-            .collection('notifications')
-            .add({
-              body: fcmBody,
-              'extra data': { orderID: orderID, receiver: 'buyer' },
-              'time stamp': admin.firestore.FieldValue.serverTimestamp(),
-              title: fcmTitle,
-              userID: order['buyerID']
-            })
-          await sendEmail(buyerRef.data()['email'], 'Order Expired', fcmBody)
-
-          await db
-            .collection('reminders')
-            .doc(orderID)
-            .set({ expirationReminderSent: true }, { merge: true })
-        }
-      } else {
-        // Optionally, send payment reminders if needed
-        if (currentTime + 3 * 24 * 60 * 60 * 1000 > nextInstallmentDeadline) {
+        // If the current time exceeds the deadline for the next installment, update order status to "expired"
+        if (
+          currentTime > nextInstallmentDeadline &&
+          installmentsMade < totalInstallments
+        ) {
           const reminderDoc = await db
             .collection('reminders')
             .doc(orderID)
             .get()
           const reminderData = reminderDoc.data()
-          if (!reminderData || !reminderData['threeDayPaymentReminderSent']) {
-            const buyerFcmBody =
-              'Please remember to pay your installment payment before the deadline runs out'
-            const fcmTitle = 'Payment Reminder'
-            // Send reminder 3 days before the deadline
-            // sendPaymentReminder(order.buyerID, orderID);
+
+          if (!reminderData || !reminderData['expirationReminderSent']) {
+            await db
+              .collection('orders')
+              .doc(orderID)
+              .update({ 'order status': 'expired' })
+
+            // Optionally, send notification to buyer about order expiration
+            // sendExpirationNotification(order.buyerID, orderID);
+            const fcmTitle = 'Order Expired'
+            const fcmBody = `Your Order with ID: ${orderID} has expired, Kindly Order Again`
+            const emailBody = `
+            <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+            <p style="font-size: 18px">Dear ${buyerRef.data()['full name']}</p>
+            <p style="font-size: 18px">Your Order with ID: ${orderID} has expired, Kindly Order Again</p>
+            `
+
             await sendFcmNotification(
               `buyer_${order['buyerID']}`,
-              buyerFcmBody,
+              fcmBody,
               fcmTitle,
               orderID,
               'buyer'
@@ -633,7 +722,7 @@ exports.checkInstallmentPayments = onSchedule(
               .doc(order['buyerID'])
               .collection('notifications')
               .add({
-                body: buyerFcmBody,
+                body: fcmBody,
                 'extra data': { orderID: orderID, receiver: 'buyer' },
                 'time stamp': admin.firestore.FieldValue.serverTimestamp(),
                 title: fcmTitle,
@@ -641,65 +730,123 @@ exports.checkInstallmentPayments = onSchedule(
               })
             await sendEmail(
               buyerRef.data()['email'],
-              'Payment Reminder',
-              'Please remember to pay your installment payment before the deadline runs out'
-            )
-          }
-
-          await db
-            .collection('reminders')
-            .doc(orderID)
-            .set({ threeDayPaymentReminderSent: true }, { merge: true })
-        }
-
-        // Send reminder 1 day before the deadline
-        if (currentTime + 24 * 60 * 60 * 1000 > nextInstallmentDeadline) {
-          const reminderDoc = await db
-            .collection('reminders')
-            .doc(orderID)
-            .get()
-          const reminderData = reminderDoc.data()
-          if (!reminderData || !reminderData['oneDayPaymentReminderSent']) {
-            // Send reminder 1 day before the deadline
-            // sendOneDayReminder(order.buyerID, orderID);
-            const buyerFcmBody =
-              'Please remember to pay your installment payment before the deadline runs out'
-            const fcmTitle = 'Payment Reminder'
-            await sendFcmNotification(
-              `buyer_${order['buyerID']}`,
-              buyerFcmBody,
-              fcmTitle,
-              orderID,
-              'buyer'
-            )
-            await db
-              .collection('notifications')
-              .doc(order['buyerID'])
-              .collection('notifications')
-              .add({
-                body: buyerFcmBody,
-                'extra data': { orderID: orderID, receiver: 'buyer' },
-                'time stamp': admin.firestore.FieldValue.serverTimestamp(),
-                title: fcmTitle,
-                userID: order['buyerID']
-              })
-            await sendEmail(
-              buyerRef.data()['email'],
-              'Payment Reminder',
-              'Please remember to pay your installment payment before the deadline runs out'
+              'Order Expired',
+              emailBody
             )
 
             await db
               .collection('reminders')
               .doc(orderID)
-              .set({ oneDayPaymentReminderSent: true }, { merge: true })
+              .set({ expirationReminderSent: true }, { merge: true })
+          }
+        } else {
+          // Optionally, send payment reminders if needed
+          if (currentTime + 3 * 24 * 60 * 60 * 1000 > nextInstallmentDeadline) {
+            const reminderDoc = await db
+              .collection('reminders')
+              .doc(orderID)
+              .get()
+            const reminderData = reminderDoc.data()
+            if (!reminderData || !reminderData['threeDayPaymentReminderSent']) {
+              const buyerFcmBody =
+                'Please remember to pay your installment payment before the deadline runs out'
+              const fcmTitle = 'Payment Reminder'
+              // Send reminder 3 days before the deadline
+              // sendPaymentReminder(order.buyerID, orderID);
+              await sendFcmNotification(
+                `buyer_${order['buyerID']}`,
+                buyerFcmBody,
+                fcmTitle,
+                orderID,
+                'buyer'
+              )
+              await db
+                .collection('notifications')
+                .doc(order['buyerID'])
+                .collection('notifications')
+                .add({
+                  body: buyerFcmBody,
+                  'extra data': { orderID: orderID, receiver: 'buyer' },
+                  'time stamp': admin.firestore.FieldValue.serverTimestamp(),
+                  title: fcmTitle,
+                  userID: order['buyerID']
+                })
+              await sendEmail(
+                buyerRef.data()['email'],
+                'Payment Reminder',
+                `
+                <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+                <p style="font-size: 18px">Dear ${
+                  buyerRef.data()['full name']
+                }</p>
+                <p style="font-size: 18px">Please remember to pay your installment payment before the deadline runs out</p>
+                `
+              )
+            }
+
+            await db
+              .collection('reminders')
+              .doc(orderID)
+              .set({ threeDayPaymentReminderSent: true }, { merge: true })
+          }
+
+          // Send reminder 1 day before the deadline
+          if (currentTime + 24 * 60 * 60 * 1000 > nextInstallmentDeadline) {
+            const reminderDoc = await db
+              .collection('reminders')
+              .doc(orderID)
+              .get()
+            const reminderData = reminderDoc.data()
+            if (!reminderData || !reminderData['oneDayPaymentReminderSent']) {
+              // Send reminder 1 day before the deadline
+              // sendOneDayReminder(order.buyerID, orderID);
+              const buyerFcmBody =
+                'Please remember to pay your installment payment before the deadline runs out'
+              const fcmTitle = 'Payment Reminder'
+              await sendFcmNotification(
+                `buyer_${order['buyerID']}`,
+                buyerFcmBody,
+                fcmTitle,
+                orderID,
+                'buyer'
+              )
+              await db
+                .collection('notifications')
+                .doc(order['buyerID'])
+                .collection('notifications')
+                .add({
+                  body: buyerFcmBody,
+                  'extra data': { orderID: orderID, receiver: 'buyer' },
+                  'time stamp': admin.firestore.FieldValue.serverTimestamp(),
+                  title: fcmTitle,
+                  userID: order['buyerID']
+                })
+              await sendEmail(
+                buyerRef.data()['email'],
+                'Payment Reminder',
+                `
+                 <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
+                 <p style="font-size: 18px">Dear ${
+                   buyerRef.data()['full name']
+                 }</p>
+                <p style="font-size: 18px">Please remember to pay your installment payment before the deadline runs out'</p>
+                `
+              )
+
+              await db
+                .collection('reminders')
+                .doc(orderID)
+                .set({ oneDayPaymentReminderSent: true }, { merge: true })
+            }
           }
         }
-      }
-    })
+      })
 
-    logger.info('Installment payment check completed')
-    return null
+      logger.info('Installment payment check completed')
+      return null
+    } else {
+      logger.error('document does not exist')
+    }
   }
 )
 
@@ -712,10 +859,41 @@ exports.sendEmailToAdminOnVendorCreation = onDocumentCreated(
 
       // Send email notification to admin
       const adminEmail = process.env.ADMIN_EMAIL // Replace with your admin email
-      const subject = 'Someone Wants to Become A Seller With Us'
-      const message = `Become a seller form has been Submitted\n\nDetails:\nShop Name: ${vendorData['shop name']}`
+      const subject = 'Vendor Request Submitted'
+      const message = `<h2 style="font-size: 24px">Vendor request form has been Submitted</h2>
+      <h4 style="font-size: 20px">Details:</h4>
+      <p style="font-size: 16px">Shop Name: ${vendorData['shop name']}</p>
+      <p style="font-size: 16px">Shop Link: ${vendorData['shop link']}</p>
+      <p style="font-size: 16px">Account Information: ${vendorData['account info']}</p>
+      <p style="font-size: 16px">Contact Information: ${vendorData['contact info']}</p>
+      `
 
       await sendEmail(adminEmail, subject, message)
+
+      logger.info('Email notification sent to admin successfully')
+    } catch (error) {
+      logger.error('Error sending email notification:', error)
+    }
+  }
+)
+
+exports.sendEmailToUserOnAccountCreation = onDocumentCreated(
+  'userProfile/{userID}',
+  async event => {
+    try {
+      // Get the newly created user data
+      const userData = event.data.data()
+
+      // Send email notification to admin
+      const userEmail = userData['email']
+      const subject = 'Welcome to HAIR MAIN STREET'
+      const message = `<h2 style="font-size: 24px">Welcome to <span style="color: #673AB7">Hair Main Street</span></h2>
+    <p style="font-size: 18px">Your account creation was successful. Enjoy using our application and witness the best we have to offer.</p>
+            <p style="font-size: 18px">We are excited to have you on board.</p>
+            <p style="font-size: 18px">Have Fun.</p>
+    `
+
+      await sendEmail(userEmail, subject, message)
 
       logger.info('Email notification sent to admin successfully')
     } catch (error) {

@@ -209,7 +209,7 @@ class _BuyerPaymentPageState extends State<BuyerPaymentPage> {
                                 hintText: "Select",
                                 menuStyle: MenuStyle(
                                   backgroundColor:
-                                      MaterialStatePropertyAll<Color>(
+                                      WidgetStatePropertyAll<Color>(
                                     Colors.grey.shade200,
                                   ),
                                 ),

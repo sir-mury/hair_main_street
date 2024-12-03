@@ -52,6 +52,7 @@ class Address {
   String? contactPhoneNumber;
   String? streetAddress;
   String? landmark;
+  bool? isDefault = false;
 
   Address({
     this.addressID,
@@ -62,6 +63,7 @@ class Address {
     this.state,
     this.streetAddress,
     this.zipCode,
+    this.isDefault,
   });
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
@@ -73,6 +75,7 @@ class Address {
         contactPhoneNumber: json['contact phonenumber'],
         zipCode: json['zipcode'],
         landmark: json['landmark'],
+        isDefault: json['isDefault'],
       );
 
   Map<String, dynamic> toJson() {
@@ -85,6 +88,7 @@ class Address {
     data['contact phonenumber'] = contactPhoneNumber;
     data['zipcode'] = zipCode;
     data['landmark'] = landmark;
+    data['isDefault'] = isDefault;
     return data;
   }
 }

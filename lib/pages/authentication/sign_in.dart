@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -268,49 +270,58 @@ class _SignInState extends State<SignIn> {
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  SizedBox(
-                    width: screenWidth * 0.85,
-                    child: TextButton(
-                      onPressed: () {
-                        userController.showMyToast("Under development");
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.all(10),
-                        backgroundColor:
-                            const Color(0xFF673AB7).withOpacity(0.10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Iconify(
-                            Ic.round_apple,
-                            size: 24,
-                            color: Colors.black,
-                          ),
-                          SizedBox(
-                            width: 8,
-                          ),
-                          Text(
-                            "Sign in with Apple",
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w300,
+                  Platform.isIOS
+                      ? Column(
+                          children: [
+                            const SizedBox(
+                              height: 20,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                            SizedBox(
+                              width: screenWidth * 0.85,
+                              child: TextButton(
+                                onPressed: () {
+                                  userController
+                                      .showMyToast("Under development");
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.all(10),
+                                  backgroundColor:
+                                      const Color(0xFF673AB7).withOpacity(0.10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Iconify(
+                                      Ic.round_apple,
+                                      size: 24,
+                                      color: Colors.black,
+                                    ),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    Text(
+                                      "Sign in with Apple",
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                          ],
+                        )
+                      : const SizedBox(
+                          height: 20,
+                        ),
                   SizedBox(
                     width: screenWidth * 0.85,
                     child: TextButton(

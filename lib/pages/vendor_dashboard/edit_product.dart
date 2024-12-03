@@ -7,6 +7,7 @@ import 'package:hair_main_street/pages/vendor_dashboard/options_page.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/product_specification.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/loading.dart';
+import 'package:hair_main_street/widgets/misc_widgets.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/ic.dart';
 import 'package:iconify_flutter_plus/icons/material_symbols.dart';
@@ -118,94 +119,6 @@ class _EditProductPageState extends State<EditProductPage> {
       print('Selected value: $value');
     }
 
-    showCancelDialog() {
-      return Get.dialog(
-        AlertDialog(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          titlePadding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-          contentPadding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
-          title: const Text(
-            "Cancel Product Edit?",
-            style: TextStyle(
-              fontSize: 19,
-              fontFamily: 'Lato',
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
-          ),
-          content: Text(
-            "Are you sure you want to cancel editing this product?",
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Lato',
-              fontWeight: FontWeight.w400,
-              color: Colors.black.withOpacity(0.65),
-            ),
-          ),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actionsPadding: EdgeInsets.fromLTRB(16, 4, 16, 10),
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF673AB7),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 32),
-                //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(
-                    width: 1,
-                    color: Color(0xFF673AB7),
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                Get.back();
-              },
-              child: const Text(
-                "No",
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.black,
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 32),
-                //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: Colors.red.shade400,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                Get.close(2);
-              },
-              child: Text(
-                "Yes",
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.red.shade400,
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        barrierDismissible: true,
-      );
-    }
-
     return StreamBuilder(
         stream: DataBaseService().getCategories(),
         builder: (context, snapshot) {
@@ -214,11 +127,24 @@ class _EditProductPageState extends State<EditProductPage> {
           }
           return PopScope(
             canPop: false,
-            onPopInvoked: (bool didPop) async {
+            onPopInvokedWithResult: (bool didPop, result) async {
               if (didPop) {
                 return;
               } else {
-                await showCancelDialog();
+                await Get.dialog(
+                  DeleteDialog(
+                    title: "Cancel Edit?",
+                    confirmAction: () {
+                      Get.close(2);
+                    },
+                    cancelAction: () {
+                      Get.back();
+                    },
+                    subtitle:
+                        "Are you sure you want to cancel editing this product?",
+                  ),
+                  barrierDismissible: true,
+                );
               }
             },
             child: Scaffold(
@@ -229,7 +155,20 @@ class _EditProductPageState extends State<EditProductPage> {
                 backgroundColor: Colors.white,
                 leading: InkWell(
                   onTap: () {
-                    showCancelDialog();
+                    Get.dialog(
+                      DeleteDialog(
+                        title: "Cancel Edit?",
+                        confirmAction: () {
+                          Get.close(2);
+                        },
+                        cancelAction: () {
+                          Get.back();
+                        },
+                        subtitle:
+                            "Are you sure you want to cancel editing this product?",
+                      ),
+                      barrierDismissible: true,
+                    );
                   },
                   radius: 12,
                   child: const Icon(
@@ -250,7 +189,7 @@ class _EditProductPageState extends State<EditProductPage> {
                 centerTitle: false,
               ),
               body: Container(
-                padding: EdgeInsets.fromLTRB(12, 6, 12, 0),
+                padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
                 //decoration: BoxDecoration(gradient: myGradient),
                 child: Form(
                   key: formKey,
@@ -768,12 +707,27 @@ class _EditProductPageState extends State<EditProductPage> {
                           height: 24,
                         ),
                         DropdownSearch(
+                          compareFn: (item1, item2) => item1 == item2,
                           selectedItem: _initialCategoryValue,
-                          dropdownButtonProps: const DropdownButtonProps(
-                            icon: Iconify(
-                              Ic.baseline_keyboard_arrow_down,
-                              size: 24,
-                              color: Colors.black,
+                          suffixProps: DropdownSuffixProps(
+                            clearButtonProps: ClearButtonProps(
+                              icon: Iconify(
+                                Ic.baseline_keyboard_arrow_down,
+                                size: 24,
+                                color: Colors.black,
+                              ),
+                            ),
+                            dropdownButtonProps: const DropdownButtonProps(
+                              iconClosed: Iconify(
+                                Ic.baseline_keyboard_arrow_down,
+                                size: 24,
+                                color: Colors.black,
+                              ),
+                              iconOpened: Iconify(
+                                Ic.baseline_keyboard_arrow_down,
+                                size: 24,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
                           dropdownBuilder: (context, selectedItem) =>
@@ -798,7 +752,9 @@ class _EditProductPageState extends State<EditProductPage> {
                                     ),
                           popupProps: PopupProps.dialog(
                             fit: FlexFit.loose,
-                            itemBuilder: (context, item, isSelected) => Padding(
+                            itemBuilder:
+                                (context, item, isDisabled, isSelected) =>
+                                    Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
                                 "${item.toString().capitalizeFirst}",
@@ -881,15 +837,15 @@ class _EditProductPageState extends State<EditProductPage> {
                             // ),
                             showSearchBox: true,
                           ),
-                          items: productController.categories,
+                          items: (f, cs) => productController.categories,
                           onChanged: (value) {
-                            print(value);
+                            //print(value);
                             setState(() {
                               product!.category = value.toString();
                             });
                           },
-                          dropdownDecoratorProps: DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
+                          decoratorProps: DropDownDecoratorProps(
+                            decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 2, horizontal: 10),
                               hintText: "Add Product Category",

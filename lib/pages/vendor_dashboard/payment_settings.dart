@@ -63,7 +63,7 @@ class PaymentSettingsPage extends StatelessWidget {
         //backgroundColor: Colors.transparent,
       ),
       body: Container(
-        padding: EdgeInsets.fromLTRB(12, 20, 12, 0),
+        padding: const EdgeInsets.fromLTRB(12, 20, 12, 0),
         decoration: BoxDecoration(gradient: myGradient),
         child: Form(
             key: formKey,
@@ -78,7 +78,7 @@ class PaymentSettingsPage extends StatelessWidget {
                   onSubmit: (val) {
                     installment = val;
                     debugPrint(installment);
-                    return null;
+                    return;
                   },
                   validator: (val) {
                     if (val!.isEmpty) {
@@ -109,13 +109,13 @@ class PaymentSettingsPage extends StatelessWidget {
                         style: TextButton.styleFrom(
                           // padding: EdgeInsets.symmetric(
                           //     horizontal: screenWidth * 0.24),
-                          backgroundColor: Color(0xFF392F5A),
-                          side: BorderSide(color: Colors.white, width: 2),
+                          backgroundColor: const Color(0xFF392F5A),
+                          side: const BorderSide(color: Colors.white, width: 2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
+                        child: const Text(
                           "Save",
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.white, fontSize: 20),

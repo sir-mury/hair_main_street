@@ -125,7 +125,7 @@ class _InventoryPageState extends State<InventoryPage>
                     "assets/Icons/edit.svg",
                     height: 30,
                     width: 30,
-                    color: Color(0xFF673AB7).withOpacity(0.50),
+                    color: const Color(0xFF673AB7).withOpacity(0.50),
                   ),
                   title: const Text(
                     "Edit",
@@ -159,7 +159,7 @@ class _InventoryPageState extends State<InventoryPage>
                         ? Icons.do_not_disturb_alt_outlined
                         : Icons.check,
                     size: 30,
-                    color: Color(0xFF673AB7).withOpacity(0.50),
+                    color: const Color(0xFF673AB7).withOpacity(0.50),
                   ),
                   title: Text(
                     isAvailable ? "Unavailable" : "Available",
@@ -178,7 +178,7 @@ class _InventoryPageState extends State<InventoryPage>
                     }
                     Product? product =
                         productController.getSingleProduct(productID);
-                    product!.isAvailable = isAvailable;
+                    product!.isAvailable = !isAvailable;
                     await productController.updateProduct(product);
                   },
                 ),
@@ -189,7 +189,7 @@ class _InventoryPageState extends State<InventoryPage>
                   leading: Icon(
                     Icons.share,
                     size: 30,
-                    color: Color(0xFF673AB7).withOpacity(0.50),
+                    color: const Color(0xFF673AB7).withOpacity(0.50),
                   ),
                   title: const Text(
                     "Share",
@@ -485,7 +485,7 @@ class _InventoryPageState extends State<InventoryPage>
                                                 : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
                                             errorWidget: ((context, url,
                                                     error) =>
-                                                Text("Failed to Load Image")),
+                                                const Text("Failed to Load Image")),
                                             placeholder: ((context, url) =>
                                                 const Center(
                                                   child:
@@ -734,7 +734,7 @@ class _InventoryPageState extends State<InventoryPage>
                                                 : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
                                             errorWidget: ((context, url,
                                                     error) =>
-                                                Text("Failed to Load Image")),
+                                                const Text("Failed to Load Image")),
                                             placeholder: ((context, url) =>
                                                 const Center(
                                                   child:
@@ -980,7 +980,7 @@ class _InventoryPageState extends State<InventoryPage>
                                                 : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
                                             errorWidget: ((context, url,
                                                     error) =>
-                                                Text("Failed to Load Image")),
+                                                const Text("Failed to Load Image")),
                                             placeholder: ((context, url) =>
                                                 const Center(
                                                   child:

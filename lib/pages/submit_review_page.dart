@@ -1,12 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/review_controller.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/review.dart';
+import 'package:hair_main_street/widgets/text_input.dart';
+import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
+import 'package:iconify_flutter_plus/icons/ph.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -25,7 +27,7 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
   TextEditingController displayNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   Review review = Review(comment: "", stars: 0.0);
-  double _rating = 0.0;
+  final double _rating = 0.0;
   List<File?> selectedImages =
       List.filled(3, null); // Changed to File? to match image_picker
 
@@ -51,14 +53,19 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Symbols.arrow_back_ios_new_rounded,
-              size: 24, color: Colors.black),
+          icon: const Icon(
+            Symbols.arrow_back_ios_new_rounded,
+            size: 24,
+            color: Colors.black,
+          ),
         ),
         title: const Text(
-          'Write a Review',
+          'Leave Review',
           style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
+            fontSize: 25,
+            fontWeight: FontWeight.w600,
+            fontFamily: "Lato",
+            color: Colors.black,
           ),
         ),
         centerTitle: true,
@@ -72,76 +79,42 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Display Name",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: displayNameController,
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: "Name",
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black, width: 1),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your display name';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        review.displayName = value!;
-                      },
-                    ),
-                  ],
+                TextInputWidget(
+                  labelColor: Colors.black,
+                  controller: displayNameController,
+                  labelText: "Display Name (optional)",
+                  fontSize: 18,
+                  hintText: "Display name",
+                  // validator: (value) {
+                  //   if (value == null || value.isEmpty) {
+                  //     return 'Please enter your display name';
+                  //   }
+                  //   return null;
+                  // },
+                  onChanged: (value) {
+                    review.displayName = value!;
+                  },
                 ),
                 const SizedBox(height: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Comment",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: commentController,
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: "Type Comment Here",
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black, width: 1),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your review';
-                        }
-                        return null;
-                      },
-                      minLines: 5,
-                      maxLines: 10,
-                      onSaved: (value) {
-                        review.comment = value!;
-                      },
-                    ),
-                  ],
+                TextInputWidget(
+                  labelText: "Comment",
+                  labelColor: Colors.black,
+                  fontSize: 18,
+                  controller: commentController,
+                  hintText: "Enter review details",
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  textInputType: TextInputType.multiline,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your review';
+                    }
+                    return null;
+                  },
+                  minLines: 5,
+                  maxLines: 10,
+                  onChanged: (value) {
+                    review.comment = value!;
+                  },
                 ),
                 const SizedBox(height: 12),
                 Column(
@@ -149,8 +122,10 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
                   children: [
                     const Text(
                       "Add Image",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -178,7 +153,7 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
                                         child: GestureDetector(
                                           onTap: () => _removeImage(index),
                                           child: Container(
-                                            padding: EdgeInsets.all(4),
+                                            padding: const EdgeInsets.all(4),
                                             color:
                                                 Colors.black.withOpacity(0.5),
                                             child: const Icon(Icons.close,
@@ -195,26 +170,28 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
                     ),
                   ],
                 ),
+                const SizedBox(
+                  height: 12,
+                ),
                 const Text(
-                  'Rate this product',
+                  'Ratings',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 12),
-                // Assuming you're using a package like flutter_rating_bar to display star ratings
-
+                const SizedBox(height: 8),
                 RatingBar.builder(
-                  itemSize: 56,
+                  itemSize: 52,
                   initialRating: _rating,
                   minRating: 0,
                   direction: Axis.horizontal,
                   allowHalfRating: false,
                   itemCount: 5, // Set to 6 for a "0 to 5 stars" rating system
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Colors.amber,
+                  itemBuilder: (context, _) => Iconify(
+                    Ph.star_fill,
+                    size: 35,
+                    color: Color.fromARGB(255, 161, 121, 230),
                   ),
                   onRatingUpdate: (rating) {
                     setState(() {
@@ -222,48 +199,50 @@ class _SubmitReviewPageState extends State<SubmitReviewPage> {
                     });
                   },
                 ),
-
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(
-                          color: Colors.black,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        //review.productID = widget.productID;
-
-                        review.userID = userController.userState.value!.uid!;
-                        await reviewController.addAReview(
-                            review, widget.productID!);
-                        // Here you can handle the submission of the review
-                        // For example, you can send the review to Firestore
-                        // and then navigate back to the previous screen
-                        //Navigator.pop(context);
-                      }
-                    },
-                    child: const Text(
-                      'Submit Review',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
-                    ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Leave a honest review to help others',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: "Raleway",
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                // Rating Bar and Submit Button remain unchanged
-                // ...
               ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 2, 8, 6),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              //padding: const EdgeInsets.symmetric(vertical: 8),
+              backgroundColor: Color(0xFF673AB7),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                _formKey.currentState!.save();
+                //review.productID = widget.productID;
+
+                review.userID = userController.userState.value!.uid!;
+                await reviewController.addAReview(review, widget.productID!);
+                // Here you can handle the submission of the review
+                // For example, you can send the review to Firestore
+                // and then navigate back to the previous screen
+                //Navigator.pop(context);
+              }
+            },
+            child: const Text(
+              'Submit Review',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+              ),
             ),
           ),
         ),

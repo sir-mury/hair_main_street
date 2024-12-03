@@ -27,10 +27,15 @@ class ChatController extends GetxController {
   //   // print(member2UID.value);
   // }
 
-  void getMessages(String member1, member2) {
+  void getMessages(String currentUserId, String otherUserId) {
     isLoading.value = true;
     //print(DataBaseService().getChats(member1, member2));
-    messagesList.bindStream(DataBaseService().getChats(member1, member2));
+    messagesList.bindStream(
+      DataBaseService().getChatsBetween2Users(
+        currentUserId: currentUserId,
+        otherUserId: otherUserId,
+      ),
+    );
     isLoading.value = false;
     // for (var element in messagesList.value!) {
     //   print(element!.idFrom);
@@ -38,8 +43,14 @@ class ChatController extends GetxController {
     // }
   }
 
-  startChat(Chat chat, ChatMessages chatMessages) {
-    return DataBaseService().startChat(chat, chatMessages);
+  // startChat(Chat chat, ChatMessages chatMessages) {
+  //   return DataBaseService().startChat(chat, chatMessages);
+  // }
+
+  //send a message
+  sendMessage(
+      ChatMessages message, String currentUserId, String otherUserId) async {
+    return DataBaseService().sendMessage(message, currentUserId, otherUserId);
   }
 
   List<ChatMessages> sortByFirestoreTimestamp(List<ChatMessages> list) {
@@ -55,21 +66,21 @@ class ChatController extends GetxController {
   }
 
   getUserChats(String userID) {
-    var resultStream = DataBaseService().getUserChats(userID);
+    var resultStream = DataBaseService().getAllUserChats(userID);
     resultStream.listen((chats) {
       myChats.assignAll(chats);
     });
     return resultStream;
   }
 
-  Future<String> resolveTheNames(ChatMessages message) async {
-    idTo.value = await resolveNameToDisplay(message.idTo!);
-    idFrom.value = await resolveNameToDisplay(message.idFrom!);
-    return 'success';
-    // print(idTo.value);
-    // print(idFrom.value);
-    //update(); // This will trigger a rebuild of the widget
-  }
+  // Future<String> resolveTheNames(ChatMessages message) async {
+  //   idTo.value = await resolveNameToDisplay(message.idTo!);
+  //   idFrom.value = await resolveNameToDisplay(message.idFrom!);
+  //   return 'success';
+  //   // print(idTo.value);
+  //   // print(idFrom.value);
+  //   //update(); // This will trigger a rebuild of the widget
+  // }
 
   Future<MessagePageData> resolveNameToDisplay(String displayID) async {
     MessagePageData nameToDisplay = MessagePageData();

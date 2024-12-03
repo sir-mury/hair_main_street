@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/get_rx.dart';
 import 'package:hair_main_street/models/productModel.dart';
 import 'package:hair_main_street/models/review.dart';
 import 'package:hair_main_street/models/vendorsModel.dart';
@@ -15,9 +14,10 @@ class ProductController extends GetxController {
   var toggleSelection = <bool>[].obs;
   Rx<ProductOption?> selectedProductOption = ProductOption().obs;
   RxList<Vendors?> vendorsList = RxList<Vendors?>();
-  RxList<Vendors?> filteredVendorsList = RxList<Vendors?>();
   RxList<Product?> products = RxList<Product?>([]);
-  Rx<List<Product?>> filteredProducts = Rx<List<Product?>>([]);
+  RxList<Vendors?> filteredSearchVendorsList = RxList<Vendors?>();
+  RxList<Product?> filteredSearchProducts = RxList<Product?>([]);
+  RxList<Product?> seeAlsoProducts = RxList<Product?>([]);
   RxList<Review?> reviews = RxList<Review?>([]);
   RxMap<String, List<Product?>> productMap = RxMap<String, List<Product?>>();
   var isOptionVisible = false.obs;
@@ -49,14 +49,102 @@ class ProductController extends GetxController {
     }
   }
 
+  @override
+  void onReady() {
+    super.onInit();
+    getCategories();
+  }
+
   //get categories
   getCategories() {
     var result = DataBaseService().getCategories();
     categories.bindStream(result);
   }
 
+  //filter function dependent on input for search page
+  // to be commented for now for possible use in the future
+  // filterProductSearchResults(String filterParameter, dynamic filterValue) {
+  //   RxList<Product?> originalFilteredProducts = filteredProducts;
+  //   switch (filterParameter) {
+  //     case "price":
+  //       if (filterValue.runtimeType == List) {
+  //         filteredProducts.value = filteredProducts.where((product) {
+  //           return product!.price! >= filterValue[0] &&
+  //               product.price! <= filterValue[1];
+  //         }).toList();
+  //       } else {}
+  //       break;
+
+  //     case "category":
+  //       if (filterValue.runtimeType == String) {
+  //         filteredProducts.value = filteredProducts
+  //             .where((product) => product!.category! == filterValue)
+  //             .toList();
+  //       }
+  //       break;
+
+  //     case "cancel":
+  //       filteredProducts = originalFilteredProducts;
+  //       break;
+  //     default:
+  //       filteredProducts;
+  //   }
+  // }
+
+  //function for handling search products
+  void handleSearchProducts(query) {
+    filteredSearchVendorsList.value = vendorsList
+        .where((vendor) =>
+            vendor!.shopName!.toLowerCase().contains(query!.toLowerCase()))
+        .toList();
+    filteredSearchProducts.value = products
+        .where((product) =>
+            product!.name!.toLowerCase().contains(query!.toLowerCase()))
+        .toList();
+  }
+
+  //new function for filtering in search page
+  void filterProductSearchResults({
+    List<double>? priceRange,
+    String? category,
+  }) {
+    // Store the original list to allow resetting or applying multiple filters
+    RxList<Product?> originalFilteredProducts = filteredSearchProducts;
+    print("the price range is $priceRange");
+
+    // Start with the full list
+    var filtered = originalFilteredProducts.toList();
+
+    // Apply the price filter if a range is provided
+    if (priceRange != null && priceRange.length == 2) {
+      print("price range is $priceRange");
+      filtered = filtered.where((product) {
+        return product!.price! >= priceRange[0] &&
+            product.price! <= priceRange[1];
+      }).toList();
+    }
+
+    // Apply the category filter if a category is provided
+    if (category != null && category.isNotEmpty) {
+      filtered = filtered.where((product) {
+        return product!.category == category;
+      }).toList();
+    }
+
+    // if both are null, restore the original list
+    if (category == null && priceRange == null) {
+      print(originalFilteredProducts);
+      //filtered = originalFilteredProducts;
+    }
+
+    // Update the filteredProducts with the final filtered list
+    filteredSearchProducts.value = filtered;
+    debugPrint(filteredSearchProducts.toString());
+    debugPrint(filtered.toString());
+    filteredSearchProducts.refresh();
+  }
+
   //filter products according to category
-  //function to filter the buyer order list
   void filterTheproductsList(List<Product?> products) {
     // No filter
     productMap["All"] = products;
@@ -85,21 +173,6 @@ class ProductController extends GetxController {
             product!.category != null && product.category == "lashes")
         .toList();
 
-    // // Filter the deleted orders
-    // productMap["Deleted"] = products
-    //     .where((order) =>
-    //         order.orderStatus != null && order.orderStatus == "deleted")
-    //     .toList();
-
-    // // Filter the expired orders
-    // productMap["Expired"] = products
-    //     .where((order) =>
-    //         order.orderStatus != null && order.orderStatus == "expired")
-    //     .toList();
-
-    //print(productMap["once"]!.length);
-    // Update listeners after filtering
-    // Assuming `productMap` is an RxMap or similar reactive object
     productMap.refresh();
   }
 
@@ -158,7 +231,7 @@ class ProductController extends GetxController {
         "Successful",
         "Product Added",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -176,7 +249,7 @@ class ProductController extends GetxController {
         "Error",
         "Product Upload Failed",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],
@@ -205,9 +278,10 @@ class ProductController extends GetxController {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
-      gravity: ToastGravity.BOTTOM, // Position at the bottom of the screen
+      gravity: ToastGravity.CENTER, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
-      backgroundColor: Colors.white, // Optional: Set background color
+      backgroundColor:
+          const Color(0xFFf5f5f5), // Optional: Set background color
       textColor: Colors.black, // Optional: Set text color
       fontSize: 14.0, // Optional: Set font size
     );
@@ -264,7 +338,7 @@ class ProductController extends GetxController {
         "Successful",
         "Product Edited",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -281,7 +355,7 @@ class ProductController extends GetxController {
         "Error",
         "Product Edit Failed",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],
@@ -296,14 +370,14 @@ class ProductController extends GetxController {
 
   //delete a product
   deleteProduct(Product product) async {
-    var result = await DataBaseService().clientDeleteProduct(product);
+    var result = await DataBaseService().vendorSideDeleteProduct(product);
     if (result == "success") {
       isProductadded.value = true;
       Get.snackbar(
         "Successful",
         "Product Deleted",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -319,7 +393,7 @@ class ProductController extends GetxController {
         "Error",
         "Failed to Delete Product",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],

@@ -66,29 +66,29 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
         //backgroundColor: Colors.transparent,
       ),
       body: Container(
-        padding: EdgeInsets.fromLTRB(12, 20, 12, 0),
+        padding: const EdgeInsets.fromLTRB(12, 20, 12, 0),
         decoration: BoxDecoration(gradient: myGradient),
         child: ListView(
           children: [
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   width: 2,
-                  color: Color(0xFF392F5A),
+                  color: const Color(0xFF392F5A),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0xFF000000),
+                    color: const Color(0xFF000000),
                     blurStyle: BlurStyle.normal,
                     offset: Offset.fromDirection(-4.0),
                     blurRadius: 2,
                   ),
                 ],
               ),
-              child: Column(
+              child: const Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -259,7 +259,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                     });
                   },
                 ),
-                Text(
+                const Text(
                   "I agree with the",
                   style: TextStyle(
                     fontSize: 20,
@@ -267,12 +267,12 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: Text(
+                  child: const Text(
                     "terms",
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                 ),
-                Text(
+                const Text(
                   "and",
                   style: TextStyle(
                     fontSize: 20,
@@ -280,7 +280,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: Text(
+                  child: const Text(
                     "conditions",
                     style: TextStyle(
                       color: Colors.blue,
@@ -296,7 +296,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
             TextButton(
               style: TextButton.styleFrom(
                 //alignment: Alignment.centerLeft,
-                backgroundColor: Color(0xFF392F5A),
+                backgroundColor: const Color(0xFF392F5A),
                 shape: const RoundedRectangleBorder(
                   side: BorderSide(color: Colors.white, width: 2),
                   borderRadius: BorderRadius.all(
@@ -305,7 +305,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                 ),
               ),
               onPressed: () {
-                Get.to(() => BuyerPaymentPage());
+                Get.to(() => const BuyerPaymentPage());
               },
               child: const Text(
                 "Proceed",

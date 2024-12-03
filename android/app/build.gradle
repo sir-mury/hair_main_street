@@ -25,17 +25,18 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.hair_main_street"
-    compileSdkVersion 34
-    ndkVersion flutter.ndkVersion
+    compileSdk = 35
+    ndkVersion '28.0.12433566 rc1'
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
+        freeCompilerArgs += ['-Xjvm-default=all']
     }
 
     sourceSets {
@@ -49,18 +50,25 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdk = 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
     buildTypes {
+        debug{
+            // ...
+        }
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    buildToolsVersion '35.0.0'
 }
 
 flutter {
@@ -71,5 +79,9 @@ dependencies {
     implementation 'androidx.window:window:1.0.0'
     implementation 'androidx.window:window-java:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    implementation "com.monnify.android-sdk:monnify-android-sdk:1.1.7"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10"
+    implementation "org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.10"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.2'
 }

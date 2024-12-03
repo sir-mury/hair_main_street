@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/get_rx.dart';
 import 'package:hair_main_street/controllers/cartController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/auxModels.dart';
@@ -31,10 +30,12 @@ class CheckOutController extends GetxController {
   RxString userUID = "".obs;
   var isLoading = false.obs;
   var isChecked = false.obs;
+  RxBool toRebuild = false.obs;
   var checkOutTickBoxModel = CheckOutTickBoxModel().obs;
 // Map to store the checkbox state for each productID
   final Map<String, RxBool> itemCheckboxState = {};
   RxList<String> deletableCartItems = <String>[].obs;
+  bool isMasterToggle = false;
 
   // List to store selected items
   RxList<CheckOutTickBoxModel> checkoutList = <CheckOutTickBoxModel>[].obs;
@@ -63,6 +64,10 @@ class CheckOutController extends GetxController {
     cartController.cartItems.listen((cartItems) {
       updateCheckoutItemFromCartItems(cartItems);
     });
+  }
+
+  void triggeRebuild() {
+    toRebuild.value = !toRebuild.value;
   }
 
   //function to filter the buyer order list
@@ -155,13 +160,14 @@ class CheckOutController extends GetxController {
 
     for (var cartItem in cartItems) {
       int index = checkoutList
-          .indexWhere((element) => element.productID == cartItem.productID);
-
+          .indexWhere((element) => element.cartID == cartItem.cartItemID);
       if (index != -1) {
         checkoutList[index] = CheckOutTickBoxModel(
+          optionName: cartItem.optionName,
           price: cartItem.price,
           quantity: cartItem.quantity,
           productID: cartItem.productID,
+          cartID: cartItem.cartItemID,
           user: user,
         );
       }
@@ -169,6 +175,7 @@ class CheckOutController extends GetxController {
 
     // Update the total price and quantity
     getTotalPriceAndTotalQuantity();
+    update();
   }
 
   //get total sales
@@ -247,7 +254,7 @@ class CheckOutController extends GetxController {
       }
     }
 
-    // Calculate total quantity by summing up all product quantities
+    // Calculate total quantity in checkout list by summing up all product quantities
     num totalQuantity = checkoutList.length;
 
     totalPriceAndQuantity.value = {
@@ -258,28 +265,26 @@ class CheckOutController extends GetxController {
 
   // Method to toggle the state of the master checkbox
   void toggleMasterCheckbox() {
+    isMasterToggle = true;
     isMasterCheckboxChecked.value = !isMasterCheckboxChecked.value;
 
-    CartItem? item;
-    // Toggle the state of all other checkboxes
-    itemCheckboxState.forEach((productID, checkboxState) {
+    itemCheckboxState.forEach((cartID, checkboxState) {
       checkboxState.value = isMasterCheckboxChecked.value;
       for (var cartItem in cartController.cartItems) {
-        if (cartItem.productID == productID) {
-          //print("ding ding");
-          item = cartItem;
+        if (cartItem.cartItemID == cartID) {
+          toggleCheckbox(
+            productID: cartItem.productID,
+            value: isMasterCheckboxChecked.value,
+            quantity: cartItem.quantity!,
+            price: cartItem.price!,
+            cartID: cartItem.cartItemID,
+            optionName: cartItem.optionName,
+          );
+          // break; // Exit the loop once the matching item is found
         }
       }
-      //print(cartController.cartItems);
-      toggleCheckbox(
-        productID: productID,
-        value: isMasterCheckboxChecked.value,
-        quantity: item!.quantity,
-        price: item!.price,
-        cartID: item!.cartItemID,
-        optionName: item!.optionName,
-      );
     });
+    isMasterToggle = false;
   }
 
   // void toggleCheckbox({
@@ -318,7 +323,7 @@ class CheckOutController extends GetxController {
         "Deleted",
         "Successfully deleted item(s) from cart ",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -328,6 +333,9 @@ class CheckOutController extends GetxController {
           bottom: screenHeight * 0.08,
         ),
       );
+      itemCheckboxState.clear();
+      checkoutList.clear();
+      totalPriceAndQuantity.clear();
       return "success";
     } else {
       isLoading.value = false;
@@ -335,7 +343,7 @@ class CheckOutController extends GetxController {
         "Error",
         "Error Deleting Items from Wishlist",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[300],
@@ -346,38 +354,37 @@ class CheckOutController extends GetxController {
         ),
       );
     }
-    itemCheckboxState.clear();
-    checkoutList.clear();
-    totalPriceAndQuantity.clear();
+
     update();
   }
 
   void toggleCheckbox({
-    String? productID,
-    bool? value,
-    quantity,
-    price,
-    user,
-    String? cartID,
+    required String productID,
+    required bool value,
+    required int quantity,
+    MyUser? user,
+    required num price,
+    required String cartID,
     String? optionName,
   }) {
-    itemCheckboxState[productID]?.value = value!;
-    if (value!) {
-      // Check if the item already exists in the checkout list
-      bool itemExists = checkoutList.any((item) {
+    itemCheckboxState[cartID]?.value = value;
+
+    if (value) {
+      // Check if the item already exists in the checkoutList
+      final existingItem = checkoutList.firstWhereOrNull((item) {
         if (optionName != null) {
-          return item.productID == productID && item.optionName == optionName;
+          return item.cartID == cartID && item.optionName == optionName;
         } else {
-          return item.productID == productID;
+          return item.cartID == cartID;
         }
       });
-      bool itemExists2 = deletableCartItems.any((item) => item == cartID);
-      // If the item doesn't exist, add it to the checkout list
-      if (!itemExists && !itemExists2) {
-        deletableCartItems.add(cartID!);
+      // print("does it exist?:$existingItem");
+
+      if (existingItem == null) {
         checkoutList.add(
           CheckOutTickBoxModel(
             productID: productID,
+            cartID: cartID,
             price: price,
             quantity: quantity,
             user: user,
@@ -385,16 +392,31 @@ class CheckOutController extends GetxController {
             // Add other necessary properties
           ),
         );
+        deletableCartItems.add(cartID);
       }
     } else {
-      // Remove the item from the checkoutList if it exists
-      checkoutList.removeWhere((item) => item.productID == productID);
-      deletableCartItems.removeWhere((item) => item == cartID);
+      checkoutList.removeWhere((item) {
+        if (optionName != null) {
+          return item.cartID == cartID && item.optionName == optionName;
+        } else {
+          return item.cartID == cartID;
+        }
+      });
+      deletableCartItems.remove(cartID);
     }
-    //print(deletableCartItems);
+
+    if (!isMasterToggle) {
+      if (!value) {
+        isMasterCheckboxChecked.value = false;
+      } else {
+        bool allSelected = itemCheckboxState.values
+            .every((checkbox) => checkbox.value == true);
+        isMasterCheckboxChecked.value = allSelected;
+      }
+    }
 
     // Update the state
-    // update();
+    update();
   }
 
   createCheckOutItem(
@@ -429,21 +451,22 @@ class CheckOutController extends GetxController {
   }
 
   //create order
-  createOrder(
-      {String? paymentMethod,
-      String? transactionID,
-      String? productPrice,
-      String? orderQuantity,
-      String? productID,
-      String? vendorID,
-      Address? deliveryAddress,
-      num? totalPrice,
-      String? recipientCode,
-      MyUser? user,
-      num? paymentPrice,
-      int? installmentNumber,
-      int? installmentPaid,
-      String? optionName}) async {
+  Future<String> createOrder({
+    String? paymentMethod,
+    String? transactionID,
+    String? productPrice,
+    String? orderQuantity,
+    String? productID,
+    String? vendorID,
+    Address? deliveryAddress,
+    num? totalPrice,
+    String? recipientCode,
+    MyUser? user,
+    num? paymentPrice,
+    int? installmentNumber,
+    int? installmentPaid,
+    String? optionName,
+  }) async {
     order.value = Orders(
         buyerId: user!.uid,
         vendorId: vendorID,
@@ -468,7 +491,7 @@ class CheckOutController extends GetxController {
         await DataBaseService().createOrder(order.value!, orderItem.value!);
     isLoading.value = true;
     if (response.keys.contains('Order Created')) {
-      isLoading.value = false;
+      //isLoading.value = false;
       Get.snackbar(
         "Success",
         "Order has been placed",
@@ -497,7 +520,7 @@ class CheckOutController extends GetxController {
         "Error",
         "Problem creating your order",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -507,6 +530,7 @@ class CheckOutController extends GetxController {
           bottom: screenHeight * 0.08,
         ),
       );
+      return "failed";
     }
   }
 
@@ -593,6 +617,7 @@ class CheckOutController extends GetxController {
         ),
       );
       orderUpdateStatus.value = "";
+      return "success";
     } else {
       Get.snackbar(
         "Error",

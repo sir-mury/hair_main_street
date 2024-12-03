@@ -7,11 +7,7 @@ import 'package:hair_main_street/models/review.dart';
 import 'package:hair_main_street/controllers/productController.dart';
 import 'package:hair_main_street/pages/cart.dart';
 import 'package:hair_main_street/pages/client_shop_page.dart';
-import 'package:hair_main_street/pages/orders_stuff/checkout%20copy.dart';
-import 'package:hair_main_street/pages/orders_stuff/checkout.dart';
-import 'package:hair_main_street/pages/orders_stuff/confirm_order.dart';
 import 'package:hair_main_street/pages/review_page.dart';
-import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -60,7 +56,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
       begin: Alignment.bottomCenter,
       //transform: GradientRotation(math.pi / 4),
     );
-    CarouselController carouselController = CarouselController();
+    CarouselSliderController carouselController = CarouselSliderController();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -84,7 +80,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
           IconButton(
             tooltip: "Cart",
             onPressed: () =>
-                Get.to(() => CartPage(), transition: Transition.fade),
+                Get.to(() => const CartPage(), transition: Transition.fade),
             icon: const Icon(Symbols.shopping_cart_rounded,
                 size: 28, color: Colors.black),
           ),
@@ -101,7 +97,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
         // decoration: BoxDecoration(
         //   gradient: myGradient,
         // ),
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: ListView(
           children: [
             Container(
@@ -114,11 +110,11 @@ class _SearchProductPageState extends State<SearchProductPage> {
               child: product!.image!.length == 1
                   ? CachedNetworkImage(
                       fit: BoxFit.fill,
-                      imageUrl: "${product!.image!.first}",
+                      imageUrl: "${product.image!.first}",
                       errorWidget: ((context, url, error) =>
-                          Text("Failed to Load Image")),
+                          const Text("Failed to Load Image")),
                       placeholder: ((context, url) =>
-                          CircularProgressIndicator()),
+                          const CircularProgressIndicator()),
                     )
                   : CarouselSlider(
                       items: List.generate(
@@ -127,9 +123,9 @@ class _SearchProductPageState extends State<SearchProductPage> {
                           fit: BoxFit.fill,
                           imageUrl: "${product.image![index]}",
                           errorWidget: ((context, url, error) =>
-                              Text("Failed to Load Image")),
+                              const Text("Failed to Load Image")),
                           placeholder: ((context, url) =>
-                              CircularProgressIndicator()),
+                              const CircularProgressIndicator()),
                         ),
                       ),
                       carouselController: carouselController,
@@ -212,7 +208,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
                           //selectedColor: Colors.red[50],
                           fillColor: Colors.grey[200],
                           isSelected: toggleSelection,
-                          children: [Toggles(), Toggles(), Toggles()],
+                          children: const [Toggles(), Toggles(), Toggles()],
                           onPressed: (int index) {
                             setState(() {
                               for (int i = 0; i < toggleSelection.length; i++) {
@@ -242,7 +238,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
                       color: Colors.black),
                   overflow: TextOverflow.ellipsis,
                 ),
-                Divider(
+                const Divider(
                   thickness: 1.5,
                   color: Colors.transparent,
                   height: 4,
@@ -258,22 +254,22 @@ class _SearchProductPageState extends State<SearchProductPage> {
                             _.decreaseQuantity();
                             print(quantity);
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Symbols.remove,
                             size: 24,
                             color: Colors.black,
                           ),
                         ),
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 1, horizontal: 2),
                           //width: 28,
                           //height: 28,
                           color: const Color.fromARGB(255, 200, 242, 237),
                           child: Center(
                             child: Text(
                               "$quantity",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 24,
                                 //backgroundColor: Colors.blue,
@@ -286,7 +282,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
                             _.increaseQuantity();
                             print(quantity);
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Symbols.add,
                             size: 24,
                             color: Colors.black,
@@ -405,7 +401,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
             alignment: Alignment.topCenter,
             // height:
             //     isVisible == true ? screenHeight * 0.136 : screenHeight * 0.08,
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.grey[100],
               boxShadow: const [
@@ -446,12 +442,12 @@ class _SearchProductPageState extends State<SearchProductPage> {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  Color.fromARGB(255, 127, 116, 166),
+                                  const Color.fromARGB(255, 127, 116, 166),
                               // padding: EdgeInsets.symmetric(
                               //     vertical: 8, horizontal: screenWidth * 0.26),
                               //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(
+                              shape: const RoundedRectangleBorder(
+                                side: BorderSide(
                                   width: 1,
                                   color: Colors.black,
                                 ),
@@ -481,12 +477,12 @@ class _SearchProductPageState extends State<SearchProductPage> {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  Color.fromARGB(255, 127, 116, 166),
+                                  const Color.fromARGB(255, 127, 116, 166),
                               // padding: EdgeInsets.symmetric(
                               //     vertical: 8, horizontal: screenWidth * 0.26),
                               //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(
+                              shape: const RoundedRectangleBorder(
+                                side: BorderSide(
                                   width: 1,
                                   color: Colors.black,
                                 ),
@@ -537,12 +533,12 @@ class _SearchProductPageState extends State<SearchProductPage> {
                       children: [
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF392F5A),
+                            backgroundColor: const Color(0xFF392F5A),
                             // padding: EdgeInsets.symmetric(
                             //     vertical: 8, horizontal: screenWidth * 0.26),
                             //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(
+                            shape: const RoundedRectangleBorder(
+                              side: BorderSide(
                                 width: 1,
                                 color: Colors.black,
                               ),
@@ -553,7 +549,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
                             ),
                           ),
                           onPressed: () {
-                            Get.to(() => ClientShopPage());
+                            Get.to(() => const ClientShopPage());
                             // DataBaseService().addProduct();
                           },
                           child: const Text(
@@ -566,14 +562,15 @@ class _SearchProductPageState extends State<SearchProductPage> {
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 127, 116, 166),
+                            backgroundColor:
+                                const Color.fromARGB(255, 127, 116, 166),
                             // padding: EdgeInsets.symmetric(
                             //   vertical: 8,
                             //   horizontal: screenWidth * 0.26,
                             // ),
                             //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
                             shape: const RoundedRectangleBorder(
-                              side: const BorderSide(
+                              side: BorderSide(
                                 width: 1,
                                 color: Colors.black,
                               ),
@@ -634,13 +631,13 @@ class Toggles extends StatelessWidget {
             color: Colors.green,
             height: 4,
           ),
-          Text(
+          const Text(
             "Price",
             style: TextStyle(
                 fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black),
             overflow: TextOverflow.ellipsis,
           ),
-          Divider(
+          const Divider(
             thickness: 1.5,
             color: Colors.transparent,
             height: 4,

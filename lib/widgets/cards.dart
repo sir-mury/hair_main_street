@@ -1,14 +1,9 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eva_icons_flutter/eva_icons_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/cartController.dart';
 import 'package:hair_main_street/controllers/chatController.dart';
@@ -44,7 +39,7 @@ import 'package:string_validator/string_validator.dart' as validator;
 
 class WhatsAppButton extends StatelessWidget {
   final VoidCallback onPressed;
-  WhatsAppButton({required this.onPressed});
+  const WhatsAppButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -71,23 +66,23 @@ class ShareCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
         child: PopupMenuButton<String>(
-      icon: Icon(EvaIcons.share),
+      icon: const Icon(Icons.share),
       onSelected: (String choice) {
         // Implement sharing logic for the selected option.
       },
       itemBuilder: (BuildContext context) {
         return <PopupMenuItem<String>>[
-          PopupMenuItem<String>(
+          const PopupMenuItem<String>(
             value: 'Facebook',
             child: ListTile(
               leading: Icon(Icons.facebook, color: Colors.blue),
               title: Text('Facebook'),
             ),
           ),
-          PopupMenuItem<String>(
+          const PopupMenuItem<String>(
             value: 'Twitter',
             child: ListTile(
-              leading: Icon(EvaIcons.twitter, color: Colors.blue),
+              leading: Icon(Icons.one_x_mobiledata, color: Colors.blue),
               title: Text('Twitter'),
             ),
           ),
@@ -196,7 +191,7 @@ class ProductCard extends StatelessWidget {
                               child: Text("Failed to Load Image"),
                             )),
                         imageBuilder: (context, imageProvider) => Container(
-                          width: double.infinity,
+                          //width: double.infinity,
                           height: 154,
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
@@ -255,17 +250,32 @@ class ProductCard extends StatelessWidget {
                         onTap: (isTapped) async {
                           // Only proceed if the user is logged in
                           if (isUserLoggedIn) {
-                            if (isLiked) {
-                              await wishListController
-                                  .removeFromWishlistWithProductID(id!);
+                            print("logged in");
+                            //isTapped = false;
+                            // isLiked = false;
+                            if (userController.userState.value!.uid ==
+                                productController
+                                    .productMap[mapKey]![index]!.vendorId) {
+                              wishListController.showMyToast(
+                                  "Cannot add your own product to wishlist");
+                              return null;
                             } else {
-                              WishlistItem wishlistItem =
-                                  WishlistItem(wishListItemID: id!);
-                              await wishListController
-                                  .addToWishlist(wishlistItem);
+                              if (isLiked) {
+                                await wishListController
+                                    .removeFromWishlistWithProductID(id!);
+                              } else {
+                                WishlistItem wishlistItem =
+                                    WishlistItem(wishListItemID: id!);
+                                await wishListController
+                                    .addToWishlist(wishlistItem);
+                              }
                             }
+                            return isUserLoggedIn ? !isLiked : false;
+                          } else {
+                            wishListController.showMyToast(
+                                "Login to add product to your wishlist");
+                            return null;
                           }
-                          return isUserLoggedIn ? !isLiked : false;
                         },
                         likeBuilder: (isLiked) {
                           if (isLiked) {
@@ -300,6 +310,147 @@ class ProductCard extends StatelessWidget {
   }
 }
 
+class SeeAlsoCard extends StatelessWidget {
+  // final String? id;
+  final int index;
+  // final String? mapKey;
+  const SeeAlsoCard({
+    required this.index,
+    // this.id,
+    // this.mapKey,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    ProductController productController = Get.find<ProductController>();
+    String formatCurrency(String numberString) {
+      final number =
+          double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
+      final formattedNumber =
+          number.toStringAsFixed(2); // Format with 2 decimals
+
+      // Split the number into integer and decimal parts
+      final parts = formattedNumber.split('.');
+      final intPart = parts[0];
+      final decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
+
+      // Format the integer part with commas for every 3 digits
+      final formattedIntPart = intPart.replaceAllMapped(
+        RegExp(r'\d{1,3}(?=(\d{3})+(?!\d))'),
+        (match) => '${match.group(0)},',
+      );
+
+      // Combine the formatted integer and decimal parts
+      final formattedResult = formattedIntPart + decimalPart;
+
+      return formattedResult;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(right: 12),
+      width: 154,
+      height: 242,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 4,
+            spreadRadius: 0,
+            color: const Color(0xFF673AB7).withOpacity(0.10),
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductPage(
+                id: productController.seeAlsoProducts[index]!.productID,
+              ),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+              child: CachedNetworkImage(
+                height: 154,
+                width: 154,
+                fit: BoxFit.cover,
+                imageUrl: productController
+                            .seeAlsoProducts[index]?.image?.isNotEmpty ==
+                        true
+                    ? productController.seeAlsoProducts[index]!.image!.first
+                    : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+                errorWidget: ((context, url, error) => const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text("Failed to Load Image"),
+                    )),
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                placeholder: ((context, url) => const SizedBox(
+                      width: double.infinity,
+                      height: 154,
+                      child: Center(child: CircularProgressIndicator()),
+                    )),
+              ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            SizedBox(
+              height: screenHeight * 0.055,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                child: Text(
+                  ReCase("${productController.seeAlsoProducts[index]!.name}")
+                      .titleCase,
+                  style: const TextStyle(
+                    fontFamily: 'Raleway',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(6),
+              child: Text(
+                "NGN ${formatCurrency(productController.seeAlsoProducts[index]!.price.toString())}",
+                style: const TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class ShopSearchCard extends StatelessWidget {
   final int index;
   const ShopSearchCard({required this.index, super.key});
@@ -309,54 +460,85 @@ class ShopSearchCard extends StatelessWidget {
     var screenHeight = Get.height;
     var screenWidth = Get.width;
     ProductController productController = Get.find<ProductController>();
+    var imageUrl = productController
+            .clientGetVendorName(
+                productController.filteredSearchVendorsList[index]!.userID!)
+            .shopPicture ??
+        "https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f";
     return InkWell(
       onTap: () {
         Get.to(
             () => ClientShopPage(
-                  vendorID:
-                      productController.filteredVendorsList[index]!.userID,
+                  vendorID: productController
+                      .filteredSearchVendorsList[index]!.userID,
                 ),
             transition: Transition.fadeIn);
       },
       splashColor: Theme.of(context).primaryColorDark,
-      child: Container(
-        padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
-        height: screenHeight * 0.15,
-        width: screenWidth * 0.15,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16),
-          ),
-          color: Colors.grey[100],
-          boxShadow: [
-            BoxShadow(
-              color: Color(0xFF000000),
-              blurStyle: BlurStyle.normal,
-              offset: Offset.fromDirection(10.0),
-              blurRadius: 2,
-            ),
-          ],
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        elevation: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.storefront_outlined,
-              size: 24,
-              color: Colors.black,
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: CachedNetworkImage(
+                //color: Colors.white,
+                //repeat: ImageRepeat.repeat,
+                imageBuilder: (context, imageProvider) => Container(
+                  width: double.infinity,
+                  height: 154,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+
+                fit: BoxFit.contain,
+                imageUrl: imageUrl,
+                errorWidget: ((context, url, error) => const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text("Failed to Load Image"),
+                    )),
+                placeholder: ((context, url) => const Center(
+                      child: CircularProgressIndicator(),
+                    )),
+              ),
             ),
-            Text(
-              "${productController.filteredVendorsList[index]!.shopName}",
-              style: const TextStyle(
-                  fontSize: 24,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w700),
+            const SizedBox(
+              height: 4,
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 24,
-              color: Colors.black,
+            Container(
+              width: double.infinity,
+              //height: 50,
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF673AB7).withOpacity(0.20),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Text(
+                ReCase("${productController.filteredSearchVendorsList[index]!.shopName}")
+                    .titleCase,
+                maxLines: 2,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -394,7 +576,7 @@ class VendorHighlightsCard extends StatelessWidget {
         ),
         elevation: 2,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.only(
@@ -470,6 +652,29 @@ class SearchCard extends StatelessWidget {
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
 
+    String formatCurrency(String numberString) {
+      final number =
+          double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
+      final formattedNumber =
+          number.toStringAsFixed(2); // Format with 2 decimals
+
+      // Split the number into integer and decimal parts
+      final parts = formattedNumber.split('.');
+      final intPart = parts[0];
+      final decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
+
+      // Format the integer part with commas for every 3 digits
+      final formattedIntPart = intPart.replaceAllMapped(
+        RegExp(r'\d{1,3}(?=(\d{3})+(?!\d))'),
+        (match) => '${match.group(0)},',
+      );
+
+      // Combine the formatted integer and decimal parts
+      final formattedResult = formattedIntPart + decimalPart;
+
+      return formattedResult;
+    }
+
     return GetX<ProductController>(builder: (controller) {
       var buttonColor = primaryAccent.obs;
       return InkWell(
@@ -477,94 +682,109 @@ class SearchCard extends StatelessWidget {
           Get.to(
               () => ProductPage(
                     id: productController
-                        .filteredProducts.value[index]!.productID,
+                        .filteredSearchProducts[index]!.productID,
                   ),
               transition: Transition.fadeIn);
         },
         splashColor: Theme.of(context).primaryColorDark,
-        child: Container(
-          padding: EdgeInsets.fromLTRB(4, 12, 4, 4),
-          height: screenHeight * 0.50,
-          width: screenWidth * 0.15,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(16),
+        child: Card(
+          elevation: 1,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(20),
             ),
-            color: Colors.grey[100],
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFF000000),
-                blurStyle: BlurStyle.normal,
-                offset: Offset.fromDirection(10.0),
-                blurRadius: 2,
-              ),
-            ],
           ),
+          color: Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(16),
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
+                ),
+                child: CachedNetworkImage(
+                  fit: BoxFit.fill,
+                  imageUrl: productController.filteredSearchProducts[index]
+                              ?.image?.isNotEmpty ==
+                          true
+                      ? productController
+                          .filteredSearchProducts[index]!.image!.first
+                      : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+                  errorWidget: ((context, url, error) => const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("Failed to Load Image"),
+                      )),
+                  imageBuilder: (context, imageProvider) => Container(
+                    width: double.infinity,
+                    height: 154,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                  width: 120,
-                  height: 106,
-                  child: CachedNetworkImage(
-                    fit: BoxFit.fill,
-                    imageUrl:
-                        "${productController.filteredProducts.value[index]!.image![0]}",
-                    errorWidget: ((context, url, error) =>
-                        Text("Failed to Load Image")),
-                    placeholder: ((context, url) => const Center(
-                          child: CircularProgressIndicator(),
-                        )),
-                  ),
+                  placeholder: ((context, url) => const SizedBox(
+                        width: double.infinity,
+                        height: 154,
+                        child: Center(child: CircularProgressIndicator()),
+                      )),
                 ),
               ),
               const SizedBox(
-                height: 8,
+                height: 4,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
                 child: Text(
-                  "${productController.filteredProducts.value[index]!.name}",
+                  productController
+                      .filteredSearchProducts[index]!.name!.titleCase,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
+                    fontFamily: "Raleway",
+                    fontWeight: FontWeight.w400,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 12.0),
+                padding: const EdgeInsets.fromLTRB(8, 4, 0, 8),
                 child: Text(
-                    "NGN ${productController.filteredProducts.value[index]!.price}"),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ShareCard(),
-                  GetX<ProductController>(
-                    builder: (_) {
-                      return IconButton(
-                        onPressed: () {
-                          if (buttonColor.value != Colors.red) {
-                            buttonColor.value = Colors.red;
-                            //print(buttonColor);
-                          } else {
-                            buttonColor.value = primaryAccent;
-                          }
-                        },
-                        icon: Icon(
-                          EvaIcons.heart,
-                          color: buttonColor.value,
-                        ),
-                      );
-                    },
+                  "NGN ${formatCurrency(productController.filteredSearchProducts[index]!.price.toString())}",
+                  style: const TextStyle(
+                    color: Color(0xFF673AB7),
+                    fontSize: 15,
+                    fontFamily: "Lato",
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
+                ),
               ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.end,
+              //   children: [
+              //     ShareCard(),
+              //     GetX<ProductController>(
+              //       builder: (_) {
+              //         return IconButton(
+              //           onPressed: () {
+              //             if (buttonColor.value != Colors.red) {
+              //               buttonColor.value = Colors.red;
+              //               //print(buttonColor);
+              //             } else {
+              //               buttonColor.value = primaryAccent;
+              //             }
+              //           },
+              //           icon: Icon(
+              //             EvaIcons.heart,
+              //             color: buttonColor.value,
+              //           ),
+              //         );
+              //       },
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),
@@ -768,7 +988,7 @@ class CarouselCard extends StatelessWidget {
     return Container(
       height: screenHeight * 0.24,
       width: screenWidth * 0.70,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(
           Radius.circular(16),
         ),
@@ -781,7 +1001,7 @@ class CarouselCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Text("Hello"),
+      child: const Text("Hello"),
     );
   }
 }
@@ -790,7 +1010,9 @@ class CartCard extends StatefulWidget {
   final String? id;
   final String? cartId;
   final String? optionName;
-  CartCard({this.cartId, this.id, this.optionName, super.key});
+  final CartItem? cartItem;
+  const CartCard(
+      {this.cartId, this.id, this.optionName, this.cartItem, super.key});
 
   @override
   State<CartCard> createState() => _CartCardState();
@@ -812,14 +1034,15 @@ class _CartCardState extends State<CartCard> {
     Product? product = productController.products
         .firstWhere((element) => element!.productID! == widget.id);
 
-    CartItem cartItem = cartController.cartItems.firstWhere((element) {
-      if (widget.optionName != null) {
-        return element.optionName == widget.optionName &&
-            element.productID == widget.id;
-      } else {
-        return element.optionName == widget.optionName;
-      }
-    });
+    // CartItem cartItem = cartController.cartItems.firstWhere((element) {
+    //   if (widget.optionName != null) {
+    //     return element.optionName == widget.optionName &&
+    //         element.productID == widget.id;
+    //   } else {
+    //     return element.optionName == widget.optionName;
+    //   }
+    // });
+    CartItem cartItem = widget.cartItem!;
 
     // SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
     //   if (checkOutController.checkoutList
@@ -835,8 +1058,9 @@ class _CartCardState extends State<CartCard> {
     // });
 
     // Initialize the checkbox state for this item
-    if (!checkOutController.itemCheckboxState.containsKey(product!.productID)) {
-      checkOutController.itemCheckboxState[product.productID] = false.obs;
+    if (!checkOutController.itemCheckboxState
+        .containsKey(cartItem.cartItemID)) {
+      checkOutController.itemCheckboxState[cartItem.cartItemID] = false.obs;
     }
 
     String formatCurrency(String numberString) {
@@ -895,15 +1119,15 @@ class _CartCardState extends State<CartCard> {
                   return Checkbox(
                     shape: const CircleBorder(side: BorderSide()),
                     value: checkOutController
-                        .itemCheckboxState[product.productID]!.value,
+                        .itemCheckboxState[cartItem.cartItemID]!.value,
                     onChanged: (val) {
                       //print(object)
                       checkOutController.toggleCheckbox(
                         productID: cartItem.productID,
-                        quantity: cartItem.quantity,
-                        price: cartItem.price,
+                        quantity: cartItem.quantity!,
+                        price: cartItem.price!,
                         user: userController.userState.value,
-                        cartID: widget.cartId,
+                        cartID: widget.cartId!,
                         value: val!,
                         optionName: cartItem.optionName,
                       );
@@ -937,11 +1161,11 @@ class _CartCardState extends State<CartCard> {
                     ),
                   ),
                   fit: BoxFit.fill,
-                  imageUrl: product.image!.isNotEmpty == true
+                  imageUrl: product!.image!.isNotEmpty == true
                       ? product.image!.first
                       : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
                   errorWidget: ((context, url, error) =>
-                      Text("Failed to Load Image")),
+                      const Text("Failed to Load Image")),
                   placeholder: ((context, url) => const Center(
                         child: CircularProgressIndicator(),
                       )),
@@ -1139,11 +1363,11 @@ class WishListCard extends StatelessWidget {
     CartController cartController = Get.find<CartController>();
     WishListController wishListController = Get.find<WishListController>();
     Product? product;
-    productController.products.forEach((element) {
+    for (var element in productController.products) {
       if (element!.productID == productID) {
         product = element;
       }
-    });
+    }
     String formatCurrency(String numberString) {
       final number =
           double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
@@ -1251,7 +1475,7 @@ class WishListCard extends StatelessWidget {
                       height: 8,
                     ),
                     Text(
-                      "NGN${formatCurrency(product!.price.toString())}",
+                      "NGN${formatCurrency(product.price.toString())}",
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontSize: 17,
@@ -1291,7 +1515,7 @@ class WishListCard extends StatelessWidget {
                             ),
                             Flexible(
                               child: Text(
-                                "${productController.clientGetVendorName(product!.vendorId).shopName}",
+                                "${productController.clientGetVendorName(product.vendorId).shopName}",
                                 style: const TextStyle(
                                   fontFamily: 'Lato',
                                   fontSize: 15,
@@ -1381,7 +1605,7 @@ class WishListCard extends StatelessWidget {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(4),
+                                    padding: const EdgeInsets.all(4),
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Color(0xFF673AB7),
@@ -1529,7 +1753,7 @@ class VendorArrivalCard extends StatelessWidget {
                       height: 20,
                     ),
                     Text(
-                      "NGN${formatCurrency(product!.price.toString())}",
+                      "NGN${formatCurrency(product.price.toString())}",
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontSize: 17,
@@ -1593,7 +1817,8 @@ class OrderCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.to(
         () => OrderDetailsPage(
-          orderDetails: orderDetails,
+          orderID: orderDetails.orderId,
+          vendorID: orderDetails.vendorId,
           product: product,
         ),
         transition: Transition.fadeIn,
@@ -1602,7 +1827,7 @@ class OrderCard extends StatelessWidget {
         //height: screenHeight * 0.20,
         width: screenWidth * 0.88,
         padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-        margin: EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(
             Radius.circular(10),
@@ -1647,16 +1872,18 @@ class OrderCard extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "${product!.name}",
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Raleway',
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                          Expanded(
+                            child: Text(
+                              "${product!.name}",
+                              maxLines: 1,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontFamily: 'Raleway',
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                           const Icon(
                             Icons.arrow_forward_ios_rounded,
@@ -1832,7 +2059,7 @@ class OrderCard extends StatelessWidget {
                     // });
                   },
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     backgroundColor: Colors.red,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -1939,12 +2166,12 @@ class VendorOrderCard extends StatelessWidget {
                     ? product.image!.first
                     : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
                 errorWidget: ((context, url, error) =>
-                    Text("Failed to Load Image")),
+                    const Text("Failed to Load Image")),
                 placeholder: ((context, url) => Container(
                       alignment: Alignment.center,
                       height: 140,
                       width: 123,
-                      child: CircularProgressIndicator(),
+                      child: const CircularProgressIndicator(),
                     )),
               ),
             ),
@@ -2211,21 +2438,21 @@ class ReferralCard extends StatelessWidget {
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      height: screenHeight * 0.06,
+      //height: 36,
       width: screenWidth * 0.88,
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       //margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(
           Radius.circular(16),
         ),
-        color: Colors.grey[200],
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF000000),
-            blurStyle: BlurStyle.normal,
-            offset: Offset.fromDirection(-4.0),
-            blurRadius: 4,
+            blurRadius: 1,
+            spreadRadius: 0,
+            color: const Color(0xFF673AB7).withOpacity(0.10),
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -2234,16 +2461,16 @@ class ReferralCard extends StatelessWidget {
         children: [
           Text(
             "${title!}:",
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
           Text(
             text!,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
         ],
@@ -2757,7 +2984,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                         width: double.infinity,
                         child: TextButton(
                           style: TextButton.styleFrom(
-                            backgroundColor: Color(0xFF673AB7),
+                            backgroundColor: const Color(0xFF673AB7),
                             padding: const EdgeInsets.all(6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
@@ -2846,7 +3073,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                           vendorController.vendor.value!.shopPicture == null
                       ? CircleAvatar(
                           radius: 68,
-                          backgroundColor: Color(0xFFF5f5f5),
+                          backgroundColor: const Color(0xFFF5f5f5),
                           child: SvgPicture.asset(
                             "assets/Icons/user.svg",
                             color: Colors.black.withOpacity(0.70),
@@ -2896,7 +3123,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Color(0xFFf5f5f5),
+                  color: const Color(0xFFf5f5f5),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.transparent),
                   boxShadow: [
@@ -2958,7 +3185,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                                     color: Colors.white,
                                   ),
                                   style: TextButton.styleFrom(
-                                    backgroundColor: Color(0xFF673AB7),
+                                    backgroundColor: const Color(0xFF673AB7),
                                     padding: const EdgeInsets.all(4),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
@@ -2971,12 +3198,12 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                                       "Successful",
                                       colorText: Colors.white,
                                       snackPosition: SnackPosition.BOTTOM,
-                                      duration: Duration(
+                                      duration: const Duration(
                                           seconds: 1, milliseconds: 200),
                                       forwardAnimationCurve: Curves.decelerate,
                                       reverseAnimationCurve: Curves.easeOut,
-                                      backgroundColor:
-                                          Color(0xFF673AB7).withOpacity(0.8),
+                                      backgroundColor: const Color(0xFF673AB7)
+                                          .withOpacity(0.8),
                                       margin: EdgeInsets.only(
                                         left: 12,
                                         right: 12,
@@ -3006,8 +3233,8 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                                     color: Colors.white,
                                   ),
                                   style: TextButton.styleFrom(
-                                    backgroundColor: Color(0xFF673AB7),
-                                    padding: EdgeInsets.all(4),
+                                    backgroundColor: const Color(0xFF673AB7),
+                                    padding: const EdgeInsets.all(4),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -3052,7 +3279,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                               InkWell(
                                 child: SvgPicture.asset(
                                   "assets/Icons/edit.svg",
-                                  color: Color(0xFF673AB7),
+                                  color: const Color(0xFF673AB7),
                                   height: 25,
                                   width: 25,
                                 ),
@@ -3089,7 +3316,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Color(0xFFf5f5f5),
+                  color: const Color(0xFFf5f5f5),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.transparent),
                   boxShadow: [
@@ -3121,7 +3348,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                           InkWell(
                             child: SvgPicture.asset(
                               "assets/Icons/edit.svg",
-                              color: Color(0xFF673AB7),
+                              color: const Color(0xFF673AB7),
                               height: 25,
                               width: 25,
                             ),
@@ -3171,7 +3398,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                               InkWell(
                                 child: SvgPicture.asset(
                                   "assets/Icons/edit.svg",
-                                  color: Color(0xFF673AB7),
+                                  color: const Color(0xFF673AB7),
                                   height: 25,
                                   width: 25,
                                 ),
@@ -3209,7 +3436,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Color(0xFFf5f5f5),
+                  color: const Color(0xFFf5f5f5),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.transparent),
                   boxShadow: [
@@ -3241,7 +3468,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                           InkWell(
                             child: SvgPicture.asset(
                               "assets/Icons/edit.svg",
-                              color: Color(0xFF673AB7),
+                              color: const Color(0xFF673AB7),
                               width: 25,
                               height: 25,
                             ),
@@ -3277,7 +3504,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Color(0xFFf5f5f5),
+                  color: const Color(0xFFf5f5f5),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.transparent),
                   boxShadow: [
@@ -3465,7 +3692,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
@@ -3500,7 +3727,8 @@ class InventoryCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
-  InventoryCard({
+  const InventoryCard({
+    super.key,
     required this.imageUrl,
     required this.productName,
     required this.stock,
@@ -3517,7 +3745,7 @@ class InventoryCard extends StatelessWidget {
       ),
       color: Colors.white,
       elevation: 2,
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       child: Padding(
         padding: const EdgeInsets.all(8), // Add padding around the entire card
         child: Row(
@@ -3551,7 +3779,7 @@ class InventoryCard extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: 8), // Add vertical spacing
+                  const SizedBox(height: 8), // Add vertical spacing
 
                   Text(
                     'In Stock: $stock',
@@ -3569,7 +3797,7 @@ class InventoryCard extends StatelessWidget {
               children: <Widget>[
                 if (onEdit != null)
                   IconButton(
-                    icon: const Icon(EvaIcons.edit2),
+                    icon: const Icon(Icons.edit),
                     onPressed: onEdit,
                   ),
                 if (onDelete != null)
@@ -3586,43 +3814,61 @@ class InventoryCard extends StatelessWidget {
   }
 }
 
-class ClientReviewCard extends StatelessWidget {
+class UserReviewCard extends StatefulWidget {
   int? index;
 
-  ClientReviewCard({
+  UserReviewCard({
     super.key,
     this.index,
   });
 
   @override
+  State<UserReviewCard> createState() => _UserReviewCardState();
+}
+
+class _UserReviewCardState extends State<UserReviewCard> {
+  ReviewController reviewController = Get.find<ReviewController>();
+  UserController userController = Get.find<UserController>();
+  bool isExpanded = false;
+  GlobalKey<PopupMenuButtonState> popUpKey = GlobalKey();
+  @override
   Widget build(BuildContext context) {
-    DateTime resolveTimestampWithoutAdding(Timestamp timestamp) {
+    Review review = reviewController.myReviews[widget.index!];
+    String resolveTimestamp(Timestamp timestamp) {
+      DateFormat formatter = DateFormat("MMM d yy");
       DateTime dateTime = timestamp.toDate(); // Convert Timestamp to DateTime
 
       // Add days to the DateTime
       //DateTime newDateTime = dateTime.add(Duration(days: daysToAdd));
 
-      return dateTime;
+      return formatter.format(dateTime);
     }
 
-    ReviewController reviewController = Get.find<ReviewController>();
-    Review review = reviewController.myReviews[index!];
     var screenWidth = Get.width;
-    return SizedBox(
-      width: double.infinity,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isExpanded = !isExpanded;
+        });
+      },
+      onLongPress: () {
+        setState(() {
+          popUpKey.currentState!.showButtonMenu();
+        });
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.black, width: 1),
+          border: Border.all(color: Colors.black.withOpacity(0.5), width: 0.5),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF000000),
-              blurStyle: BlurStyle.normal,
-              offset: Offset.fromDirection(-4.0),
-              blurRadius: 1.2,
+              blurRadius: 2,
+              spreadRadius: 0,
+              color: const Color(0xFF673AB7).withOpacity(0.20),
+              offset: const Offset(0, 1),
             ),
           ],
         ),
@@ -3632,145 +3878,204 @@ class ClientReviewCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    blurStyle: BlurStyle.normal,
-                    offset: Offset.fromDirection(-4.0),
-                    blurRadius: 1,
+            userController.userState.value == null ||
+                    userController.userState.value!.profilePhoto == null
+                ? CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.black12,
+                    child: SvgPicture.asset(
+                      "assets/Icons/user.svg",
+                      color: Colors.black,
+                      height: 30,
+                      width: 30,
+                    ),
+                  )
+                : CircleAvatar(
+                    radius: 30,
+                    //backgroundColor: Colors.black,
+                    backgroundImage: NetworkImage(
+                      userController.userState.value!.profilePhoto!,
+                      scale: 1,
+                    ),
                   ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: screenWidth * 0.08,
-                backgroundColor: Colors.grey[200],
-              ),
-            ),
             const SizedBox(
-              width: 20,
+              width: 12,
             ),
             Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 5,
-                          child: Text(
-                            "${review.displayName}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                            onPressed: () => Get.to(
-                                  () => EditReviewPage(
-                                    productID: "${review.productID}",
-                                    reviewID: "${review.reviewID}",
-                                  ),
-                                ),
-                            icon: const Icon(Icons.edit)),
-                        IconButton(
-                            onPressed: () {
-                              Get.dialog(
-                                AlertDialog(
-                                  backgroundColor: Colors.white,
-                                  elevation: 0,
-                                  title: const Text('Delete Review'),
-                                  content: const Text(
-                                      'You are about to delete this review.\nAre you sure?'),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () {
-                                        Get.back(); // Close the dialog
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            WidgetStateProperty.all<Color>(
-                                                Colors.white),
-                                      ),
-                                      child: const Text(
-                                        'Cancel',
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.black),
-                                      ),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        await reviewController
-                                            .deleteReview(review.reviewID!);
-                                        //Get.back();
-                                      },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            WidgetStateProperty.all<Color>(
-                                                Colors.red),
-                                      ),
-                                      child: const Text(
-                                        'Delete',
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.delete))
-                      ],
-                    ),
                     Text(
-                      "${resolveTimestampWithoutAdding(review.createdAt)}",
+                      "${review.displayName}",
                       style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    Text(
-                      review.comment,
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Lato",
                       ),
                     ),
                     Row(
                       children: [
                         Icon(
                           Icons.star_half_rounded,
-                          color: Colors.yellow[700],
+                          color: Color.fromARGB(255, 161, 121, 230),
                         ),
                         Text(
                           "${review.stars}",
-                          style: const TextStyle(fontSize: 14),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontFamily: "Lato",
+                          ),
                         ),
                       ],
                     ),
+                    Text(
+                      review.comment,
+                      maxLines: isExpanded == false ? 1 : 5,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ]),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 63,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  PopupMenuButton(
+                    key: popUpKey,
+                    color: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.black.withOpacity(0.30),
+                        width: 0.8,
+                      ),
+                    ),
+                    position: PopupMenuPosition.under,
+                    tooltip: "More Options",
+                    padding: const EdgeInsets.all(4),
+                    itemBuilder: (context) {
+                      List options = ["Edit", "Delete"];
+                      return List.generate(options.length, (index) {
+                        return PopupMenuItem(
+                          onTap: () {
+                            if (options[index] == "Edit") {
+                              Get.to(
+                                () => EditReviewPage(
+                                  productID: "${review.productID}",
+                                  reviewID: "${review.reviewID}",
+                                ),
+                              );
+                            } else if (options[index] == "Delete") {
+                              showDeleteDialog(reviewController, review);
+                            }
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              if (options[index] == "Edit")
+                                const Icon(
+                                  Icons.edit,
+                                  size: 14,
+                                  color: Colors.black,
+                                )
+                              else if (options[index] == "Delete")
+                                const Icon(
+                                  Icons.delete,
+                                  size: 14,
+                                  color: Colors.black,
+                                ),
+                              Text(
+                                options[index],
+                                style: const TextStyle(
+                                  fontFamily: "Raleway",
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      });
+                    },
+                    child: const Icon(
+                      Icons.more_horiz_outlined,
+                      size: 24,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    resolveTimestamp(review.createdAt),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: "Raleway",
+                      color: Colors.black.withOpacity(0.50),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  void showDeleteDialog(ReviewController reviewController, Review review) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('Delete Review'),
+        content:
+            const Text('You are about to delete this review.\nAre you sure?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Get.back(); // Close the dialog
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all<Color>(Colors.white),
+            ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await reviewController.deleteReview(review.reviewID!);
+              //Get.back();
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all<Color>(Colors.red),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ChatsCard extends StatefulWidget {
-  int? index;
-  String? nameToDisplay;
-  Vendors? vendorDetails;
-  MessagePageData? member1;
-  MessagePageData? member2;
+  final int? index;
+  final String? nameToDisplay;
+  final Vendors? vendorDetails;
+  final MessagePageData? member1;
+  final MessagePageData? member2;
 
-  ChatsCard({
+  const ChatsCard({
     super.key,
     this.member1,
     this.member2,
@@ -3792,14 +4097,15 @@ class _ChatsCardState extends State<ChatsCard> {
 
   @override
   void initState() {
-    super.initState();
-    if (userController.userState.value!.uid! == widget.member2!.id) {
+    var currentUserID = userController.userState.value!.uid!;
+    if (currentUserID == widget.member2!.id) {
       sender = widget.member2!;
       receiver = widget.member1!;
-    } else if (userController.userState.value!.uid! == widget.member1!.id) {
+    } else if (currentUserID == widget.member1!.id) {
       sender = widget.member1!;
       receiver = widget.member2!;
     }
+    super.initState();
   }
 
   @override
@@ -3837,8 +4143,8 @@ class _ChatsCardState extends State<ChatsCard> {
     return InkWell(
       onTap: () => Get.to(
         () => MessagesPage(
-          senderID: sender!.id,
-          receiverID: receiver!.id,
+          participant1: sender!.id,
+          participant2: receiver!.id,
         ),
       ),
       child: Column(
@@ -3920,7 +4226,7 @@ class _ChatsCardState extends State<ChatsCard> {
                       Text(
                         chatController
                                 .myChats[widget.index!]!.recentMessageText ??
-                            "hello",
+                            "",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -3928,18 +4234,6 @@ class _ChatsCardState extends State<ChatsCard> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      // Row(
-                      //   children: [
-                      //     Icon(
-                      //       Icons.star_half_rounded,
-                      //       color: Colors.yellow[700],
-                      //     ),
-                      //     Text(
-                      //       "${review.stars}",
-                      //       style: const TextStyle(fontSize: 14),
-                      //     ),
-                      //   ],
-                      // ),
                     ],
                   ),
                 ),

@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/productController.dart';
@@ -170,7 +169,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
       backgroundColor: Colors.grey[100],
       //extendBody: false,
       body: Container(
-        padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         //decoration: BoxDecoration(gradient: myGradient),
         child: CustomScrollView(
           slivers: [
@@ -185,7 +184,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                         ),
                       )
                     : SliverPadding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         sliver: SliverGrid(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) => ProductCard(
@@ -209,7 +208,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
             SliverList(
               delegate: SliverChildListDelegate(
                 [
-                  HeaderText(text: "Hot Deals"),
+                  const HeaderText(text: "Hot Deals"),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -292,11 +291,11 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                   //     // ),
                   //   ],
                   // ),
-                  SizedBox(
+                  const SizedBox(
                     height: 4,
                   ),
-                  HeaderText(text: "Products"),
-                  SizedBox(
+                  const HeaderText(text: "Products"),
+                  const SizedBox(
                     height: 4,
                   ),
                   Center(
@@ -309,7 +308,8 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
                               ),
                             )
                           : GridView.builder(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
@@ -400,8 +400,8 @@ class HeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4),
-      padding: EdgeInsets.symmetric(horizontal: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.transparent,

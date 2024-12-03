@@ -12,13 +12,15 @@ import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
+import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
+import 'package:iconify_flutter_plus/icons/ph.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class ReviewPage extends StatelessWidget {
   final List<Review>? reviews;
 
-  ReviewPage(this.reviews);
+  const ReviewPage(this.reviews, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -100,14 +102,14 @@ class ReviewPage extends StatelessWidget {
   }
 }
 
-class ClientReviewPage extends StatefulWidget {
-  ClientReviewPage({super.key});
+class UserReviewPage extends StatefulWidget {
+  const UserReviewPage({super.key});
 
   @override
-  State<ClientReviewPage> createState() => _ClientReviewPageState();
+  State<UserReviewPage> createState() => UserReviewPageState();
 }
 
-class _ClientReviewPageState extends State<ClientReviewPage> {
+class UserReviewPageState extends State<UserReviewPage> {
   ReviewController reviewController = Get.find<ReviewController>();
   UserController userController = Get.find<UserController>();
 
@@ -125,8 +127,10 @@ class _ClientReviewPageState extends State<ClientReviewPage> {
           title: const Text(
             "My Reviews",
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+              fontFamily: "Lato",
             ),
           ),
           centerTitle: true,
@@ -176,7 +180,7 @@ class _ClientReviewPageState extends State<ClientReviewPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       shrinkWrap: true,
                       itemCount: reviewController.myReviews.length,
-                      itemBuilder: (context, index) => ClientReviewCard(
+                      itemBuilder: (context, index) => UserReviewCard(
                         index: index,
                       ),
                     );
@@ -212,7 +216,7 @@ class _EditReviewPageState extends State<EditReviewPage> {
   final _formKey = GlobalKey<FormState>();
   Review review = Review(comment: "", stars: 0.0);
   double _rating = 0.0;
-  List<File?>? selectedImages = [];
+  List<File?> selectedImages = [];
 
   @override
   void initState() {
@@ -221,24 +225,28 @@ class _EditReviewPageState extends State<EditReviewPage> {
     _rating = review.stars;
   }
 
+  void selectImage(int index) async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImages.insert(index, File(pickedFile.path));
+      });
+    }
+    setState(() {});
+    print(selectedImages);
+    print(index);
+  }
+
+  void removeImage(int index) {
+    setState(() {
+      selectedImages.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     //print(review.displayName);
-    void _selectImage(int index) async {
-      final pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState(() {
-          selectedImages![index] = File(pickedFile.path);
-        });
-      }
-    }
-
-    void _removeImage(int index) {
-      setState(() {
-        selectedImages![index] = null;
-      });
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -248,10 +256,11 @@ class _EditReviewPageState extends State<EditReviewPage> {
               size: 24, color: Colors.black),
         ),
         title: const Text(
-          'Edit Your Review',
+          'Edit Review',
           style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -270,7 +279,10 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   children: [
                     TextInputWidget(
                       labelText: "Display Name",
+                      labelColor: Colors.black,
+                      fontSize: 18,
                       controller: displayNameController,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                       initialValue: review.displayName ?? "",
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -279,9 +291,11 @@ class _EditReviewPageState extends State<EditReviewPage> {
                         return null;
                       },
                       onChanged: (value) {
-                        setState(() {
-                          review.displayName = value;
-                        });
+                        if (value!.isNotEmpty) {
+                          setState(() {
+                            review.displayName = value;
+                          });
+                        }
                       },
                     ),
                   ],
@@ -292,8 +306,11 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   children: [
                     TextInputWidget(
                       labelText: "Comment",
+                      labelColor: Colors.black,
                       controller: commentController,
+                      fontSize: 18,
                       initialValue: review.comment,
+                      textInputType: TextInputType.multiline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your review';
@@ -303,9 +320,11 @@ class _EditReviewPageState extends State<EditReviewPage> {
                       minLines: 5,
                       maxLines: 10,
                       onChanged: (value) {
-                        setState(() {
-                          review.comment = value!;
-                        });
+                        if (value!.isNotEmpty) {
+                          setState(() {
+                            review.comment = value;
+                          });
+                        }
                       },
                     ),
                   ],
@@ -316,8 +335,10 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   children: [
                     const Text(
                       "Add Image",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -325,64 +346,71 @@ class _EditReviewPageState extends State<EditReviewPage> {
                       children: List.generate(
                         3,
                         (index) => GestureDetector(
-                          onTap: () => _selectImage(index),
+                          onTap: () => selectImage(index),
                           child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            width: 88,
-                            height: 88,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border:
-                                  Border.all(color: Colors.black, width: 0.8),
-                            ),
-                            child: selectedImages!.isNotEmpty &&
-                                    selectedImages![index] != null
-                                ? Stack(
-                                    children: [
-                                      Image.file(selectedImages![index]!),
-                                      Positioned(
-                                        top: 0,
-                                        right: 0,
-                                        child: GestureDetector(
-                                          onTap: () => _removeImage(index),
-                                          child: Container(
-                                            padding: EdgeInsets.all(4),
-                                            color:
-                                                Colors.black.withOpacity(0.5),
-                                            child: const Icon(Icons.close,
-                                                color: Colors.white),
+                              margin: const EdgeInsets.only(right: 12),
+                              width: 88,
+                              height: 88,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border:
+                                    Border.all(color: Colors.black, width: 0.8),
+                              ),
+                              child: Builder(builder: (context) {
+                                print(
+                                    "selectedImages after build $selectedImages");
+                                return selectedImages.isNotEmpty &&
+                                        index < selectedImages.length
+                                    ? Stack(
+                                        children: [
+                                          Image.file(selectedImages[index]!),
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: GestureDetector(
+                                              onTap: () => removeImage(index),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.all(4),
+                                                color: Colors.black
+                                                    .withOpacity(0.5),
+                                                child: const Icon(Icons.close,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : const Icon(Icons.add, size: 40),
-                          ),
+                                        ],
+                                      )
+                                    : const Icon(Icons.add, size: 40);
+                              })),
                         ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(
+                  height: 12,
+                ),
                 const Text(
-                  'Rate this product',
+                  'Ratings',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 12),
                 // Assuming you're using a package like flutter_rating_bar to display star ratings
 
                 RatingBar.builder(
-                  itemSize: 56,
+                  itemSize: 52,
                   initialRating: _rating,
                   minRating: 0,
                   direction: Axis.horizontal,
                   allowHalfRating: false,
                   itemCount: 5, // Set to 6 for a "0 to 5 stars" rating system
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Colors.amber,
+                  itemBuilder: (context, _) => const Iconify(
+                    Ph.star_fill,
+                    color: Color.fromARGB(255, 161, 121, 230),
                   ),
                   onRatingUpdate: (rating) {
                     setState(() {
@@ -391,53 +419,13 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   },
                 ),
 
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(
-                          color: Colors.black,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        reviewController.isLoading.value = true;
-                        _formKey.currentState!.save();
-                        if (selectedImages!.isNotEmpty) {
-                          await reviewController.uploadImage(selectedImages!);
-                          print("doing this");
-                        }
-                        if (reviewController.downloadUrls.isNotEmpty) {
-                          print("now this");
-                          review.reviewImages =
-                              reviewController.downloadUrls.value;
-                        }
-                        if (reviewController.isLoading.value == true) {
-                          Get.dialog(const LoadingWidget(),
-                              barrierDismissible: false);
-                        }
-                        review.userID = userController.userState.value!.uid!;
-                        review.reviewID = widget.reviewID;
-                        review.productID = widget.productID;
-                        print("hello");
-                        await reviewController.editReview(review);
-                        //review.productID = widget.productID;
-                      }
-                    },
-                    child: const Text(
-                      'Edit Review',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
-                    ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Leave a honest review to help others',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: "Raleway",
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -446,6 +434,54 @@ class _EditReviewPageState extends State<EditReviewPage> {
         ),
       ),
       backgroundColor: Colors.white,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 2, 8, 6),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              backgroundColor: const Color(0xFF673AB7),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                // side: const BorderSide(
+                //   color: Colors.black,
+                //   width: 1,
+                // ),
+              ),
+            ),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                reviewController.isLoading.value = true;
+                _formKey.currentState!.save();
+                if (selectedImages.isNotEmpty) {
+                  await reviewController.uploadImage(selectedImages);
+                  print("doing this");
+                }
+                if (reviewController.downloadUrls.isNotEmpty) {
+                  print("now this");
+                  review.reviewImages = reviewController.downloadUrls;
+                }
+                if (reviewController.isLoading.value == true) {
+                  Get.dialog(const LoadingWidget(), barrierDismissible: false);
+                }
+                review.userID = userController.userState.value!.uid!;
+                review.reviewID = widget.reviewID;
+                review.productID = widget.productID;
+                print("hello");
+                await reviewController.editReview(review);
+                //review.productID = widget.productID;
+              }
+            },
+            child: const Text(
+              'Edit Review',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

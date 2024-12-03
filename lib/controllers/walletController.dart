@@ -45,7 +45,7 @@ class WalletController extends GetxController {
         "Success",
         "Withdrawal Request Submitted",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],

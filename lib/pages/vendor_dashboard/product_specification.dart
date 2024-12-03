@@ -294,10 +294,10 @@ class _SpecificationsPageState extends State<SpecificationsPage> {
               onPressed: () async {
                 var validate = formKey.currentState!.validate();
                 if (validate) {
-                  specifications!.forEach((element) {
+                  for (var element in specifications!) {
                     print(element.title);
                     print(element.specification);
-                  });
+                  }
                   completed = true;
                   if (completed) {
                     Get.back(result: specifications);
@@ -867,10 +867,10 @@ class _EditSpecificationsPageState extends State<EditSpecificationsPage> {
               onPressed: () async {
                 var validate = formKey.currentState!.validate();
                 if (validate) {
-                  specifications!.forEach((element) {
+                  for (var element in specifications!) {
                     print(element.title);
                     print(element.specification);
-                  });
+                  }
                   completed = true;
                   if (completed) {
                     Get.back(result: specifications);

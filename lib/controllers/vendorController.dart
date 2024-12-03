@@ -90,33 +90,37 @@ class VendorController extends GetxController {
   getProductsByAge(List<Product> vendorOrdersObject) {
     final now = DateTime.now();
 
-    filteredVendorProductList["Today"] = vendorOrdersObject
-        .where((product) =>
-            now.difference(product.createdAt!.toDate()).inHours < 24)
-        .toList();
+    if (vendorOrdersObject.isEmpty) {
+      filteredVendorProductList.clear();
+    } else {
+      filteredVendorProductList["Today"] = vendorOrdersObject
+          .where((product) =>
+              now.difference(product.createdAt!.toDate()).inHours < 24)
+          .toList();
 
-    filteredVendorProductList["Yesterday"] = vendorOrdersObject
-        .where((product) =>
-            now.difference(product.createdAt!.toDate()).inHours >= 24 &&
-            now.difference(product.createdAt!.toDate()).inHours < 72)
-        .toList();
+      filteredVendorProductList["Yesterday"] = vendorOrdersObject
+          .where((product) =>
+              now.difference(product.createdAt!.toDate()).inHours >= 24 &&
+              now.difference(product.createdAt!.toDate()).inHours < 72)
+          .toList();
 
-    filteredVendorProductList["Last Week"] = vendorOrdersObject
-        .where((product) =>
-            now.difference(product.createdAt!.toDate()).inDays >= 3 &&
-            now.difference(product.createdAt!.toDate()).inDays < 7)
-        .toList();
-    filteredVendorProductList["Last Month"] = vendorOrdersObject
-        .where((product) =>
-            now.difference(product.createdAt!.toDate()).inDays >= 7 &&
-            now.difference(product.createdAt!.toDate()).inDays < 28)
-        .toList();
-    filteredVendorProductList["Older"] = vendorOrdersObject
-        .where((product) =>
-            now.difference(product.createdAt!.toDate()).inDays > 28)
-        .toList();
+      filteredVendorProductList["Last Week"] = vendorOrdersObject
+          .where((product) =>
+              now.difference(product.createdAt!.toDate()).inDays >= 3 &&
+              now.difference(product.createdAt!.toDate()).inDays < 7)
+          .toList();
+      filteredVendorProductList["Last Month"] = vendorOrdersObject
+          .where((product) =>
+              now.difference(product.createdAt!.toDate()).inDays >= 7 &&
+              now.difference(product.createdAt!.toDate()).inDays < 28)
+          .toList();
+      filteredVendorProductList["Older"] = vendorOrdersObject
+          .where((product) =>
+              now.difference(product.createdAt!.toDate()).inDays > 28)
+          .toList();
 
-    filteredVendorProductList.refresh();
+      filteredVendorProductList.refresh();
+    }
   }
 
   //filter by availability
@@ -138,7 +142,7 @@ class VendorController extends GetxController {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
-      gravity: ToastGravity.BOTTOM, // Position at the bottom of the screen
+      gravity: ToastGravity.CENTER, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
       backgroundColor: Colors.white, // Optional: Set background color
       textColor: Colors.black, // Optional: Set text color
@@ -219,7 +223,7 @@ class VendorController extends GetxController {
         "Error",
         "A problem occured",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -234,14 +238,14 @@ class VendorController extends GetxController {
 
   //delete a product
   deleteProduct(Product product) async {
-    var result = await DataBaseService().clientDeleteProduct(product);
+    var result = await DataBaseService().vendorSideDeleteProduct(product);
     if (result == "success") {
       //isProductadded.value = true;
       Get.snackbar(
         "Successful",
         "Product Deleted",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -256,7 +260,7 @@ class VendorController extends GetxController {
         "Error",
         "Failed to Delete Product",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],
@@ -292,7 +296,7 @@ class VendorController extends GetxController {
         "Error",
         "A problem occured",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],

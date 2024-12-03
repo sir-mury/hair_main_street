@@ -1,12 +1,9 @@
 import 'package:contentsize_tabbarview/contentsize_tabbarview.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/blankPage.dart';
-import 'dart:math' as math;
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/controllers/vendorController.dart';
 import 'package:hair_main_street/extras/delegate.dart';
@@ -109,7 +106,8 @@ class _ClientShopPageState extends State<ClientShopPage>
                             ),
                           ),
                           onPressed: () => showSearch(
-                              context: context, delegate: MySearchDelegate()),
+                              context: context,
+                              delegate: VendorProductSearchDelegate()),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
@@ -238,9 +236,9 @@ class _ClientShopPageState extends State<ClientShopPage>
                                           } else {
                                             Get.to(
                                               () => MessagesPage(
-                                                senderID: userController
+                                                participant1: userController
                                                     .userState.value!.uid,
-                                                receiverID: vendorController
+                                                participant2: vendorController
                                                     .vendor.value!.userID,
                                               ),
                                             );
@@ -403,70 +401,104 @@ class _ClientShopPageState extends State<ClientShopPage>
                               //vendor products page
                               Column(
                                 children: [
-                                  MasonryGridView.count(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 4,
-                                    mainAxisSpacing: 8,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 8),
-                                    shrinkWrap: true,
-                                    //itemCount: itemCount,
-                                    itemBuilder: (_, index) => ClientShopCard(
-                                      index: index,
-                                    ),
-                                    itemCount: itemCount,
-                                  ),
-                                  SizedBox(
-                                    width: screenWidth * 0.40,
-                                    child: TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          // Assuming productController.productMap["All"] is your list
-                                          int listLength = vendorController
-                                              .productList.length;
-
-                                          // Check if the list length is greater than itemCount
-                                          if (listLength > itemCount!) {
-                                            // Increment itemCount by 2
-                                            itemCount = itemCount! + 2;
-                                          } else if (listLength ==
-                                              itemCount! + 1) {
-                                            // If the list length is equal to itemCount plus 1, increment itemCount by 1
-                                            itemCount = itemCount! + 1;
-                                          }
-
-                                          // Check if itemCount has reached a value that makes the button unresponsive
-                                          if (itemCount! >= listLength) {
-                                            // Disable the button or set a flag to make it unresponsive
-                                            // This is just an example. You'll need to implement the actual logic to disable the button.
-                                            //isButtonDisabled = true;
-                                          }
-                                        });
-                                      },
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: const Color(0xFF673AB7)
-                                            .withOpacity(0.70),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                  vendorController.productList.isNotEmpty
+                                      ? MasonryGridView.count(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 4,
+                                          mainAxisSpacing: 8,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 8),
+                                          shrinkWrap: true,
+                                          //itemCount: itemCount,
+                                          itemBuilder: (_, index) =>
+                                              ClientShopCard(
+                                            index: index,
+                                          ),
+                                          itemCount: vendorController
+                                              .productList.length,
+                                        )
+                                      : const SizedBox(
+                                          height: 400,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.do_not_disturb,
+                                                  size: 50,
+                                                  color: Colors.black,
+                                                ),
+                                                SizedBox(
+                                                  height: 12,
+                                                ),
+                                                Text(
+                                                  "No Products to display yet",
+                                                  style: TextStyle(
+                                                    fontSize: 32,
+                                                    fontFamily: "Lato",
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.black,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                        //   side: const BorderSide(
-                                        //     width: 2,
-                                        //     color: Colors.black,
-                                        //   ),
-                                        // ),
-                                      ),
-                                      child: const Text(
-                                        "Load More >>>",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  // SizedBox(
+                                  //   width: screenWidth * 0.40,
+                                  //   child: TextButton(
+                                  //     onPressed: () {
+                                  //       setState(() {
+                                  //         // Assuming productController.productMap["All"] is your list
+                                  //         int listLength = vendorController
+                                  //             .productList.length;
+
+                                  //         // Check if the list length is greater than itemCount
+                                  //         if (listLength > itemCount!) {
+                                  //           // Increment itemCount by 2
+                                  //           itemCount = itemCount! + 2;
+                                  //         } else if (listLength ==
+                                  //             itemCount! + 1) {
+                                  //           // If the list length is equal to itemCount plus 1, increment itemCount by 1
+                                  //           itemCount = itemCount! + 1;
+                                  //         }
+
+                                  //         // Check if itemCount has reached a value that makes the button unresponsive
+                                  //         if (itemCount! >= listLength) {
+                                  //           // Disable the button or set a flag to make it unresponsive
+                                  //           // This is just an example. You'll need to implement the actual logic to disable the button.
+                                  //           //isButtonDisabled = true;
+                                  //         }
+                                  //       });
+                                  //     },
+                                  //     style: TextButton.styleFrom(
+                                  //       backgroundColor: const Color(0xFF673AB7)
+                                  //           .withOpacity(0.70),
+                                  //       shape: RoundedRectangleBorder(
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(10),
+                                  //       ),
+                                  //       //   side: const BorderSide(
+                                  //       //     width: 2,
+                                  //       //     color: Colors.black,
+                                  //       //   ),
+                                  //       // ),
+                                  //     ),
+                                  //     child: const Text(
+                                  //       "Load More >>>",
+                                  //       style: TextStyle(
+                                  //         color: Colors.white,
+                                  //         fontSize: 14,
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
                                 ],
                               ),
 
@@ -481,58 +513,96 @@ class _ClientShopPageState extends State<ClientShopPage>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      ListView.builder(
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemCount: vendorController
-                                              .filteredVendorProductList.length,
-                                          shrinkWrap: true,
-                                          itemBuilder: (context, index) {
-                                            return Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Visibility(
-                                                  visible: vendorController
-                                                      .filteredVendorProductList
-                                                      .values
-                                                      .elementAt(index)
-                                                      .isNotEmpty,
-                                                  child: Text(
-                                                    vendorController
-                                                        .filteredVendorProductList
-                                                        .keys
-                                                        .elementAt(index),
-                                                    style: const TextStyle(
-                                                      fontSize: 20,
-                                                      fontFamily: 'Lato',
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Column(
-                                                  children: List.generate(
-                                                    vendorController
-                                                        .filteredVendorProductList
-                                                        .values
-                                                        .elementAt(index)
-                                                        .length,
-                                                    (index2) =>
-                                                        VendorArrivalCard(
-                                                      productID: vendorController
+                                      vendorController.filteredVendorProductList
+                                              .isNotEmpty
+                                          ? ListView.builder(
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              itemCount: vendorController
+                                                  .filteredVendorProductList
+                                                  .length,
+                                              shrinkWrap: true,
+                                              itemBuilder: (context, index) {
+                                                return Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Visibility(
+                                                      visible: vendorController
                                                           .filteredVendorProductList
                                                           .values
-                                                          .elementAt(
-                                                              index)[index2]
-                                                          .productID,
+                                                          .elementAt(index)
+                                                          .isNotEmpty,
+                                                      child: Text(
+                                                        vendorController
+                                                            .filteredVendorProductList
+                                                            .keys
+                                                            .elementAt(index),
+                                                        style: const TextStyle(
+                                                          fontSize: 20,
+                                                          fontFamily: 'Lato',
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
                                                     ),
-                                                  ),
-                                                )
-                                              ],
-                                            );
-                                          }),
+                                                    Column(
+                                                      children: List.generate(
+                                                        vendorController
+                                                            .filteredVendorProductList
+                                                            .values
+                                                            .elementAt(index)
+                                                            .length,
+                                                        (index2) =>
+                                                            VendorArrivalCard(
+                                                          productID: vendorController
+                                                              .filteredVendorProductList
+                                                              .values
+                                                              .elementAt(
+                                                                  index)[index2]
+                                                              .productID,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                );
+                                              })
+                                          : const SizedBox(
+                                              height: 400,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 8,
+                                                ),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.do_not_disturb,
+                                                      size: 50,
+                                                      color: Colors.black,
+                                                    ),
+                                                    SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                      "No Products to display yet",
+                                                      style: TextStyle(
+                                                        fontSize: 30,
+                                                        fontFamily: "Lato",
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors.black,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                       // ListView.builder(
                                       //   physics:
                                       //       const NeverScrollableScrollPhysics(),
@@ -558,12 +628,18 @@ class _ClientShopPageState extends State<ClientShopPage>
 
                               //vendor info page
                               SingleChildScrollView(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                  horizontal: 4,
+                                ),
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
                                     Card(
-                                      color: Colors.grey[300],
+                                      elevation: 0,
+                                      color: const Color(0xFF673AB7)
+                                          .withOpacity(0.20),
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8,
@@ -576,26 +652,34 @@ class _ClientShopPageState extends State<ClientShopPage>
                                             const Text(
                                               "Shop Name",
                                               style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w700),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: "Raleway",
+                                                color: Colors.black,
+                                              ),
                                             ),
-                                            Text(
+                                            SelectableText(
                                               vendorController
                                                   .vendor.value!.shopName!,
                                               style: const TextStyle(
                                                 fontSize: 20,
+                                                fontFamily: "Lato",
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w600,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
+                                              minLines: 1,
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 40,
+                                      height: 12,
                                     ),
                                     Card(
-                                      color: Colors.grey[300],
+                                      elevation: 0,
+                                      color: const Color(0xFF673AB7)
+                                          .withOpacity(0.20),
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8,
@@ -608,25 +692,33 @@ class _ClientShopPageState extends State<ClientShopPage>
                                               const Text(
                                                 "Shop Address",
                                                 style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.w700),
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: "Raleway",
+                                                  color: Colors.black,
+                                                ),
                                               ),
-                                              Text(
+                                              SelectableText(
                                                 "${vendorController.vendor.value!.contactInfo!['street address']}\n${vendorController.vendor.value!.contactInfo!['local government']} LGA\n${vendorController.vendor.value!.contactInfo!['state']}\n${vendorController.vendor.value!.contactInfo!['country']}",
                                                 style: const TextStyle(
                                                   fontSize: 20,
+                                                  fontFamily: "Lato",
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black,
                                                 ),
-                                                overflow: TextOverflow.ellipsis,
+                                                minLines: 1,
+                                                //overflow: TextOverflow.ellipsis,
                                               ),
                                             ]),
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 40,
+                                      height: 12,
                                     ),
                                     Card(
-                                      color: Colors.grey[300],
+                                      elevation: 0,
+                                      color: const Color(0xFF673AB7)
+                                          .withOpacity(0.20),
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8,
@@ -639,22 +731,29 @@ class _ClientShopPageState extends State<ClientShopPage>
                                             const Text(
                                               "Phone Number",
                                               style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w700),
-                                            ),
-                                            Text(
-                                              "${vendorController.vendor.value!.contactInfo!['phone number']}",
-                                              style: const TextStyle(
-                                                fontSize: 20,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: "Raleway",
+                                                color: Colors.black,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
                                             ),
+                                            SelectableText(
+                                                "${vendorController.vendor.value!.contactInfo!['phone number']}",
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontFamily: "Lato",
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black,
+                                                ),
+                                                minLines: 1
+                                                //overflow: TextOverflow.ellipsis,
+                                                ),
                                           ],
                                         ),
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 40,
+                                      height: 12,
                                     ),
                                   ],
                                 ),

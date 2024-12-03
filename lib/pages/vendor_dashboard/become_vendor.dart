@@ -1,10 +1,8 @@
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:hair_main_street/blankPage.dart';
 import 'package:hair_main_street/controllers/userController.dart';
-import 'package:hair_main_street/controllers/vendorController.dart';
 import 'package:hair_main_street/extras/banks_bank_code.dart';
 import 'package:hair_main_street/extras/country_state.dart';
 import 'package:hair_main_street/models/vendorsModel.dart';
@@ -52,7 +50,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
           child: InputDecorator(
             decoration: InputDecoration(
               labelText: label,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -260,7 +258,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       labelText: "Phone Number",
                       fontSize: 15,
                       hintText: "",
-                      labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                      labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                       maxLines: 1,
                       textInputType: TextInputType.number,
                       validator: (value) {
@@ -329,11 +327,25 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       height: 4,
                     ),
                     DropdownSearch(
-                      dropdownButtonProps: const DropdownButtonProps(
-                        icon: Iconify(
-                          Ic.baseline_keyboard_arrow_down,
-                          size: 24,
-                          color: Colors.black,
+                      suffixProps: DropdownSuffixProps(
+                        clearButtonProps: ClearButtonProps(
+                          icon: Iconify(
+                            Ic.baseline_keyboard_arrow_down,
+                            size: 24,
+                            color: Colors.black,
+                          ),
+                        ),
+                        dropdownButtonProps: const DropdownButtonProps(
+                          iconClosed: Iconify(
+                            Ic.baseline_keyboard_arrow_down,
+                            size: 24,
+                            color: Colors.black,
+                          ),
+                          iconOpened: Iconify(
+                            Ic.baseline_keyboard_arrow_down,
+                            size: 24,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       dropdownBuilder: (context, selectedItem) =>
@@ -358,7 +370,8 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                                 ),
                       popupProps: PopupProps.dialog(
                         fit: FlexFit.loose,
-                        itemBuilder: (context, item, isSelected) => Padding(
+                        itemBuilder: (context, item, isDisabled, isSelected) =>
+                            Padding(
                           padding: const EdgeInsets.symmetric(vertical: 6),
                           child: Text(
                             "${item.toString().capitalizeFirst}",
@@ -431,7 +444,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                         ),
                         showSearchBox: true,
                       ),
-                      items: banksandCodes.keys.toList(),
+                      items: (f, cs) => banksandCodes.keys.toList(),
                       validator: (value) {
                         if (value.toString().isEmpty) {
                           return "Please choose your Bank name";
@@ -448,10 +461,10 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                           }
                         });
                       },
-                      dropdownDecoratorProps: DropDownDecoratorProps(
-                        dropdownSearchDecoration: InputDecoration(
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: Color(0xFFf5f5f5),
+                          fillColor: const Color(0xFFf5f5f5),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 2, horizontal: 10),
                           hintText: "Select Bank",
@@ -491,7 +504,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       hintText: "",
                       maxLines: 1,
                       fontSize: 15,
-                      labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                      labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                       textInputType: TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -518,7 +531,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       hintText: "",
                       maxLines: 1,
                       fontSize: 15,
-                      labelColor: Color(0xFF673AB7).withOpacity(0.50),
+                      labelColor: const Color(0xFF673AB7).withOpacity(0.50),
                       textInputType: TextInputType.text,
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -554,21 +567,20 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
               onPressed: () async {
                 bool? validate = formKey.currentState!.validate();
                 if (validate) {
+                  country = "Nigeria";
+                  vendor.contactInfo!['country'] = country;
                   if (state == null ||
                       country == null ||
                       localGovernment == null) {
                     userController
                         .showMyToast("Please Select a Country and State");
-                  } else if (state == "select" ||
-                      country == "select" ||
-                      localGovernment == "select") {
-                    userController
-                        .showMyToast("Please Select a Country and State");
                   } else {
                     userController.isLoading.value = true;
                     if (userController.isLoading.value) {
-                      Get.dialog(const LoadingWidget(),
-                          barrierDismissible: false);
+                      Get.dialog(
+                        const LoadingWidget(),
+                        barrierDismissible: false,
+                      );
                     }
                     vendor.userID = userController.userState.value!.uid;
                     formKey.currentState!.save();
@@ -595,6 +607,49 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class MakeshiftBecomeVendorPage extends StatelessWidget {
+  const MakeshiftBecomeVendorPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              size: 20, color: Colors.black),
+        ),
+        title: const Text(
+          'Become a vendor',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Lato',
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: true,
+        // flexibleSpace: Container(
+        //   decoration: BoxDecoration(gradient: appBarGradient),
+        // ),
+        backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+      ),
+      body: BlankPage(
+        text: "This feature is coming soon...",
+        haveAppBar: true,
+        appBarText: "Analytics Page",
+        pageIcon: const Icon(
+          Icons.construction_rounded,
+          color: Color(0xFF673AB7),
+          size: 40,
         ),
       ),
     );

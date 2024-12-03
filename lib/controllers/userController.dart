@@ -17,12 +17,15 @@ import 'package:recase/recase.dart';
 class UserController extends GetxController {
   Rx<MyUser?> userState = Rx<MyUser?>(null);
   Rx<AdminVariableModel?> adminVariables = Rx<AdminVariableModel?>(null);
+  Rx<Address?> selectedAddress = Rx<Address?>(null);
   var isLoading = false.obs;
   var myUser = MyUser().obs;
   var isObscure = true.obs;
   var isObscure1 = true.obs;
   var isImageSelected = false.obs;
   var selectedImage = "".obs;
+  RxBool isVendor = false.obs;
+  RxBool isProfileComplete = false.obs;
   Rx<MyUser?> buyerDetails = Rx<MyUser?>(null);
   Rx<Vendors?> vendorDetails = Rx<Vendors?>(null);
   RxList<Address?> deliveryAddresses = RxList<Address?>([null]);
@@ -36,20 +39,27 @@ class UserController extends GetxController {
     ReferralController referralController =
         Get.put<ReferralController>(ReferralController());
     // print(userState.value!.email);
-    super.onInit();
     userState.bindStream(determineAuthState());
+    // userState.listen(getRoleDynamically);
     adminVariables.bindStream(getAdminVariables());
 
     ever(userState, (MyUser? newUser) {
       if (newUser != null) {
         referralController.getReferrals();
+        isVendor.bindStream(determineIfVendor());
         getRoleDynamically;
       }
     });
+    super.onInit();
+  }
+
+  //determine if a user is a vendor
+  determineIfVendor() {
+    return DataBaseService().determineIfVendor();
   }
 
   //get delivery addresses
-  getDeliveryAddresses(String userID) {
+  void getDeliveryAddresses(String userID) {
     deliveryAddresses
         .bindStream(DataBaseService().getDeliveryAddresses(userID));
     update();
@@ -71,8 +81,11 @@ class UserController extends GetxController {
   Future<String?> addDeliveryAddress(
       String userID, Address address, bool defaultAddress) async {
     isLoading.value = true;
-    var response = await DataBaseService()
-        .addDeliveryAddresses(userID, address, defaultAddress);
+    address.isDefault = defaultAddress;
+    var response = await DataBaseService().addDeliveryAddresses(
+      userID,
+      address,
+    );
 
     if (response == 'success') {
       isLoading.value = false;
@@ -80,7 +93,7 @@ class UserController extends GetxController {
         "Success",
         "Delivery Address Added",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -97,7 +110,7 @@ class UserController extends GetxController {
         "Error",
         "A problem occured while adding delivery address",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],
@@ -115,8 +128,11 @@ class UserController extends GetxController {
   Future<String?> editDeliveryAddress(
       String userID, Address address, bool defaultAddress) async {
     isLoading.value = true;
-    var response = await DataBaseService()
-        .editDeliveryAddresses(userID, address, defaultAddress);
+    address.isDefault = defaultAddress;
+    var response = await DataBaseService().editDeliveryAddresses(
+      userID,
+      address,
+    );
 
     if (response == 'success') {
       isLoading.value = false;
@@ -124,7 +140,7 @@ class UserController extends GetxController {
         "Success",
         "Delivery Address Edited",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -141,7 +157,7 @@ class UserController extends GetxController {
         "Error",
         "A problem occured while editing delivery address",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],
@@ -151,6 +167,49 @@ class UserController extends GetxController {
           bottom: screenHeight * 0.08,
         ),
       );
+      return 'failed';
+    }
+  }
+
+  //delete delivery address
+  Future<String?> deleteDeliveryAddress(String userID, String addressID) async {
+    var response =
+        await DataBaseService().deleteDeliveryAddresses(userID, addressID);
+    if (response == 'success') {
+      isLoading.value = false;
+      Get.snackbar(
+        "Success",
+        "Delivery Address Deleted",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 1, milliseconds: 800),
+        forwardAnimationCurve: Curves.decelerate,
+        reverseAnimationCurve: Curves.easeOut,
+        backgroundColor: Colors.green[200],
+        margin: EdgeInsets.only(
+          left: 12,
+          right: 12,
+          bottom: screenHeight * 0.08,
+        ),
+      );
+      Get.close(1);
+      return 'success';
+    } else {
+      isLoading.value = false;
+      Get.snackbar(
+        "Error",
+        "A problem occured while deleting delivery address",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 1, milliseconds: 800),
+        forwardAnimationCurve: Curves.decelerate,
+        reverseAnimationCurve: Curves.easeOut,
+        backgroundColor: Colors.red[400],
+        margin: EdgeInsets.only(
+          left: 12,
+          right: 12,
+          bottom: screenHeight * 0.08,
+        ),
+      );
+      Get.close(1);
       return 'failed';
     }
   }
@@ -189,8 +248,13 @@ class UserController extends GetxController {
       if (doc != null && doc.exists) {
         // Make sure userState.value is not null
         if (userState.value != null) {
-          userState.value!.isVendor = doc.get('isVendor');
-          userState.value!.fullname = doc.get('fullname');
+          print("running get role dynamically");
+          MyUser user = MyUser.fromJson(doc.data() as Map<String, dynamic>);
+          userState.value!.isVendor = user.isVendor;
+          userState.value!.fullname = user.fullname;
+          userState.value!.profilePhoto = user.profilePhoto;
+          print(user.profilePhoto);
+          update();
         }
       }
     });
@@ -203,7 +267,7 @@ class UserController extends GetxController {
         "Error",
         "Timed Out",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[400],
@@ -234,7 +298,7 @@ class UserController extends GetxController {
           "Success",
           "User Created and Signed In",
           snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 1, milliseconds: 800),
+          duration: const Duration(seconds: 1, milliseconds: 800),
           forwardAnimationCurve: Curves.decelerate,
           reverseAnimationCurve: Curves.easeOut,
           backgroundColor: Colors.green[200],
@@ -244,7 +308,7 @@ class UserController extends GetxController {
             bottom: screenHeight * 0.08,
           ),
         );
-        Get.offAll(() => HomePage());
+        Get.offAll(() => const HomePage());
         return "success";
       } else {
         isLoading.value = false;
@@ -252,7 +316,7 @@ class UserController extends GetxController {
           "Error",
           response.code.toString().split("_").join(" "),
           snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 1, milliseconds: 800),
+          duration: const Duration(seconds: 1, milliseconds: 800),
           forwardAnimationCurve: Curves.decelerate,
           reverseAnimationCurve: Curves.easeOut,
           backgroundColor: Colors.red[400],
@@ -270,7 +334,7 @@ class UserController extends GetxController {
           "Success",
           "User Created and Signed In",
           snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 1, milliseconds: 800),
+          duration: const Duration(seconds: 1, milliseconds: 800),
           forwardAnimationCurve: Curves.decelerate,
           reverseAnimationCurve: Curves.easeOut,
           backgroundColor: Colors.green[200],
@@ -280,7 +344,7 @@ class UserController extends GetxController {
             bottom: screenHeight * 0.08,
           ),
         );
-        Get.offAll(() => HomePage());
+        Get.offAll(() => const HomePage());
         return "success";
       } else {
         isLoading.value = false;
@@ -288,7 +352,7 @@ class UserController extends GetxController {
           "Error",
           response.code.toString().split("_").join(" ").titleCase,
           snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 1, milliseconds: 800),
+          duration: const Duration(seconds: 1, milliseconds: 800),
           forwardAnimationCurve: Curves.decelerate,
           reverseAnimationCurve: Curves.easeOut,
           backgroundColor: Colors.red[200],
@@ -307,7 +371,7 @@ class UserController extends GetxController {
   }
 
   // signIn
-  dynamic signIn(String? email, String? password) async {
+  Future<void> signIn(String? email, String? password) async {
     try {
       var response =
           await AuthService().signInWithEmailandPassword(email, password);
@@ -318,7 +382,7 @@ class UserController extends GetxController {
           "Success",
           "User Signed In",
           snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 1, milliseconds: 800),
+          duration: const Duration(seconds: 1, milliseconds: 800),
           forwardAnimationCurve: Curves.decelerate,
           reverseAnimationCurve: Curves.easeOut,
           backgroundColor: Colors.green[200],
@@ -329,16 +393,17 @@ class UserController extends GetxController {
           ),
         );
         error.value = "";
-        Get.offAll(() => HomePage());
+        Get.close(1);
+        Get.offAll(() => const HomePage());
         Get.find<BottomNavController>().changeTabIndex(0);
       } else {
         isLoading.value = false;
-        Get.back();
+        Get.close(1);
         Get.snackbar(
           "Error",
           response.code.toString().split("_").join(" ").titleCase,
           snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 1, milliseconds: 800),
+          duration: const Duration(seconds: 1, milliseconds: 800),
           colorText: Colors.black,
           forwardAnimationCurve: Curves.decelerate,
           reverseAnimationCurve: Curves.easeOut,
@@ -350,7 +415,6 @@ class UserController extends GetxController {
           ),
         );
         error.value = response.code.toString().split("_").join(" ");
-        return null;
       }
     } catch (e) {
       isLoading.value = false;
@@ -359,34 +423,38 @@ class UserController extends GetxController {
   }
 
   //signOut
-  signOut() {
-    AuthService().signOut();
-    Get.snackbar(
-      "Success",
-      "User Signed Out",
-      snackPosition: SnackPosition.BOTTOM,
-      duration: Duration(seconds: 1, milliseconds: 800),
-      forwardAnimationCurve: Curves.decelerate,
-      reverseAnimationCurve: Curves.easeOut,
-      backgroundColor: Colors.green[200],
-      margin: EdgeInsets.only(
-        left: 12,
-        right: 12,
-        bottom: screenHeight * 0.08,
-      ),
-    );
-    Get.offAll(() => HomePage());
-    Get.find<BottomNavController>().changeTabIndex(0);
+  signOut() async {
+    var result = await AuthService().signOut();
+    print("result: $result");
+    if (result == 'success') {
+      isLoading.value = false;
+      Get.snackbar(
+        "Success",
+        "User Signed Out",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 1, milliseconds: 800),
+        forwardAnimationCurve: Curves.decelerate,
+        reverseAnimationCurve: Curves.easeOut,
+        backgroundColor: Colors.green[200],
+        margin: EdgeInsets.only(
+          left: 12,
+          right: 12,
+          bottom: screenHeight * 0.08,
+        ),
+      );
+      Get.offAll(() => const HomePage());
+      Get.find<BottomNavController>().changeTabIndex(0);
+    }
   }
 
   //delete account
-  deleteAccount() {
-    AuthService().deleteAccount();
+  deleteAccount() async {
+    await AuthService().deleteAccount();
     Get.snackbar(
       "Success",
       "User Signed Out",
       snackPosition: SnackPosition.BOTTOM,
-      duration: Duration(seconds: 1, milliseconds: 800),
+      duration: const Duration(seconds: 1, milliseconds: 800),
       forwardAnimationCurve: Curves.decelerate,
       reverseAnimationCurve: Curves.easeOut,
       backgroundColor: Colors.green[200],
@@ -396,7 +464,8 @@ class UserController extends GetxController {
         bottom: screenHeight * 0.08,
       ),
     );
-    Get.offAll(() => HomePage());
+    Get.offAll(() => const HomePage());
+    Get.find<BottomNavController>().changeTabIndex(0);
   }
 
   //edit user profile
@@ -412,6 +481,7 @@ class UserController extends GetxController {
         myUser.profilePhoto = result['profile photo'];
         // Update other fields if necessary
       });
+      update();
       return "success";
     } else {
       return "error";
@@ -426,7 +496,7 @@ class UserController extends GetxController {
         "Success",
         "Password changed successfully",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -442,7 +512,7 @@ class UserController extends GetxController {
         "Error",
         'Wrong Old Password',
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         colorText: Colors.white,
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
@@ -458,7 +528,7 @@ class UserController extends GetxController {
         "Error",
         'An error occurred while changing password',
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         colorText: Colors.white,
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
@@ -482,7 +552,7 @@ class UserController extends GetxController {
         "Success",
         "User Signed In",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -493,7 +563,7 @@ class UserController extends GetxController {
         ),
       );
       error.value = "";
-      Get.offAll(() => HomePage());
+      Get.offAll(() => const HomePage());
       Get.find<BottomNavController>().changeTabIndex(0);
     } else if (response is FirebaseAuthException) {
       isLoading.value = false;
@@ -502,7 +572,7 @@ class UserController extends GetxController {
         "Error",
         response.code.toString().split("_").join(" ").titleCase,
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         colorText: Colors.black,
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
@@ -527,7 +597,12 @@ class UserController extends GetxController {
   }
 
   Future<MyUser?> getUserDetails(String userID) async {
-    return await DataBaseService().getBuyerDetails(userID);
+    var response = await DataBaseService().getBuyerDetails(userID);
+    if (response.runtimeType == MyUser) {
+      return response;
+    } else {
+      return null;
+    }
   }
 
   void getVendorDetails(String vendorID) {
@@ -545,7 +620,7 @@ class UserController extends GetxController {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
-      gravity: ToastGravity.BOTTOM, // Position at the bottom of the screen
+      gravity: ToastGravity.CENTER, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
       backgroundColor: Colors.white, // Optional: Set background color
       textColor: Colors.black, // Optional: Set text color
@@ -559,12 +634,14 @@ class UserController extends GetxController {
     if (response == 'success') {
       isLoading.value = false;
       showMyToast("Image Deleted Successfully");
+      update();
       Get.close(2);
     } else {
       isLoading.value = false;
       showMyToast("Problem Deleting Image");
       Get.close(1);
     }
+    update();
   }
 
   selectProfileImage(ImageSource source, String imagePath) async {
@@ -582,11 +659,14 @@ class UserController extends GetxController {
     var response = await editUserProfile(updatedField);
     print(response);
     if (response == "success") {
-      Get.back();
+      isLoading.value = false;
+      Get.close(2);
       showMyToast("Image Upload Successful");
       selectedImage.value = "";
       isImageSelected.value = false;
     } else {
+      isLoading.value = false;
+      Get.close(1);
       showMyToast("Error Uploading\nProfile Image\nTry Again");
     }
   }
@@ -618,7 +698,7 @@ class UserController extends GetxController {
         "Error",
         "A problem occured",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -641,7 +721,7 @@ class UserController extends GetxController {
         "Success",
         "Code sent to your email, Kindly check",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -659,7 +739,7 @@ class UserController extends GetxController {
         "Error",
         result.code.toString().split("_").join(" ").titleCase,
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         colorText: Colors.black,
@@ -683,7 +763,7 @@ class UserController extends GetxController {
         "Success",
         "Password Reset",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -701,7 +781,7 @@ class UserController extends GetxController {
         "Password reset Failed",
         result.code.toString().split("_").join(" ").titleCase,
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -713,6 +793,16 @@ class UserController extends GetxController {
         ),
       );
       return 'failed';
+    }
+  }
+
+  //to check if profile is complete
+  profileComplete() {
+    if (userState.value!.fullname!.isNotEmpty &&
+        userState.value!.phoneNumber!.isNotEmpty) {
+      isProfileComplete.value = true;
+    } else {
+      isProfileComplete.value = false;
     }
   }
 }

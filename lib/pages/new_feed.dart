@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:hair_main_street/controllers/cartController.dart';
 import 'package:hair_main_street/controllers/productController.dart';
 import 'package:hair_main_street/controllers/review_controller.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/extras/delegate.dart';
-import 'package:hair_main_street/models/productModel.dart';
+import 'package:hair_main_street/pages/notifcation.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
+import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
+import 'package:iconify_flutter_plus/icons/ion.dart';
 
 class NewFeedPage extends StatefulWidget {
   const NewFeedPage({super.key});
@@ -21,23 +22,15 @@ class NewFeedPage extends StatefulWidget {
 class _NewFeedPageState extends State<NewFeedPage>
     with TickerProviderStateMixin {
   int? itemCount;
-
-  @override
-  void initState() {
-    super.initState();
-    itemCount = 4;
-  }
+  ProductController productController = Get.find<ProductController>();
 
   @override
   Widget build(BuildContext context) {
+    Get.find<UserController>();
     Get.put(ReviewController());
-    ProductController productController = Get.find<ProductController>();
-    UserController userController = Get.find<UserController>();
     //VendorController vendorController = Get.find<VendorController>();
-    GlobalKey<FormState> formKey = GlobalKey();
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
-    num mainAxisExtent = screenHeight * 0.36;
     List<Map<String, num>> categories = [
       {
         "All": 4,
@@ -64,13 +57,24 @@ class _NewFeedPageState extends State<NewFeedPage>
           child: Text(
             'Explore Our Collection',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xFF673AB7),
               fontFamily: "Lato",
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            padding: const EdgeInsets.all(0),
+            onPressed: () => Get.to(() => NotificationsPage()),
+            icon: const Iconify(
+              Ion.md_notifications_outline,
+              color: Colors.black,
+              size: 24,
+            ),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: Column(
@@ -186,7 +190,8 @@ class _NewFeedPageState extends State<NewFeedPage>
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 12),
                                         shrinkWrap: true,
-                                        itemCount: itemCount,
+                                        itemCount: productController
+                                            .productMap["All"]?.length,
                                         itemBuilder: (context, index) {
                                           return ProductCard(
                                             mapKey: "All",
@@ -200,34 +205,33 @@ class _NewFeedPageState extends State<NewFeedPage>
                                       width: screenWidth * 0.40,
                                       child: TextButton(
                                         onPressed: () {
-                                          setState(() {
-                                            // Assuming productController.productMap["All"] is your list
-                                            int listLength = productController
-                                                .productMap["All"]!.length;
+                                          productController.showMyToast(
+                                              "More products Loading...");
+                                          // setState(() {
+                                          //   // Assuming productController.productMap["All"] is your list
+                                          //   int listLength = productController
+                                          //       .productMap["All"]!.length;
 
-                                            // Check if the list length is greater than itemCount
-                                            if (itemCount! < listLength) {
-                                              // Calculate the difference between listLength and current item count
-                                              final difference =
-                                                  listLength - itemCount!;
+                                          //   // Check if the list length is greater than itemCount
+                                          //   if (itemCount! < listLength) {
+                                          //     // Calculate the difference between listLength and current item count
+                                          //     final difference =
+                                          //         listLength - itemCount!;
 
-                                              // Check if the difference is even and divisible by 2
-                                              if (difference % 2 == 0) {
-                                                // Add 2 elements if the difference is even
-                                                itemCount = itemCount! + 2;
-                                              } else {
-                                                // Add 1 element if the difference is odd
-                                                itemCount = itemCount! + 1;
-                                              }
-                                            } else {
-                                              // List is already full, return it without changes
-                                              itemCount;
-                                              productController.showMyToast(
-                                                  "Thats all the products for now");
-                                            }
-                                            // Check if itemCount has reached a value that makes the button unresponsive
-                                            // if (itemCount! >= listLength) {}
-                                          });
+                                          //     if (difference > 1) {
+                                          //       itemCount = itemCount! + 2;
+                                          //     } else {
+                                          //       itemCount = itemCount! + 1;
+                                          //     }
+                                          //   } else {
+                                          //     // List is already full, return it without changes
+                                          //     itemCount;
+                                          //     productController.showMyToast(
+                                          //         "More products coming soon...");
+                                          //   }
+                                          //   // Check if itemCount has reached a value that makes the button unresponsive
+                                          //   // if (itemCount! >= listLength) {}
+                                          // });
                                         },
                                         style: TextButton.styleFrom(
                                           backgroundColor:
@@ -255,45 +259,45 @@ class _NewFeedPageState extends State<NewFeedPage>
                                     const SizedBox(
                                       height: 12,
                                     ),
-                                    const Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        "Vendor Highlights",
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: 'Lato',
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    MasonryGridView.count(
-                                      crossAxisSpacing: 4,
-                                      mainAxisSpacing: 8,
-                                      crossAxisCount: 2,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8),
-                                      shrinkWrap: true,
-                                      itemCount: controller.vendorsList.length,
-                                      // gridDelegate:
-                                      //     SliverGridDelegateWithFixedCrossAxisCount(
-                                      //   crossAxisCount: 2,
-                                      //   crossAxisSpacing: 4,
-                                      //   mainAxisExtent: screenHeight * 0.27,
-                                      //   mainAxisSpacing: 8,
-                                      // ),
-                                      itemBuilder: (context, index) =>
-                                          VendorHighlightsCard(
-                                        index: index,
-                                        // id: productController
-                                        //     .products.value[index]!.productID,
-                                      ),
-                                    ),
+                                    // const Align(
+                                    //   alignment: Alignment.centerLeft,
+                                    //   child: Text(
+                                    //     "Vendor Highlights",
+                                    //     textAlign: TextAlign.left,
+                                    //     style: TextStyle(
+                                    //       fontSize: 24,
+                                    //       fontWeight: FontWeight.w600,
+                                    //       fontFamily: 'Lato',
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    // const SizedBox(
+                                    //   height: 4,
+                                    // ),
+                                    // MasonryGridView.count(
+                                    //   crossAxisSpacing: 4,
+                                    //   mainAxisSpacing: 8,
+                                    //   crossAxisCount: 2,
+                                    //   physics:
+                                    //       const NeverScrollableScrollPhysics(),
+                                    //   padding: const EdgeInsets.symmetric(
+                                    //       vertical: 8),
+                                    //   shrinkWrap: true,
+                                    //   itemCount: controller.vendorsList.length,
+                                    //   // gridDelegate:
+                                    //   //     SliverGridDelegateWithFixedCrossAxisCount(
+                                    //   //   crossAxisCount: 2,
+                                    //   //   crossAxisSpacing: 4,
+                                    //   //   mainAxisExtent: screenHeight * 0.27,
+                                    //   //   mainAxisSpacing: 8,
+                                    //   // ),
+                                    //   itemBuilder: (context, index) =>
+                                    //       VendorHighlightsCard(
+                                    //     index: index,
+                                    //     // id: productController
+                                    //     //     .products.value[index]!.productID,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                               ),

@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/chatController.dart';
 import 'package:hair_main_street/controllers/notificationController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
-import 'package:hair_main_street/extras/colors.dart';
+import 'package:hair_main_street/firebase_options.dart';
 import 'package:hair_main_street/pages/authentication/authentication.dart';
 import 'package:hair_main_street/pages/client_shop_page.dart';
 import 'package:hair_main_street/pages/homePage.dart';
@@ -16,31 +16,28 @@ import 'package:hair_main_street/pages/onboarding_page.dart';
 import 'package:hair_main_street/pages/product_page.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/services/notification.dart';
-import 'package:hair_main_street/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'firebase_options.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 // ...
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Future.delayed(const Duration(milliseconds: 1000));
   final prefs = await SharedPreferences.getInstance();
   final showHome = prefs.getBool("showHome") ?? false;
-  FlutterNativeSplash.remove();
   NotificationService().init();
   //await FirebaseMessaging.instance.getInitialMessage();
   Get.put(UserController());
   Get.lazyPut<NotificationController>(() => NotificationController());
   Get.put<ChatController>(ChatController());
-  await dotenv.load(fileName: ".env");
+  FlutterNativeSplash.remove();
 
   runApp(MyApp(showHome: showHome));
 }
@@ -150,7 +147,7 @@ class _MyAppState extends State<MyApp> {
             name: '/',
             page: () =>
                 widget.showHome ? const HomePage() : const OnboardingScreen()),
-        GetPage(name: "/orders", page: () => OrdersPage()),
+        GetPage(name: "/orders", page: () => const OrdersPage()),
         GetPage(name: '/shops', page: () => const ClientShopPage()),
         GetPage(name: '/products', page: () => const ProductPage()),
         GetPage(
@@ -164,13 +161,24 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Hair Main Street',
       theme: ThemeData(
+        popupMenuTheme: PopupMenuThemeData(
+          enableFeedback: true,
+        ),
+        extensions: const [
+          WoltModalSheetThemeData(
+            topBarElevation: 0,
+            topBarShadowColor: Colors.white,
+            modalElevation: 0,
+            dragHandleColor: Colors.black,
+          )
+        ],
         navigationBarTheme: NavigationBarThemeData(
           elevation: 0,
           labelTextStyle: WidgetStateProperty.all(
             const TextStyle(
-              fontSize: 14,
+              fontSize: 11.2,
               fontFamily: 'Lato',
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
               color: Colors.black,
             ),
           ),
@@ -204,13 +212,14 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         appBarTheme: const AppBarTheme(
+          scrolledUnderElevation: 0,
           centerTitle: true,
           elevation: 0,
           titleTextStyle: TextStyle(
             color: Color(0xFF673AB7),
             fontFamily: 'Lato',
-            fontWeight: FontWeight.w900,
-            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            fontSize: 24,
           ),
           backgroundColor: Colors.white,
           actionsIconTheme: IconThemeData(color: Colors.white),

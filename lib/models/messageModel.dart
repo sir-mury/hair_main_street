@@ -15,37 +15,36 @@ ChatMessages chatMessageFromJson(String str) =>
 String chatMessagesToJson(ChatMessages data) => json.encode(data.toJson());
 
 class ChatMessages {
-  String? idTo;
-  String? idFrom;
+  String? senderID;
   String? content;
+  bool? isRead = false;
   Timestamp? timestamp;
 
   ChatMessages({
-    this.idTo,
-    this.idFrom,
+    this.senderID,
+    this.isRead,
     this.content,
     this.timestamp,
   });
 
   factory ChatMessages.fromJson(Map<String, dynamic> json) => ChatMessages(
-        idTo: json["id To"],
-        idFrom: json["id From"],
+        senderID: json["senderID"],
+        isRead: json["is read"],
         content: json["content"],
         timestamp: json["timestamp"],
       );
 
   Map<String, dynamic> toJson() => {
-        "idTo": idTo,
-        "idFrom": idFrom,
+        "senderID": senderID,
+        "is read": isRead,
         "content": content,
-        "timestamp": timestamp,
+        "timestamp": FieldValue.serverTimestamp(),
       };
 }
 
 class Chat {
   String? chatID;
-  String? member1;
-  String? member2;
+  List<String>? participants;
   String? recentMessageText;
   String? recentMessageSentBy;
   Timestamp? recentMessageSentAt;
@@ -53,8 +52,7 @@ class Chat {
 
   Chat(
       {this.chatID,
-      this.member1,
-      this.member2,
+      this.participants,
       this.readBy,
       this.recentMessageSentAt,
       this.recentMessageSentBy,
@@ -62,19 +60,17 @@ class Chat {
 
   factory Chat.fromJson(Map<String, dynamic> json) => Chat(
         chatID: json["chatID"],
-        member1: json["member1"],
+        participants: List<String>.from(json["participants"]),
         readBy: json["read by"],
         recentMessageSentAt: json["recent message sent at"],
         recentMessageSentBy: json['recent message sent by'],
         recentMessageText: json['recent message text'],
-        member2: json["member2"],
       );
 
   Map<String, dynamic> toJson() => {
         "chatID": chatID,
-        "member1": member1,
-        "member2": member2,
-        "recent message sent at": recentMessageSentAt,
+        "participants": participants,
+        "recent message sent at": FieldValue.serverTimestamp(),
         "recent message sent by": recentMessageSentBy,
         "recent message text": recentMessageText,
         "read by": readBy,

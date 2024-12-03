@@ -15,7 +15,7 @@ class ReferralPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var myReferrals = referralController.myReferrals.value;
+    var myReferrals = referralController.myReferrals;
     var currentUser = userController.userState.value;
     referralController.myRewardPoints
         .bindStream(referralController.getRewardPoints());
@@ -24,32 +24,6 @@ class ReferralPage extends StatelessWidget {
     //debugPrint(currentUser.referralLink);
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
-    Gradient myGradient = const LinearGradient(
-      colors: [
-        Color.fromARGB(255, 255, 224, 139),
-        Color.fromARGB(255, 200, 242, 237)
-      ],
-      stops: [
-        0.05,
-        0.99,
-      ],
-      end: Alignment.topCenter,
-      begin: Alignment.bottomCenter,
-      //transform: GradientRotation(math.pi / 4),
-    );
-    Gradient appBarGradient = const LinearGradient(
-      colors: [
-        Color.fromARGB(255, 200, 242, 237),
-        Color.fromARGB(255, 255, 224, 139)
-      ],
-      stops: [
-        0.05,
-        0.99,
-      ],
-      end: Alignment.topCenter,
-      begin: Alignment.bottomCenter,
-      //transform: GradientRotation(math.pi / 4),
-    );
     Text? referralText = Text(
       "${currentUser.referralLink}",
       textAlign: TextAlign.center,
@@ -80,8 +54,9 @@ class ReferralPage extends StatelessWidget {
           title: const Text(
             'Referral',
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              fontFamily: "Lato",
               color: Colors.black,
             ),
           ),
@@ -92,14 +67,9 @@ class ReferralPage extends StatelessWidget {
           // ),
           //backgroundColor: Colors.transparent,
         ),
-        body: Container(
-          //decoration: BoxDecoration(gradient: myGradient),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 8,
-          ),
+        body: SafeArea(
           child: ListView(
-            padding: EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             children: [
               const HeaderText(
                 text: "Invite Your Friends",
@@ -108,25 +78,26 @@ class ReferralPage extends StatelessWidget {
                 height: 8,
               ),
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF000000),
-                      blurStyle: BlurStyle.normal,
-                      offset: Offset.fromDirection(-4.0),
-                      blurRadius: 4,
+                      blurRadius: 1,
+                      spreadRadius: 0,
+                      color: const Color(0xFF673AB7).withOpacity(0.10),
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
                 child: const Text(
-                  "On Hair Main Street, you get 10 reward points by using your referral link to invite your friends.\nThese can be accumulated to be used to make purchases.",
+                  "On Hair Main Street, you get 10 reward points by using your referral link to invite your friends.\nThese can be accumulated to be used to make purchases.\nFeature coming soon...",
                   style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500),
+                    fontSize: 17,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
                   maxLines: 10,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -142,14 +113,14 @@ class ReferralPage extends StatelessWidget {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF000000),
-                      blurStyle: BlurStyle.normal,
-                      offset: Offset.fromDirection(-4.0),
-                      blurRadius: 4,
+                      blurRadius: 1,
+                      spreadRadius: 0,
+                      color: const Color(0xFF673AB7).withOpacity(0.10),
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
@@ -168,11 +139,11 @@ class ReferralPage extends StatelessWidget {
                           child: TextButton.icon(
                             icon: const Icon(
                               Icons.copy,
-                              size: 32,
+                              size: 24,
                               color: Colors.white,
                             ),
                             style: TextButton.styleFrom(
-                              backgroundColor: Colors.black,
+                              backgroundColor: const Color(0xFF673AB7),
                               padding: const EdgeInsets.all(6),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -188,12 +159,12 @@ class ReferralPage extends StatelessWidget {
                                 "Link Copied",
                                 "Successful",
                                 snackPosition: SnackPosition.BOTTOM,
-                                duration:
-                                    Duration(seconds: 1, milliseconds: 400),
+                                duration: const Duration(
+                                    seconds: 1, milliseconds: 400),
                                 forwardAnimationCurve: Curves.decelerate,
                                 reverseAnimationCurve: Curves.easeOut,
                                 backgroundColor:
-                                    Color.fromARGB(255, 200, 242, 237),
+                                    const Color.fromARGB(255, 200, 242, 237),
                                 margin: EdgeInsets.only(
                                   left: 12,
                                   right: 12,
@@ -219,12 +190,12 @@ class ReferralPage extends StatelessWidget {
                           child: TextButton.icon(
                             icon: const Icon(
                               Icons.share,
-                              size: 32,
+                              size: 24,
                               color: Colors.white,
                             ),
                             style: TextButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              padding: EdgeInsets.all(6),
+                              backgroundColor: const Color(0xFF673AB7),
+                              padding: const EdgeInsets.all(6),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: const BorderSide(
@@ -358,17 +329,18 @@ class HeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4),
-      padding: EdgeInsets.symmetric(horizontal: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.transparent,
       ),
       child: Text(
         text!,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 24,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
+          fontFamily: "Raleway",
         ),
       ),
     );

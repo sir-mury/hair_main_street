@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
@@ -15,8 +14,9 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 void navigateToNotifications() {
-  Get.offAll(() => HomePage());
-  Get.find<BottomNavController>().changeTabIndex(1);
+  Get.to(() => NotificationsPage());
+  // Get.offAll(() => const HomePage());
+  // Get.find<BottomNavController>().changeTabIndex(1);
 }
 
 var androidChannel = const AndroidNotificationChannel(
@@ -80,7 +80,7 @@ class NotificationService {
 
     //making the settings
     var androidInitialize =
-        const AndroidInitializationSettings('@drawable/ic_launcher');
+        const AndroidInitializationSettings('@drawable/hms_main');
     var iosInitialize = const DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -117,7 +117,7 @@ class NotificationService {
               android: AndroidNotificationDetails(
                 androidChannel.id,
                 androidChannel.name,
-                icon: "@drawable/ic_launcher",
+                icon: "@drawable/hms_main",
                 styleInformation: bigTextStyleInformation,
               ),
               iOS: DarwinNotificationDetails(
@@ -148,7 +148,7 @@ class NotificationService {
       if (notification == null) {
         return;
       } else {
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(const Duration(seconds: 1), () {
           navigateToNotifications();
         });
       }

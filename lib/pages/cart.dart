@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/blankPage.dart';
 import 'package:hair_main_street/controllers/cartController.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/pages/orders_stuff/cart_checkout.dart';
+import 'package:hair_main_street/services/auth.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
@@ -176,7 +176,8 @@ class CartPage extends StatelessWidget {
                                         ),
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Color(0xFF673AB7),
+                                            backgroundColor:
+                                                const Color(0xFF673AB7),
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 0, horizontal: 32),
                                             //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
@@ -237,45 +238,6 @@ class CartPage extends StatelessWidget {
                             ),
                           )
                         ],
-                        // bottom: PreferredSize(
-                        //   preferredSize:
-                        //       Size.fromHeight(screenHeight * .05),
-                        //   child: CheckboxListTile(
-                        //     controlAffinity:
-                        //         ListTileControlAffinity.leading,
-                        //     contentPadding: const EdgeInsets.symmetric(
-                        //         horizontal: 28, vertical: 1),
-                        //     side: const BorderSide(
-                        //         width: 2, color: Colors.black),
-                        //     title: const Text(
-                        //       "Add All",
-                        //       style: TextStyle(
-                        //           fontSize: 18,
-                        //           fontWeight: FontWeight.w600,
-                        //           color: Colors.black),
-                        //     ),
-                        //     value: checkOutController
-                        //         .isMasterCheckboxChecked.value,
-                        //     onChanged: (val) {
-                        //       checkOutController.toggleMasterCheckbox();
-                        //       // for (var item
-                        //       //     in checkOutController.checkoutList) {
-                        //       //   //print(item.price);
-                        //       //   print(item.quantity);
-                        //       // }
-                        //       checkOutController
-                        //           .getTotalPriceAndTotalQuantity();
-                        //       // Future.delayed(Duration(seconds: 2), () {
-                        //       //   checkOutController
-                        //       //       .getTotalPriceAndTotalQuantity();
-                        //       // });
-                        //     },
-                        //   ),
-                        // ),
-                        // flexibleSpace: Container(
-                        //   decoration: BoxDecoration(gradient: appBarGradient),
-                        // ),
-                        //backgroundColor: Color(0xFF0E4D92),
                       ),
                       extendBody: false,
                       extendBodyBehindAppBar: false,
@@ -290,8 +252,8 @@ class CartPage extends StatelessWidget {
                                     Iconify(
                                       Raphael.cart,
                                       size: 156,
-                                      color:
-                                          Color(0xFF673AB7).withOpacity(0.30),
+                                      color: const Color(0xFF673AB7)
+                                          .withOpacity(0.30),
                                     ),
                                     const SizedBox(
                                       height: 16,
@@ -299,8 +261,8 @@ class CartPage extends StatelessWidget {
                                     Text(
                                       "Oops Nothing here yet\nLet's Go Shopping",
                                       style: TextStyle(
-                                        color:
-                                            Color(0xFF673AB7).withOpacity(0.70),
+                                        color: const Color(0xFF673AB7)
+                                            .withOpacity(0.70),
                                         fontSize: 30,
                                         fontFamily: 'Lato',
                                         fontWeight: FontWeight.w600,
@@ -320,6 +282,7 @@ class CartPage extends StatelessWidget {
                                 //physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   return CartCard(
+                                    cartItem: cartController.cartItems[index],
                                     cartId: cartController
                                         .cartItems[index].cartItemID,
                                     id: cartController
@@ -457,36 +420,6 @@ class CartPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // floatingActionButton: Container(
-                      //   //width: double.infinity,
-                      //   margin: EdgeInsets.only(bottom: screenHeight * .056),
-                      //   color: Colors.transparent,
-                      //   child: ElevatedButton(
-                      //     style: ElevatedButton.styleFrom(
-                      //       backgroundColor: Color(0xFF392F5A),
-                      //       padding: EdgeInsets.symmetric(
-                      //           vertical: 8, horizontal: screenWidth * 0.12),
-                      //       //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                      //       shape: RoundedRectangleBorder(
-                      //         side: const BorderSide(
-                      //           width: 1.2,
-                      //           color: Colors.black,
-                      //         ),
-                      //         borderRadius: BorderRadius.circular(16),
-                      //       ),
-                      //     ),
-                      //     onPressed: () {
-                      //       DataBaseService().addProduct();
-                      //     },
-                      //     child: const Text(
-                      //       "Proceed",
-                      //       style: TextStyle(
-                      //         fontSize: 24,
-                      //         color: Colors.white,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
                     );
                   },
                 );

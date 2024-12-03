@@ -1,83 +1,239 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:hair_main_street/controllers/order_checkoutController.dart';
 
 class PaymentSuccessfulPage extends StatelessWidget {
   const PaymentSuccessfulPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 100,
-              width: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF673AB7).withOpacity(0.10),
-                    Colors.white.withOpacity(0.15)
-                  ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {},
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7).withOpacity(0.40),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Container(
+                    height: 175,
+                    width: 175,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: SvgPicture.asset(
+                      "assets/Icons/charm-tick.svg",
+                      color: Colors.white,
+                      height: 75,
+                      width: 75,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              const Text(
+                "Payment Successful",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
                 ),
               ),
-              child: Container(
-                height: 75,
-                width: 75,
-                decoration: const BoxDecoration(
-                    color: Color(0xFF673AB7), shape: BoxShape.circle),
-                child: SvgPicture.asset(
-                  "assets/Icons/charm-tick.svg",
-                  color: Colors.white,
-                  height: 50,
-                  width: 50,
+            ],
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: BottomAppBar(
+            elevation: 0,
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            height: kToolbarHeight,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF673AB7),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  Get.offAllNamed("/");
+                },
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "Payment Successful",
-              style: TextStyle(
-                fontSize: 30,
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: BottomAppBar(
-          elevation: 0,
-          color: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          height: kToolbarHeight,
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF673AB7),
-                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+    );
+  }
+}
+
+class InstallmentPaymentSuccessfulPage extends StatelessWidget {
+  final int installmentRemaining;
+  const InstallmentPaymentSuccessfulPage({
+    super.key,
+    required this.installmentRemaining,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    CheckOutController checkOutController = Get.find<CheckOutController>();
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        //Get.close(2);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7).withOpacity(0.40),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Container(
+                    height: 175,
+                    width: 175,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: SvgPicture.asset(
+                      "assets/Icons/charm-tick.svg",
+                      color: Colors.white,
+                      height: 75,
+                      width: 75,
+                    ),
+                  ),
+                ],
               ),
-              onPressed: () async {
-                Get.offAllNamed("/");
-              },
-              child: const Text(
-                "Continue",
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontSize: 16,
-                  color: Colors.white,
+              const SizedBox(
+                height: 20,
+              ),
+              installmentRemaining == 0
+                  ? Column(
+                      children: [
+                        const Text(
+                          "Payment Successful",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        const Text(
+                          "You have completed the payment of all your installments",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Raleway',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Text(
+                          "Payment Successful",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          "You have $installmentRemaining installment payment left to complete",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Raleway',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: BottomAppBar(
+            elevation: 0,
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            height: kToolbarHeight,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF673AB7),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  checkOutController.toRebuild();
+                  Get.close(3);
+                },
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -102,30 +258,32 @@ class ProductCreationSuccessfulPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF673AB7).withOpacity(0.10),
-                      Colors.white.withOpacity(0.15)
-                    ],
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7).withOpacity(0.40),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                child: Container(
-                  height: 75,
-                  width: 75,
-                  decoration: const BoxDecoration(
-                      color: Color(0xFF673AB7), shape: BoxShape.circle),
-                  child: SvgPicture.asset(
-                    "assets/Icons/charm-tick.svg",
-                    color: Colors.white,
-                    height: 50,
-                    width: 50,
+                  Container(
+                    height: 175,
+                    width: 175,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: SvgPicture.asset(
+                      "assets/Icons/charm-tick.svg",
+                      color: Colors.white,
+                      height: 75,
+                      width: 75,
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(
                 height: 20,
@@ -257,30 +415,32 @@ class WithdrawalSuccessPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF673AB7).withOpacity(0.10),
-                      Colors.white.withOpacity(0.15)
-                    ],
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7).withOpacity(0.40),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                child: Container(
-                  height: 75,
-                  width: 75,
-                  decoration: const BoxDecoration(
-                      color: Color(0xFF673AB7), shape: BoxShape.circle),
-                  child: SvgPicture.asset(
-                    "assets/Icons/charm-tick.svg",
-                    color: Colors.white,
-                    height: 50,
-                    width: 50,
+                  Container(
+                    height: 175,
+                    width: 175,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF673AB7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: SvgPicture.asset(
+                      "assets/Icons/charm-tick.svg",
+                      color: Colors.white,
+                      height: 75,
+                      width: 75,
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(
                 height: 20,
@@ -429,7 +589,7 @@ class RequestProcessingPage extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                 decoration: BoxDecoration(
-                    color: Color(0xFF673AB7).withOpacity(0.35),
+                    color: const Color(0xFF673AB7).withOpacity(0.35),
                     borderRadius: BorderRadius.circular(20)),
                 child: const Text(
                   "Your Request is being processed",

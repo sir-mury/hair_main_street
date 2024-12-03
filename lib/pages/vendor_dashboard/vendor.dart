@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:hair_main_street/blankPage.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/controllers/vendorController.dart';
-import 'package:hair_main_street/models/orderModel.dart';
 import 'package:hair_main_street/pages/orders_stuff/payment_successful_page.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/Shop_page.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/Inventory.dart';
@@ -18,15 +16,12 @@ import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/carbon.dart';
-import 'package:iconify_flutter_plus/icons/clarity.dart';
-import 'package:iconify_flutter_plus/icons/ion.dart';
 import 'package:iconify_flutter_plus/icons/material_symbols.dart';
-import 'package:iconify_flutter_plus/icons/mingcute.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
 
 class VendorPage extends StatefulWidget {
-  VendorPage({super.key});
+  const VendorPage({super.key});
 
   @override
   State<VendorPage> createState() => _VendorPageState();
@@ -74,10 +69,10 @@ class _VendorPageState extends State<VendorPage> {
     // ];
 
     List? vl = [
-      ShopSetupPage(),
+      const ShopSetupPage(),
       const InventoryPage(),
       const AddproductPage(),
-      VendorOrdersPage(),
+      const VendorOrdersPage(),
       const AnalyticsPage(),
       const WalletPage(),
     ];
@@ -383,10 +378,10 @@ class _VendorPageState extends State<VendorPage> {
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(8),
-                                              color: Color(0xFFE91E63)
+                                              color: const Color(0xFFE91E63)
                                                   .withOpacity(0.10),
                                             ),
-                                            padding: EdgeInsets.all(8),
+                                            padding: const EdgeInsets.all(8),
                                             child: Column(
                                               children: [
                                                 Text(

@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:hair_main_street/models/notificationsModel.dart';
 import 'package:hair_main_street/pages/homePage.dart';
 import 'package:hair_main_street/services/database.dart';
@@ -9,12 +8,12 @@ class NotificationController extends GetxController {
   var notifications = <Notifications>[].obs;
 
   void navigateToNotifications() {
-    Get.offAll(() => HomePage());
+    Get.offAll(() => const HomePage());
     Get.find<BottomNavController>().changeTabIndex(1);
   }
 
   void navigateBacktoHome() {
-    Get.offAll(() => HomePage());
+    Get.offAll(() => const HomePage());
     Get.find<BottomNavController>().changeTabIndex(0);
   }
 

@@ -1,23 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/chatController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/auxModels.dart';
 import 'package:hair_main_street/models/messageModel.dart';
-import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 
 class MessagesPage extends StatefulWidget {
-  final String? senderID;
-  final String? receiverID;
-  const MessagesPage({this.receiverID, this.senderID, super.key});
+  final String? participant1;
+  final String? participant2;
+  const MessagesPage({this.participant1, this.participant2, super.key});
 
   @override
   State<MessagesPage> createState() => _MessagesPageState();
@@ -33,7 +29,8 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   void initState() {
     super.initState();
-    resolveMessageData(widget.receiverID);
+    resolveMessageData([widget.participant1!, widget.participant2!]);
+    chatController.getMessages(widget.participant1!, widget.participant2!);
     // SchedulerBinding.instance.addPostFrameCallback((_) {
     //   if (scrollController.hasClients) {
     //     scrollController.jumpTo(scrollController.position.maxScrollExtent);
@@ -44,12 +41,17 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   void dispose() {
     scrollController.dispose();
-    chatController.getMessages(widget.senderID!, widget.receiverID!);
     super.dispose();
   }
 
-  void resolveMessageData(id) async {
-    data = await chatController.resolveNameToDisplay(id);
+  Future<MessagePageData?> resolveMessageData(List<String> participants) async {
+    String currentUserId = userController.userState.value!.uid!;
+    for (var participant in participants) {
+      if (participant != currentUserId) {
+        return await chatController.resolveNameToDisplay(participant);
+      } else {}
+    }
+    return null;
   }
 
   void scrollToEnd() {
@@ -62,13 +64,15 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   Widget build(BuildContext context) {
     GlobalKey<FormState> formKey = GlobalKey();
-    Chat chat = Chat(member1: "", member2: "");
-    ChatMessages chatMessages = ChatMessages(idTo: "", idFrom: "", content: "");
+    Chat chat = Chat(participants: []);
+    ChatMessages chatMessages = ChatMessages(content: "");
 
     return FutureBuilder(
-        future: chatController.resolveNameToDisplay(widget.receiverID!),
+        future:
+            resolveMessageData([widget.participant1!, widget.participant2!]),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData ||
+              snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               backgroundColor: Colors.white,
               body: LoadingWidget(),
@@ -77,15 +81,16 @@ class _MessagesPageState extends State<MessagesPage> {
           return Scaffold(
             appBar: AppBar(
               leadingWidth: 40,
-              centerTitle: false,
+              centerTitle: true,
               scrolledUnderElevation: 0,
               elevation: 0,
               title: Text(
-                data!.name ?? "Message",
+                snapshot.data!.name ?? "Message",
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 25,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: "Lato",
                 ),
               ),
               leading: IconButton(
@@ -104,27 +109,33 @@ class _MessagesPageState extends State<MessagesPage> {
                 children: [
                   Expanded(
                     child: StreamBuilder(
-                        stream: DataBaseService()
-                            .getChats(widget.senderID!, widget.receiverID!),
+                        stream: DataBaseService().getChatsBetween2Users(
+                          currentUserId: widget.participant1!,
+                          otherUserId: widget.participant2!,
+                        ),
                         builder: (context, snapshot) {
                           //print(snapshot.data);
                           if (snapshot.hasData) {
                             return GetX<ChatController>(
                               builder: (controller) {
                                 return controller.messagesList.value!.isEmpty
-                                    ? const Text(
-                                        "No Messages Yet",
-                                        style: TextStyle(
-                                          fontSize: 40,
+                                    ? Center(
+                                        child: const Text(
+                                          "No Messages Yet",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 40,
+                                            fontFamily: "Raleway",
+                                          ),
                                         ),
                                       )
                                     : ListView.builder(
-                                        reverse: true,
+                                        reverse: false,
                                         controller: scrollController,
                                         shrinkWrap: true,
                                         padding: const EdgeInsets.fromLTRB(
                                             12, 12, 12, 8),
-                                        //physics: const NeverScrollableScrollPhysics(),
+                                        physics: const BouncingScrollPhysics(),
                                         itemCount: controller
                                             .messagesList.value!.length,
                                         itemBuilder: (context, index) {
@@ -152,7 +163,7 @@ class _MessagesPageState extends State<MessagesPage> {
                   ),
                   Container(
                     color: Colors.white,
-                    padding: EdgeInsets.fromLTRB(6, 8, 8, 8),
+                    padding: const EdgeInsets.fromLTRB(6, 8, 8, 8),
                     child: Form(
                       key: formKey,
                       child: Row(
@@ -193,24 +204,30 @@ class _MessagesPageState extends State<MessagesPage> {
                                 ),
                                 onPressed: chatController.isButtonEnabled.value
                                     ? () {
-                                        chatMessages.idFrom = widget.senderID;
-                                        chatMessages.idTo = widget.receiverID;
-                                        chat.member1 = widget.senderID;
-                                        chat.member2 = widget.receiverID;
+                                        String currentUserId = userController
+                                            .userState.value!.uid!;
+                                        chatMessages.senderID = currentUserId;
+                                        chat.participants = [
+                                          widget.participant1!,
+                                          widget.participant2!
+                                        ];
                                         chat.recentMessageSentBy =
-                                            widget.senderID;
+                                            currentUserId;
                                         chatMessages.content =
                                             messageController.text;
                                         chat.recentMessageText =
                                             messageController.text;
-                                        chatController.startChat(
-                                            chat, chatMessages);
-                                        debugPrint(
-                                            "hellow:${messageController.text}");
-
+                                        chatController.sendMessage(
+                                          chatMessages,
+                                          widget.participant1!,
+                                          widget.participant2!,
+                                        );
                                         messageController.clear();
                                         formKey.currentState!.reset();
-                                        scrollToEnd();
+                                        if (chatController
+                                            .messagesList.value!.isNotEmpty) {
+                                          scrollToEnd();
+                                        }
                                       }
                                     : null,
                                 icon: const Icon(
@@ -228,47 +245,6 @@ class _MessagesPageState extends State<MessagesPage> {
                 ],
               ),
             ),
-            // bottomNavigationBar: SafeArea(
-            //   child: BottomAppBar(
-            //     child: Form(
-            //       key: formKey,
-            //       child: Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //         children: [
-            //           Expanded(
-            //             //flex: 6,
-            //             child: TextInputWidgetWithoutLabel(
-            //               hintText: "Message",
-            //               onChanged: (val) {
-            //                 messageController.text = val!;
-            //               },
-            //               textInputType: TextInputType.text,
-            //             ),
-            //           ),
-            //           IconButton(
-            //             style: IconButton.styleFrom(
-            //               shape: const CircleBorder(
-            //                 side: BorderSide(
-            //                   color: Colors.white,
-            //                   width: 1.2,
-            //                 ),
-            //               ),
-            //             ),
-            //             onPressed: () {
-            //               formKey.currentState!.save();
-            //               debugPrint(messageController.text);
-            //             },
-            //             icon: const Icon(
-            //               Icons.send_rounded,
-            //               color: Colors.white,
-            //               size: 28,
-            //             ),
-            //           )
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
           );
         });
   }
@@ -277,7 +253,8 @@ class _MessagesPageState extends State<MessagesPage> {
 class ChatMessage extends StatefulWidget {
   final ChatMessages message;
 
-  ChatMessage({
+  const ChatMessage({
+    super.key,
     required this.message,
   });
 
@@ -293,7 +270,7 @@ class _ChatMessageState extends State<ChatMessage> {
   @override
   void initState() {
     super.initState();
-    myFuture = chatController.resolveTheNames(widget.message);
+    //myFuture = chatController.resolveTheNames(widget.message);
   }
 
   @override
@@ -314,7 +291,7 @@ class _ChatMessageState extends State<ChatMessage> {
 
     return GetX<ChatController>(builder: (controller) {
       bool isUsertheSender =
-          widget.message.idFrom == userController.userState.value!.uid;
+          widget.message.senderID == userController.userState.value!.uid;
       return Align(
         alignment:
             isUsertheSender ? Alignment.centerRight : Alignment.centerLeft,
@@ -325,13 +302,19 @@ class _ChatMessageState extends State<ChatMessage> {
                     : MainAxisAlignment.start,
                 children: [
                   Container(
+                    //width: screenWidth * 0.50,
+                    constraints: BoxConstraints(maxWidth: screenWidth * 0.80),
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
                       color: const Color(0xFF673AB7),
                     ),
-                    child: Text(
+                    child: SelectableText(
                       widget.message.content!,
+                      maxLines: 15,
+                      minLines: 1,
+                      // overflow: TextOverflow.ellipsis,
+                      // softWrap: true,
                       style: const TextStyle(
                         fontFamily: 'Raleway',
                         fontSize: 15,
@@ -345,7 +328,7 @@ class _ChatMessageState extends State<ChatMessage> {
                   ),
                   FutureBuilder(
                       future: chatController
-                          .resolveNameToDisplay(widget.message.idFrom!),
+                          .resolveNameToDisplay(widget.message.senderID!),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData ||
                             snapshot.connectionState ==
@@ -359,10 +342,10 @@ class _ChatMessageState extends State<ChatMessage> {
                                   snapshot.data!.imageUrl!.isEmpty
                               ? CircleAvatar(
                                   radius: 18,
-                                  backgroundColor: const Color(0xFF703535),
+                                  backgroundColor: Colors.white,
                                   child: SvgPicture.asset(
                                     "assets/Icons/user.svg",
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     height: 24,
                                     width: 24,
                                   ),
@@ -384,7 +367,7 @@ class _ChatMessageState extends State<ChatMessage> {
                 children: [
                   FutureBuilder(
                       future: chatController
-                          .resolveNameToDisplay(widget.message.idTo!),
+                          .resolveNameToDisplay(widget.message.senderID!),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData ||
                             snapshot.connectionState ==
@@ -398,10 +381,10 @@ class _ChatMessageState extends State<ChatMessage> {
                                   snapshot.data!.imageUrl!.isEmpty
                               ? CircleAvatar(
                                   radius: 18,
-                                  backgroundColor: const Color(0xFF703535),
+                                  backgroundColor: Colors.white,
                                   child: SvgPicture.asset(
                                     "assets/Icons/user.svg",
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     height: 24,
                                     width: 24,
                                   ),
@@ -418,6 +401,7 @@ class _ChatMessageState extends State<ChatMessage> {
                     width: 5,
                   ),
                   Container(
+                    constraints: BoxConstraints(maxWidth: screenWidth * 0.80),
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
@@ -427,7 +411,7 @@ class _ChatMessageState extends State<ChatMessage> {
                         color: Colors.black38,
                       ),
                     ),
-                    child: Text(
+                    child: SelectableText(
                       widget.message.content!,
                       style: const TextStyle(
                         fontFamily: 'Raleway',

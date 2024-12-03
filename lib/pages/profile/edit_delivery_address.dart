@@ -40,6 +40,7 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
   @override
   void initState() {
     address = userController.getSingleAddress(widget.addressID);
+    defaultAddress = address!.isDefault!;
     super.initState();
   }
 
@@ -120,8 +121,9 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   },
                   onChanged: (val) {
                     setState(() {
-                      contactNameController.text = val!;
-                      contactName = contactNameController.text;
+                      // contactNameController.text = val!;
+                      // contactName = contactNameController.text;
+                      address!.contactName = val!;
                     });
                   },
                 ),
@@ -147,8 +149,9 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   },
                   onChanged: (val) {
                     setState(() {
-                      contactPhoneNumberController.text = val!;
-                      contactPhoneNumber = contactPhoneNumberController.text;
+                      // contactPhoneNumberController.text = val!;
+                      // contactPhoneNumber = contactPhoneNumberController.text;
+                      address!.contactPhoneNumber = val!;
                     });
                   },
                 ),
@@ -180,8 +183,9 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   },
                   onChanged: (val) {
                     setState(() {
-                      streetAddressController.text = val!;
-                      streetAddress = streetAddressController.text;
+                      // streetAddressController.text = val!;
+                      // streetAddress = streetAddressController.text;
+                      address!.streetAddress = val!;
                     });
                   },
                 ),
@@ -220,8 +224,9 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   },
                   onChanged: (val) {
                     setState(() {
-                      landmarkController.text = val!;
-                      landmark = landmarkController.text;
+                      // landmarkController.text = val!;
+                      // landmark = landmarkController.text;
+                      landmark = val!;
                     });
                     return null;
                   },
@@ -245,8 +250,7 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   },
                   onChanged: (val) {
                     setState(() {
-                      zipcodeController.text = val!;
-                      zipcode = zipcodeController.text;
+                      address!.zipCode = val!;
                     });
                     return null;
                   },
@@ -305,18 +309,18 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                 if (userController.isLoading.value) {
                   Get.dialog(const LoadingWidget());
                 }
-                Address address = Address(
-                  landmark: landmark,
-                  streetAddress: streetAddress,
-                  lGA: lGA,
-                  state: state,
-                  contactName: contactName,
-                  contactPhoneNumber: contactPhoneNumber,
-                  zipCode: zipcode,
-                );
+                // Address address = Address(
+                //   landmark: landmark,
+                //   streetAddress: streetAddress,
+                //   lGA: lGA,
+                //   state: state,
+                //   contactName: contactName,
+                //   contactPhoneNumber: contactPhoneNumber,
+                //   zipCode: zipcode,
+                // );
                 var value = await userController.editDeliveryAddress(
                   userController.userState.value!.uid!,
-                  address,
+                  address!,
                   defaultAddress,
                 );
                 if (value == 'success') {

@@ -138,7 +138,7 @@ class _ProductEditPreviewState extends State<ProductEditPreview> {
                             ? product!.image!.first
                             : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
                         errorWidget: ((context, url, error) =>
-                            Text("Failed to Load Image")),
+                            const Text("Failed to Load Image")),
                         placeholder: ((context, url) => const Center(
                               child: CircularProgressIndicator(),
                             )),
@@ -371,7 +371,7 @@ class _ProductEditPreviewState extends State<ProductEditPreview> {
               // ),
               // Row(),
               ExpansionTile(
-                tilePadding: EdgeInsets.symmetric(horizontal: 0),
+                tilePadding: const EdgeInsets.symmetric(horizontal: 0),
                 backgroundColor: Colors.white,
                 iconColor: Colors.black,
                 collapsedIconColor: Colors.black,
@@ -401,7 +401,7 @@ class _ProductEditPreviewState extends State<ProductEditPreview> {
                             product!.options!.length,
                             (index) => Container(
                               width: double.infinity,
-                              color: Color(0xFFf5f5f5),
+                              color: const Color(0xFFf5f5f5),
                               margin: const EdgeInsets.only(bottom: 4),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,7 +471,7 @@ class _ProductEditPreviewState extends State<ProductEditPreview> {
               Expanded(
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(6),
                     //alignment: Alignment.centerLeft,
                     backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
@@ -506,9 +506,9 @@ class _ProductEditPreviewState extends State<ProductEditPreview> {
               Expanded(
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(6),
                     //alignment: Alignment.centerLeft,
-                    backgroundColor: Color(0xFF673AB7),
+                    backgroundColor: const Color(0xFF673AB7),
                     shape: const RoundedRectangleBorder(
                       //side: BorderSide(color: Color(0xFF673AB7), width: 2),
                       borderRadius: BorderRadius.all(

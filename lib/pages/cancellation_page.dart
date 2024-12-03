@@ -156,13 +156,20 @@ class _CancellationPageState extends State<CancellationPage> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Symbols.arrow_back_ios_new_rounded,
-              size: 24, color: Colors.black),
+          icon: const Icon(
+            Symbols.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black,
+          ),
         ),
         title: const Text(
           "Cancel Order",
           style: TextStyle(
-              fontSize: 32, fontWeight: FontWeight.w900, color: Colors.black),
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
+            fontFamily: "Lato",
+            color: Colors.black,
+          ),
         ),
         centerTitle: true,
       ),
@@ -205,24 +212,30 @@ class _CancellationPageState extends State<CancellationPage> {
                     ],
                   ),
                 ),
-
-                // Reason for Refund Row
+                const SizedBox(
+                  height: 6,
+                ),
+                // Reason for cancellation
                 Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.only(bottom: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "Reason for Cancellation:",
-                        style: TextStyle(fontSize: 16.0),
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const SizedBox(height: 10.0),
                       PopupMenuButton<String>(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                           side: const BorderSide(
-                            color: Colors.black,
-                            width: 0.5,
+                            color: Color(0xFFf5f5f5),
+                            width: 1,
                           ),
                         ),
                         elevation: 0,
@@ -256,8 +269,8 @@ class _CancellationPageState extends State<CancellationPage> {
                         child: Container(
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: Colors.black,
-                              width: 1,
+                              color: Colors.black26,
+                              width: 0.8,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -279,12 +292,16 @@ class _CancellationPageState extends State<CancellationPage> {
                 Visibility(
                   visible: selectedReason == "Others",
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: TextFormField(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 20),
+                    child: TextInputWidgetWithoutLabel(
                       controller: othersController,
+                      hintText: "Specify Reason",
                       onChanged: (value) {
-                        othersController.text = value;
-                        selectedReason = othersController.text;
+                        if (value!.isNotEmpty) {
+                          othersController.text = value;
+                          selectedReason = othersController.text;
+                        }
+                        return null;
                       },
                       validator: (value) {
                         if (value!.isEmpty && selectedReason == "Others") {
@@ -292,18 +309,8 @@ class _CancellationPageState extends State<CancellationPage> {
                         }
                         return null;
                       },
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: "Specify Reason",
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black, width: 1),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
-                        ),
-                      ),
+                      minLines: 3,
+                      maxLines: 7,
                     ),
                   ),
                 ),
@@ -349,11 +356,26 @@ class _CancellationPageState extends State<CancellationPage> {
                         height: 4,
                       ),
                       DropdownSearch(
-                        dropdownButtonProps: const DropdownButtonProps(
-                          icon: Iconify(
-                            Ic.baseline_keyboard_arrow_down,
-                            size: 24,
-                            color: Colors.black,
+                        compareFn: (item1, item2) => item1 == item2,
+                        suffixProps: DropdownSuffixProps(
+                          clearButtonProps: ClearButtonProps(
+                            icon: Iconify(
+                              Ic.clear,
+                              size: 24,
+                              color: Colors.black,
+                            ),
+                          ),
+                          dropdownButtonProps: const DropdownButtonProps(
+                            iconClosed: Iconify(
+                              Ic.baseline_keyboard_arrow_down,
+                              size: 24,
+                              color: Colors.black,
+                            ),
+                            iconOpened: Iconify(
+                              Ic.baseline_keyboard_arrow_down,
+                              size: 24,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                         dropdownBuilder: (context, selectedItem) =>
@@ -378,7 +400,9 @@ class _CancellationPageState extends State<CancellationPage> {
                                   ),
                         popupProps: PopupProps.dialog(
                           fit: FlexFit.loose,
-                          itemBuilder: (context, item, isSelected) => Padding(
+                          itemBuilder:
+                              (context, item, isDisabled, isSelected) =>
+                                  Padding(
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             child: Text(
                               "${item.toString().capitalizeFirst}",
@@ -451,7 +475,7 @@ class _CancellationPageState extends State<CancellationPage> {
                           ),
                           showSearchBox: true,
                         ),
-                        items: bankAndCodes.keys.toList(),
+                        items: (f, cs) => bankAndCodes.keys.toList(),
                         validator: (value) {
                           if (value.toString().isEmpty) {
                             return "Please choose your Bank name";
@@ -463,10 +487,10 @@ class _CancellationPageState extends State<CancellationPage> {
                             bankName = value.toString();
                           });
                         },
-                        dropdownDecoratorProps: DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
+                        decoratorProps: DropDownDecoratorProps(
+                          decoration: InputDecoration(
                             filled: true,
-                            fillColor: Color(0xFFf5f5f5),
+                            fillColor: const Color(0xFFf5f5f5),
                             contentPadding: const EdgeInsets.symmetric(
                                 vertical: 2, horizontal: 10),
                             hintText: "Select Bank",
@@ -533,7 +557,7 @@ class _CancellationPageState extends State<CancellationPage> {
                         hintText: "Enter your account name",
                         maxLines: 1,
                         fontSize: 15,
-                        labelColor: const Color(0xFF673AB7).withOpacity(0.50),
+                        labelColor: const Color(0xFF673AB7),
                         textInputType: TextInputType.text,
                         validator: (value) {
                           if (value!.isEmpty) {
@@ -595,7 +619,7 @@ class _CancellationPageState extends State<CancellationPage> {
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF673AB7),
+              backgroundColor: const Color(0xFF673AB7),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

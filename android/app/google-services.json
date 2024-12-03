@@ -12,7 +12,20 @@
           "package_name": "com.example.hair_main_street"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "227252082418-98apjpq3897h21e7bp9dl6ss3l8cu1hk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hair_main_street",
+            "certificate_hash": "1a5f6d6add18c5516b9949b3ab35836a9c456ec4"
+          }
+        },
+        {
+          "client_id": "227252082418-v3gnhdbbrbiqk4t9q0jbf1pe6i973vqi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBvPZcSZT_qfdwObU5MHG_6sNcV18TiiJc"
@@ -20,7 +33,55 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227252082418-3agq37bii282ve6e1vc3mcvlns08ppot.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "227252082418-3rea2vvpj7e2oq1bpg8lep05srei4k6s.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.hairMainStreet"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227252082418:android:9ac975310c3ae7f9a0226b",
+        "android_client_info": {
+          "package_name": "com.example.hair_main_street_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227252082418-v3gnhdbbrbiqk4t9q0jbf1pe6i973vqi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvPZcSZT_qfdwObU5MHG_6sNcV18TiiJc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227252082418-3agq37bii282ve6e1vc3mcvlns08ppot.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "227252082418-3rea2vvpj7e2oq1bpg8lep05srei4k6s.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.hairMainStreet"
+              }
+            }
+          ]
         }
       }
     }

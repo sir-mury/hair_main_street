@@ -3,14 +3,16 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_paystack/flutter_paystack.dart';
+// import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
 import 'package:hair_main_street/controllers/productController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/auxModels.dart';
 import 'package:hair_main_street/models/userModel.dart';
+import 'package:hair_main_street/pages/orders_stuff/payment_successful_page.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:monnify_payment_sdk/monnify_payment_sdk.dart';
 import 'package:recase/recase.dart';
 
 class CartCheckoutConfirmationPage extends StatefulWidget {
@@ -35,22 +37,35 @@ class CartCheckoutConfirmationPage extends StatefulWidget {
 
 class _CartCheckoutConfirmationPageState
     extends State<CartCheckoutConfirmationPage> {
-  final plugin = PaystackPlugin();
   UserController userController = Get.find<UserController>();
   ProductController productController = Get.find<ProductController>();
   CheckOutController checkOutController = Get.find<CheckOutController>();
+  String? secretKey = dotenv.env["PAYSTACK_SECRET_KEY"];
   String? publicKey = dotenv.env["PAYSTACK_PUBLIC_KEY"];
+  String? monnifyAPIKey = dotenv.env["MONNIFY_API_KEY"];
+  String? monnifyContractCode = dotenv.env["MONNIFY_CONTRACT_CODE"];
+  Monnify? monnify;
+  String? callbackUrl = dotenv.env["CALLBACK_URL"];
   num? payableAmount;
 
   @override
   void initState() {
-    plugin.initialize(publicKey: publicKey!);
     payableAmount = widget.payableAmount;
+    initializeMonnify();
     super.initState();
+  }
+
+  initializeMonnify() async {
+    monnify = await Monnify.initialize(
+      applicationMode: ApplicationMode.TEST,
+      apiKey: monnifyAPIKey!,
+      contractCode: monnifyContractCode!,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    bool transactionInitialized = false;
     String formatCurrency(String numberString) {
       final number =
           double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
@@ -109,74 +124,152 @@ class _CartCheckoutConfirmationPageState
               ),
             ),
           ],
-          actionsAlignment: MainAxisAlignment.end,
+          actionsAlignment: MainAxisAlignment.center,
         ),
       );
     }
 
-    //initiate paystack payment for a list of products
-    Future<void> initiatePaymentForProducts(
+    initatePaymentForProducts(
       List<Map<String, dynamic>> productStates,
       String email,
       MyUser user,
     ) async {
-      Charge charge = Charge()
-        ..amount = (widget.payableAmount!.round()) * 100
-        ..reference = _getReference()
-        ..email = email;
-
-      CheckoutResponse response = await plugin.checkout(
-        context,
-        method: CheckoutMethod.card,
-        charge: charge,
+      String reference = _getReference();
+      TransactionDetails transactionDetails = TransactionDetails().copyWith(
+        currencyCode: "NGN",
+        customerEmail: email,
+        amount: (widget.payableAmount!.toDouble()),
+        paymentMethods: [
+          PaymentMethod.CARD,
+          PaymentMethod.USSD,
+          PaymentMethod.ACCOUNT_TRANSFER,
+          PaymentMethod.DIRECT_DEBIT,
+        ],
+        paymentReference: reference,
       );
-      if (response.status) {
-        bool verified = await checkOutController.verifyTransaction(
-            reference: response.reference!);
-        print(response);
-        print(response.reference);
-        print("verified:$verified");
-        if (verified) {
-          try {
-            for (var states in productStates) {
-              int installmentPaid;
-              var totalPrice = states["productPrice"];
-              var productPrice =
-                  (states["productPrice"]) / states["orderQuantity"];
-              if (states["paymentMethod"] == "installment") {
-                installmentPaid = 1;
-              } else {
-                installmentPaid = 0;
+      try {
+        final response =
+            await monnify?.initializePayment(transaction: transactionDetails);
+        switch (response?.transactionStatus) {
+          case "PAID":
+            try {
+              for (var states in productStates) {
+                int installmentPaid;
+                var totalPrice = states["productPrice"];
+                var productPrice =
+                    (states["productPrice"]) / states["orderQuantity"];
+                if (states["paymentMethod"] == "installment") {
+                  installmentPaid = 1;
+                } else {
+                  installmentPaid = 0;
+                }
+                var result = await checkOutController.createOrder(
+                  deliveryAddress: widget.selectedAddress,
+                  installmentPaid: installmentPaid,
+                  totalPrice: totalPrice,
+                  paymentMethod: states["paymentMethod"],
+                  paymentPrice: states["installmentAmountPaid"],
+                  productID: states["productID"],
+                  transactionID: reference,
+                  vendorID: states["vendorID"],
+                  installmentNumber: states["numberOfInstallments"],
+                  orderQuantity: states["orderQuantity"].toString(),
+                  productPrice: productPrice.toString(),
+                  user: user,
+                );
+                if (result == 'success') {
+                  Get.to(
+                    () => const PaymentSuccessfulPage(),
+                  );
+                  checkOutController.checkoutList.clear();
+                }
               }
-              var result = await checkOutController.createOrder(
-                deliveryAddress: widget.selectedAddress,
-                installmentPaid: installmentPaid,
-                totalPrice: totalPrice,
-                paymentMethod: states["paymentMethod"],
-                paymentPrice: states["installmentAmountPaid"],
-                productID: states["productID"],
-                transactionID: response.reference,
-                vendorID: states["vendorID"],
-                installmentNumber: states["numberOfInstallments"],
-                orderQuantity: states["orderQuantity"].toString(),
-                productPrice: productPrice.toString(),
-                user: user,
-              );
-              if (result == 'success') {
-                Get.offNamedUntil("/orders", (route) => route.isFirst);
-                checkOutController.checkoutList.clear();
-              }
+            } catch (e) {
+              print("error: $e");
             }
-          } catch (e) {
-            print("error: $e");
-          }
-        } else {
-          showErrorDialog("An Error Occured in Payment");
+            break;
+
+          case "FAILED":
+            showErrorDialog("Payment Failed");
+            break;
+          case "CANCELLED":
+            showErrorDialog("Payment Cancelled");
+            break;
+          case null:
+            showErrorDialog("Payment Failed");
+            break;
+          default:
+            showErrorDialog("Payment Failed");
+            break;
         }
-      } else {
-        showErrorDialog("You Cancelled Your Payment");
+      } catch (e) {
+        // handle exceptions in here.
       }
     }
+
+    //initiate paystack payment for a list of products
+    // Future<void> initiatePaymentForProducts(
+    //   List<Map<String, dynamic>> productStates,
+    //   String email,
+    //   MyUser user,
+    // ) async {
+    //   Charge charge = Charge()
+    //     ..amount = (widget.payableAmount!.round()) * 100
+    //     ..reference = _getReference()
+    //     ..email = email;
+
+    //   CheckoutResponse response = await plugin.checkout(
+    //     context,
+    //     method: CheckoutMethod.card,
+    //     charge: charge,
+    //   );
+    //   if (response.status) {
+    //     bool verified = await checkOutController.verifyTransaction(
+    //         reference: response.reference!);
+    //     print(response);
+    //     print(response.reference);
+    //     print("verified:$verified");
+    //     if (verified) {
+    //       try {
+    //         for (var states in productStates) {
+    //           int installmentPaid;
+    //           var totalPrice = states["productPrice"];
+    //           var productPrice =
+    //               (states["productPrice"]) / states["orderQuantity"];
+    //           if (states["paymentMethod"] == "installment") {
+    //             installmentPaid = 1;
+    //           } else {
+    //             installmentPaid = 0;
+    //           }
+    //           var result = await checkOutController.createOrder(
+    //             deliveryAddress: widget.selectedAddress,
+    //             installmentPaid: installmentPaid,
+    //             totalPrice: totalPrice,
+    //             paymentMethod: states["paymentMethod"],
+    //             paymentPrice: states["installmentAmountPaid"],
+    //             productID: states["productID"],
+    //             transactionID: response.reference,
+    //             vendorID: states["vendorID"],
+    //             installmentNumber: states["numberOfInstallments"],
+    //             orderQuantity: states["orderQuantity"].toString(),
+    //             productPrice: productPrice.toString(),
+    //             user: user,
+    //           );
+    //           if (result == 'success') {
+    //             Get.offNamedUntil("/orders", (route) => route.isFirst);
+    //             checkOutController.checkoutList.clear();
+    //           }
+    //         }
+    //       } catch (e) {
+    //         print("error: $e");
+    //       }
+    //     } else {
+    //       showErrorDialog("An Error Occured in Payment");
+    //     }
+    //   } else {
+    //     showErrorDialog("You Cancelled Your Payment");
+    //   }
+    // }
 
     return PopScope(
       canPop: true,
@@ -310,7 +403,7 @@ class _CartCheckoutConfirmationPageState
                                         widget.products[index].optionName!
                                             .isNotEmpty,
                                 child: Container(
-                                  padding: EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
@@ -524,7 +617,7 @@ class _CartCheckoutConfirmationPageState
                         ),
                       ),
                       onPressed: () async {
-                        initiatePaymentForProducts(
+                        initatePaymentForProducts(
                             widget.productStates,
                             userController.userState.value!.email!,
                             userController.userState.value!);

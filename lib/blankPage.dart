@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:get/get.dart';
 
 class BlankPage extends StatelessWidget {
@@ -73,7 +74,7 @@ class BlankPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              pageIcon ?? Icon(Icons.cancel),
+              pageIcon ?? const Icon(Icons.cancel),
               const SizedBox(
                 height: 32,
               ),
@@ -102,7 +103,7 @@ class BlankPage extends StatelessWidget {
                         icon: interactionIcon!,
                         label: Text(
                           interactionText!,
-                          style: textStyle ?? TextStyle(),
+                          style: textStyle ?? const TextStyle(),
                         ),
                       ),
                     )

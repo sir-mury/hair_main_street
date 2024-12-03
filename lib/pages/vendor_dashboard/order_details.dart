@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,12 +8,11 @@ import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/orderModel.dart';
 import 'package:hair_main_street/models/productModel.dart';
 import 'package:hair_main_street/models/userModel.dart';
-import 'package:hair_main_street/pages/feed.dart';
 import 'package:hair_main_street/pages/messages.dart';
 import 'package:hair_main_street/pages/product_page.dart';
+import 'package:hair_main_street/widgets/loading.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class VendorOrderDetailsPage extends StatefulWidget {
   DatabaseOrderResponse? orderDetails;
@@ -36,6 +36,7 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
   @override
   void initState() {
     super.initState();
+    userController.getBuyerDetails(widget.orderDetails!.buyerId!);
     _loadSelectedStatus();
   }
 
@@ -51,7 +52,6 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    userController.getBuyerDetails(widget.orderDetails!.buyerId!);
     //MyUser? buyerDetails = userController.buyerDetails.value;
 
     DateTime resolveTimestampWithoutAdding(Timestamp timestamp) {
@@ -75,34 +75,32 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
       return formattedDate;
     }
 
+    String formatCurrency(String numberString) {
+      final number =
+          double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
+      final formattedNumber =
+          number.toStringAsFixed(2); // Format with 2 decimals
+
+      // Split the number into integer and decimal parts
+      final parts = formattedNumber.split('.');
+      final intPart = parts[0];
+      final decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
+
+      // Format the integer part with commas for every 3 digits
+      final formattedIntPart = intPart.replaceAllMapped(
+        RegExp(r'\d{1,3}(?=(\d{3})+(?!\d))'),
+        (match) => '${match.group(0)},',
+      );
+
+      // Combine the formatted integer and decimal parts
+      final formattedResult = formattedIntPart + decimalPart;
+
+      return formattedResult;
+    }
+
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
-    Gradient myGradient = const LinearGradient(
-      colors: [
-        Color.fromARGB(255, 255, 224, 139),
-        Color.fromARGB(255, 200, 242, 237)
-      ],
-      stops: [
-        0.05,
-        0.99,
-      ],
-      end: Alignment.topCenter,
-      begin: Alignment.bottomCenter,
-      //transform: GradientRotation(math.pi / 4),
-    );
-    Gradient appBarGradient = const LinearGradient(
-      colors: [
-        Color.fromARGB(255, 200, 242, 237),
-        Color.fromARGB(255, 255, 224, 139)
-      ],
-      stops: [
-        0.05,
-        0.99,
-      ],
-      end: Alignment.topCenter,
-      begin: Alignment.bottomCenter,
-      //transform: GradientRotation(math.pi / 4),
-    );
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -113,8 +111,9 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
         title: const Text(
           'Order Details',
           style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Lato',
             color: Colors.black,
           ),
         ),
@@ -124,389 +123,209 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
         // ),
         //backgroundColor: Colors.transparent,
       ),
-      body: Obx(() {
-        MyUser? buyerDetails = userController.buyerDetails.value;
-        return userController.buyerDetails.value == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : Container(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                //decoration: BoxDecoration(gradient: myGradient),
-                child: ListView(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            // padding: EdgeInsets.symmetric(
-                            //     horizontal: screenWidth * 0.24),
-                            backgroundColor: Colors.black,
-                            side:
-                                const BorderSide(color: Colors.white, width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            "Print",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: screenHeight * .006,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          width: 2,
-                          color: Colors.black,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF000000),
-                            blurStyle: BlurStyle.normal,
-                            offset: Offset.fromDirection(-4.0),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "User Info",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const Divider(
-                            color: Colors.black,
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text("Name: "),
-                              Expanded(child: Text("${buyerDetails?.fullname}"))
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text("Phone Number: "),
-                              Text("${buyerDetails?.phoneNumber}")
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text("Email: "),
-                              Expanded(child: Text("${buyerDetails?.email}"))
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text("Delivery Address: "),
-                              Expanded(
-                                child: Text(
-                                  "${buyerDetails?.address}",
-                                  maxLines: 3,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(
-                            height: 7,
-                            color: Colors.black,
-                          ),
-                          Center(
-                            child: TextButton(
-                              onPressed: () {
-                                Get.to(
-                                  () => MessagesPage(
-                                    senderID: widget.orderDetails!.vendorId,
-                                    receiverID: widget.orderDetails!.buyerId,
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                padding: const EdgeInsets.all(4),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: const BorderSide(
-                                    width: 1.5,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              child: const Text(
-                                "Contact Customer",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: screenHeight * .02,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          width: 2,
-                          color: Colors.black,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF000000),
-                            blurStyle: BlurStyle.normal,
-                            offset: Offset.fromDirection(-4.0),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Order Info",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const Divider(
-                            height: 7,
-                            color: Colors.black,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Order ID: ",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "${widget.orderDetails!.orderId}",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Order Date: ",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "${resolveTimestampWithoutAdding(widget.orderDetails!.createdAt)}",
-                                style: TextStyle(fontSize: 16),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Total Price: ",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "${widget.orderDetails!.paymentPrice}",
-                                style: TextStyle(fontSize: 16),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Quantity: ",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "x${widget.orderDetails!.orderItem!.first.quantity}",
-                                style: TextStyle(fontSize: 16),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Payment Method: ",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "${widget.orderDetails!.paymentMethod}",
-                                style: TextStyle(fontSize: 16),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Payment Status: ",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "${widget.orderDetails!.paymentStatus}",
-                                style: TextStyle(fontSize: 16),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Visibility(
-                            visible:
-                                widget.orderDetails!.orderStatus == "expired",
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    "Order Status: ",
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    widget.orderDetails!.orderStatus!,
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Visibility(
-                            visible: widget.orderDetails!.paymentPrice ==
-                                widget.orderDetails!.totalPrice,
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    "Order Status: ",
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                                dropDownValue == "confirmed" ||
-                                        dropDownValue == "expired" ||
-                                        dropDownValue == "cancelled"
-                                    ? Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          dropDownValue!.capitalizeFirst!,
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                      )
-                                    : Expanded(
-                                        child: DropdownButton(
-                                          isExpanded: true,
-                                          //hint: Text("Hello"),
-                                          //style: TextStyle(color: Colors.black),
-                                          value: dropDownValue,
-                                          items: [
-                                            "created",
-                                            "not delivered",
-                                            "delivered"
-                                          ].map<DropdownMenuItem<String>>(
-                                              (String value) {
-                                            return DropdownMenuItem<String>(
-                                              value: value,
-                                              child: Text(value),
-                                              onTap: () async =>
-                                                  await checkOutController
-                                                      .updateOrderStatus(
-                                                          widget.orderDetails!
-                                                              .orderId!,
-                                                          value),
-                                            );
-                                          }).toList(),
-                                          onChanged: (val) {
-                                            _saveSelectedStatus(val as String);
-                                            setState(() {
-                                              if (val != null) {
-                                                dropDownValue = val as String;
-                                                print(dropDownValue);
-                                              }
-                                            });
-                                            // _loadSelectedStatus();
-                                          },
-                                        ),
-                                      ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: screenHeight * .02,
-                    ),
-                    Visibility(
-                      visible: widget.orderDetails!.paymentPrice !=
-                          widget.orderDetails!.totalPrice,
-                      child: Container(
+      body: SafeArea(
+        child: Obx(() {
+          MyUser? buyerDetails = userController.buyerDetails.value;
+          return userController.buyerDetails.value == null
+              ? const LoadingWidget()
+              : Container(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                  //decoration: BoxDecoration(gradient: myGradient),
+                  child: ListView(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    children: [
+                      //   Row(
+                      //     mainAxisAlignment: MainAxisAlignment.end,
+                      //     children: [
+                      //       TextButton(
+                      //         onPressed: () {},
+                      //         style: TextButton.styleFrom(
+                      //           // padding: EdgeInsets.symmetric(
+                      //           //     horizontal: screenWidth * 0.24),
+                      //           backgroundColor: Colors.black,
+                      //           side:
+                      //               const BorderSide(color: Colors.white, width: 2),
+                      //           shape: RoundedRectangleBorder(
+                      //             borderRadius: BorderRadius.circular(12),
+                      //           ),
+                      //         ),
+                      //         child: const Text(
+                      //           "Print",
+                      //           textAlign: TextAlign.center,
+                      //           style: TextStyle(color: Colors.white, fontSize: 20),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      //  const SizedBox(
+                      //     height: 8,
+                      //   ),
+                      Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 8, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            width: 2,
-                            color: Color(0xFF392F5A),
+                            width: 1,
+                            color: Colors.black,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF000000),
-                              blurStyle: BlurStyle.normal,
-                              offset: Offset.fromDirection(-4.0),
-                              blurRadius: 2,
+                              blurRadius: 1,
+                              spreadRadius: 0,
+                              color: const Color(0xFF673AB7).withOpacity(0.10),
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Product Info",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "Lato",
+                              ),
+                            ),
+                            const Divider(
+                              height: 4,
+                              color: Colors.black,
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Get.to(
+                                  () => ProductPage(
+                                    id: widget.product!.productID,
+                                  ),
+                                  transition: Transition.fadeIn,
+                                );
+                                //debugPrint("Clicked");
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                      child: CachedNetworkImage(
+                                        height: 154,
+                                        width: 154,
+                                        fit: BoxFit.cover,
+                                        imageUrl: widget.product?.image
+                                                    ?.isNotEmpty ==
+                                                true
+                                            ? widget.product!.image!.first
+                                            : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+                                        errorWidget: ((context, url, error) =>
+                                            const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child:
+                                                  Text("Failed to Load Image"),
+                                            )),
+                                        imageBuilder:
+                                            (context, imageProvider) =>
+                                                Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.rectangle,
+                                            image: DecorationImage(
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        placeholder: ((context, url) =>
+                                            const SizedBox(
+                                              width: double.infinity,
+                                              height: 154,
+                                              child: Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            )),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${widget.product!.name}",
+                                            maxLines: 2,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontFamily: "Raleway",
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          Text(
+                                            "NGN${formatCurrency(widget.product!.price.toString())}",
+                                            style: const TextStyle(
+                                              color: Color(0xFF673AB7),
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              fontFamily: "Lato",
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text("Qty Available"),
+                                              // const SizedBox(
+                                              //   width: 30,
+                                              // ),
+                                              Text(
+                                                  "x ${widget.product!.quantity}")
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            width: 1,
+                            color: Colors.black,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 1,
+                              spreadRadius: 0,
+                              color: const Color(0xFF673AB7).withOpacity(0.10),
+                              offset: const Offset(0, 1),
                             ),
                           ],
                         ),
@@ -514,222 +333,495 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Remaining Payment",
+                              "Customer Info",
                               style: TextStyle(
                                 fontSize: 20,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "Lato",
                               ),
                             ),
                             const Divider(
-                              height: 7,
                               color: Colors.black,
-                            ),
-                            const SizedBox(
                               height: 4,
                             ),
                             Row(
                               children: [
-                                const Text(
-                                  "Amount Remaining: ",
+                                const Text("Name: "),
+                                Expanded(
+                                    child: Text("${buyerDetails?.fullname}"))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text("Phone Number: "),
+                                Text("${buyerDetails?.phoneNumber}")
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text("Email: "),
+                                Expanded(
+                                  child: Text(
+                                      buyerDetails!.email ?? 'Not Available'),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Delivery Address: "),
+                                buyerDetails.address != null
+                                    ? Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "${buyerDetails.address!.landmark ?? ""},${buyerDetails.address!.streetAddress},${buyerDetails.address!.lGA},${buyerDetails.address!.state}.${buyerDetails.address!.zipCode ?? ""}",
+                                            ),
+                                            Text(
+                                              "${buyerDetails.address!.contactName ?? ""},${buyerDetails.address!.contactPhoneNumber},",
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : const Text("Not Available")
+                              ],
+                            ),
+                            const Divider(
+                              height: 4,
+                              color: Colors.black,
+                            ),
+                            Center(
+                              child: TextButton(
+                                onPressed: () {
+                                  Get.to(
+                                    () => MessagesPage(
+                                      participant1:
+                                          widget.orderDetails!.vendorId,
+                                      participant2:
+                                          widget.orderDetails!.buyerId,
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF673AB7),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 2, horizontal: 18),
+                                ),
+                                child: const Text(
+                                  "Contact Customer",
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontSize: 18,
                                   ),
                                 ),
-                                Text(
-                                    "₦${widget.orderDetails!.totalPrice! - widget.orderDetails!.paymentPrice!.toInt()}")
-                              ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            width: 1,
+                            color: Colors.black,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 1,
+                              spreadRadius: 0,
+                              color: const Color(0xFF673AB7).withOpacity(0.10),
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Order Info",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "Lato",
+                              ),
+                            ),
+                            const Divider(
+                              height: 4,
+                              color: Colors.black,
                             ),
                             Row(
                               children: [
                                 const Text(
-                                  "Installments Paid: ",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                  ),
+                                  "Order ID: ",
+                                  style: TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  "${widget.orderDetails!.installmentPaid} out of ${widget.orderDetails!.installmentNumber}",
+                                  "${widget.orderDetails!.orderId}",
                                   style: const TextStyle(
                                     fontSize: 16,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 )
                               ],
                             ),
                             const SizedBox(
-                              height: 4,
+                              height: 8,
                             ),
-                            // Visibility(
-                            //   visible: widget.orderDetails!.paymentPrice ==
-                            //       widget.orderDetails!.totalPrice,
-                            //   child: Center(
-                            //     child: GetX<CheckOutController>(
-                            //       builder: (_) {
-                            //         return DropdownButton(
-                            //           value: dropDownValue,
-                            //           items: dropDownItems.map((item) {
-                            //             return DropdownMenuItem(
-                            //               value: item,
-                            //               child: Text("$item"),
-                            //             );
-                            //           }).toList(),
-                            //           onChanged: (val) {
-                            //             dropDownValue = val as String;
-                            //             print(dropDownValue);
-                            //           },
-                            //         );
-                            //       },
-                            //     ),
-                            //   ),
-                            // ),
-
-                            // Divider(
-                            //   height: 7,
-                            //   color: Colors.black,
-                            // ),
-                            // Center(
-                            //   child: TextButton(
-                            //     onPressed: () {
-                            //       Get.to(() => MessagesPage());
-                            //     },
-                            //     style: TextButton.styleFrom(
-                            //       backgroundColor: Color(0xFF392F5A),
-                            //       padding: EdgeInsets.all(4),
-                            //       shape: RoundedRectangleBorder(
-                            //         borderRadius: BorderRadius.circular(12),
-                            //         side: const BorderSide(
-                            //           width: 1.5,
-                            //           color: Colors.black,
-                            //         ),
-                            //       ),
-                            //     ),
-                            //     child: Text(
-                            //       "Pay Amount",
-                            //       style: TextStyle(
-                            //         color: Colors.white,
-                            //         fontSize: 20,
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: screenHeight * .02,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          width: 2,
-                          color: Colors.black,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF000000),
-                            blurStyle: BlurStyle.normal,
-                            offset: Offset.fromDirection(-4.0),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Product Info",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const Divider(
-                            height: 8,
-                            color: Colors.black,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Get.to(
-                                () => ProductPage(
-                                  id: widget.product!.productID,
+                            Row(
+                              children: [
+                                const Text(
+                                  "Order Date: ",
+                                  style: TextStyle(fontSize: 16),
                                 ),
-                                transition: Transition.fadeIn,
-                              );
-                              //debugPrint("Clicked");
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black45,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    width: screenWidth * 0.32,
-                                    height: screenHeight * 0.16,
+                                Text(
+                                  "${resolveTimestampWithoutAdding(widget.orderDetails!.createdAt)}",
+                                  style: const TextStyle(fontSize: 16),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Total Price: ",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "NGN ${formatCurrency(widget.orderDetails!.paymentPrice.toString())}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF673AB7),
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  const SizedBox(
-                                    width: 12,
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Qty Ordered: ",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "x${widget.orderDetails!.orderItem!.first.quantity}",
+                                  style: const TextStyle(fontSize: 16),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Payment Method: ",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "${widget.orderDetails!.paymentMethod}",
+                                  style: const TextStyle(fontSize: 16),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Payment Status: ",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "${widget.orderDetails!.paymentStatus}",
+                                  style: const TextStyle(fontSize: 16),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Visibility(
+                              visible:
+                                  widget.orderDetails!.orderStatus == "expired",
+                              child: Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      "Order Status: ",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                   Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "${widget.product!.name}",
-                                          maxLines: 4,
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text("₦${widget.product!.price}"),
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text("Quantity Available"),
-                                            const SizedBox(
-                                              width: 30,
-                                            ),
-                                            Text(
-                                                "x ${widget.product!.quantity}")
-                                          ],
-                                        ),
-                                      ],
+                                    flex: 2,
+                                    child: Text(
+                                      widget.orderDetails!.orderStatus!,
+                                      style: const TextStyle(fontSize: 16),
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Visibility(
+                              visible: widget.orderDetails!.orderItem!.first
+                                      .optionName !=
+                                  null,
+                              child: Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      "Option Ordered: ",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      widget.orderDetails!.orderItem!.first
+                                              .optionName ??
+                                          "",
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Visibility(
+                              visible: widget.orderDetails!.paymentPrice ==
+                                  widget.orderDetails!.totalPrice,
+                              child: Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      "Order Status: ",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  dropDownValue == "confirmed" ||
+                                          dropDownValue == "expired" ||
+                                          dropDownValue == "cancelled"
+                                      ? Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            dropDownValue!.capitalizeFirst!,
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                          ),
+                                        )
+                                      : Expanded(
+                                          child: DropdownButton(
+                                            isExpanded: true,
+                                            //hint: Text("Hello"),
+                                            //style: TextStyle(color: Colors.black),
+                                            value: dropDownValue,
+                                            items: [
+                                              "created",
+                                              "not delivered",
+                                              "delivered"
+                                            ].map<DropdownMenuItem<String>>(
+                                                (String value) {
+                                              return DropdownMenuItem<String>(
+                                                value: value,
+                                                child: Text(value),
+                                                onTap: () async =>
+                                                    await checkOutController
+                                                        .updateOrderStatus(
+                                                            widget.orderDetails!
+                                                                .orderId!,
+                                                            value),
+                                              );
+                                            }).toList(),
+                                            onChanged: (val) {
+                                              _saveSelectedStatus(
+                                                  val as String);
+                                              setState(() {
+                                                dropDownValue = val;
+                                                print(dropDownValue);
+                                              });
+                                              // _loadSelectedStatus();
+                                            },
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: screenHeight * .02,
-                    ),
-                  ],
-                ),
-              );
-      }),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Visibility(
+                        visible: widget.orderDetails!.paymentPrice !=
+                            widget.orderDetails!.totalPrice,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              width: 1,
+                              color: Colors.black,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 1,
+                                spreadRadius: 0,
+                                color:
+                                    const Color(0xFF673AB7).withOpacity(0.10),
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Remaining Payment",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: "Lato",
+                                ),
+                              ),
+                              const Divider(
+                                height: 4,
+                                color: Colors.black,
+                              ),
+                              const SizedBox(
+                                height: 4,
+                              ),
+                              Row(
+                                children: [
+                                  const Text(
+                                    "Amount Remaining: ",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    "NGN${formatCurrency((widget.orderDetails!.totalPrice! - widget.orderDetails!.paymentPrice!.toInt()).toString())}",
+                                    style: const TextStyle(
+                                      color: Color(0xFF673AB7),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  const Text(
+                                    "Installments Paid: ",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    "${widget.orderDetails!.installmentPaid} out of ${widget.orderDetails!.installmentNumber}",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 4,
+                              ),
+                              // Visibility(
+                              //   visible: widget.orderDetails!.paymentPrice ==
+                              //       widget.orderDetails!.totalPrice,
+                              //   child: Center(
+                              //     child: GetX<CheckOutController>(
+                              //       builder: (_) {
+                              //         return DropdownButton(
+                              //           value: dropDownValue,
+                              //           items: dropDownItems.map((item) {
+                              //             return DropdownMenuItem(
+                              //               value: item,
+                              //               child: Text("$item"),
+                              //             );
+                              //           }).toList(),
+                              //           onChanged: (val) {
+                              //             dropDownValue = val as String;
+                              //             print(dropDownValue);
+                              //           },
+                              //         );
+                              //       },
+                              //     ),
+                              //   ),
+                              // ),
+
+                              // Divider(
+                              //   height: 7,
+                              //   color: Colors.black,
+                              // ),
+                              // Center(
+                              //   child: TextButton(
+                              //     onPressed: () {
+                              //       Get.to(() => MessagesPage());
+                              //     },
+                              //     style: TextButton.styleFrom(
+                              //       backgroundColor: Color(0xFF392F5A),
+                              //       padding: EdgeInsets.all(4),
+                              //       shape: RoundedRectangleBorder(
+                              //         borderRadius: BorderRadius.circular(12),
+                              //         side: const BorderSide(
+                              //           width: 1.5,
+                              //           color: Colors.black,
+                              //         ),
+                              //       ),
+                              //     ),
+                              //     child: Text(
+                              //       "Pay Amount",
+                              //       style: TextStyle(
+                              //         color: Colors.white,
+                              //         fontSize: 20,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+        }),
+      ),
     );
   }
 }

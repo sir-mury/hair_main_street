@@ -1,13 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/controllers/vendorController.dart';
 import 'package:hair_main_street/controllers/walletController.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/withdrawal_Page.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/withdrawal_requests.dart';
-import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/mingcute.dart';
@@ -57,7 +54,7 @@ class _WalletPageState extends State<WalletPage> {
       return formattedResult;
     }
 
-    void _showBottomSheet(BuildContext context) {
+    void showBottomSheet(BuildContext context) {
       showModalBottomSheet<void>(
         context: context,
         shape: RoundedRectangleBorder(
@@ -162,11 +159,11 @@ class _WalletPageState extends State<WalletPage> {
               ),
               centerTitle: true,
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(260),
+                preferredSize: const Size.fromHeight(260),
                 child: Container(
                   //height: 1000,
                   color: Colors.white,
-                  padding: EdgeInsets.fromLTRB(12, 12, 12, 5),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -212,7 +209,7 @@ class _WalletPageState extends State<WalletPage> {
                             ),
                             Container(
                               height: 100,
-                              margin: EdgeInsets.symmetric(horizontal: 8),
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
                               width: 1,
                               color: Colors.black.withOpacity(0.75),
                             ),
@@ -257,7 +254,7 @@ class _WalletPageState extends State<WalletPage> {
                                 elevation: 0,
                                 // backgroundColor: Colors.white,
                                 backgroundColor:
-                                    Color(0xFF673AB7).withOpacity(0.10),
+                                    const Color(0xFF673AB7).withOpacity(0.10),
                                 padding: const EdgeInsets.all(6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5),
@@ -268,7 +265,7 @@ class _WalletPageState extends State<WalletPage> {
                                 ),
                               ),
                               onPressed: () {
-                                Get.to(() => WithdrawalPage());
+                                Get.to(() => const WithdrawalPage());
                               },
                               child: const Row(
                                 mainAxisAlignment:
@@ -317,7 +314,7 @@ class _WalletPageState extends State<WalletPage> {
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           // backgroundColor: Colors.white,
-                          backgroundColor: Color(0xFF673AB7).withOpacity(0.10),
+                          backgroundColor: const Color(0xFF673AB7).withOpacity(0.10),
                           padding: const EdgeInsets.all(6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
@@ -429,7 +426,7 @@ class _WalletPageState extends State<WalletPage> {
                           else
                             ListView.builder(
                               shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               itemCount: walletController
                                   .filteredTransactionMap.length,
                               itemBuilder: (context, index1) => Column(

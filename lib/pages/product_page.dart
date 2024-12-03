@@ -23,8 +23,8 @@ import 'package:hair_main_street/pages/orders_stuff/installment_checkout.dart';
 import 'package:hair_main_street/pages/orders_stuff/once_checkout.dart';
 import 'package:hair_main_street/pages/review_page.dart';
 import 'package:hair_main_street/services/database.dart';
-import 'package:hair_main_street/widgets/bottom_sheet.dart';
 import 'package:hair_main_street/widgets/cards.dart';
+import 'package:hair_main_street/widgets/loading.dart';
 import 'package:like_button/like_button.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
@@ -55,6 +55,19 @@ class _ProductPageState extends State<ProductPage> {
   List<bool>? optionToggleSelection = [false];
   Product? product;
   ProductOption? selectedOptionHere;
+
+  //function to determine number of products to show in the see also panel
+  int numberOfProductsToShow(int length) {
+    return length > 6 ? 6 : length;
+  }
+
+  // function to filter the list of products to show in the see also panel and then show them
+  List<Product?> getSeeAlsoProducts(List<Product?> products) {
+    // print("running this see also product function");
+    return products
+        .where((product) => product!.productID != widget.id)
+        .toList();
+  }
 
   void onOptionSelected(ProductOption selectedOption) {
     setState(() {
@@ -95,6 +108,9 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     //productController.getReviews(widget.id!);
+    productController.seeAlsoProducts.value = getSeeAlsoProducts(
+        productController.productMap[product!.category?.titleCase ?? "All"] ??
+            []);
 
     showPaymentDialog() {
       return Get.dialog(
@@ -158,7 +174,7 @@ class _ProductPageState extends State<ProductPage> {
                 color: Colors.grey,
                 thickness: 1,
               ),
-              GestureDetector(
+              InkWell(
                 child: const SizedBox(
                   width: double.infinity,
                   child: Padding(
@@ -177,6 +193,7 @@ class _ProductPageState extends State<ProductPage> {
                 ),
                 onTap: () {
                   if (userController.userState.value == null) {
+                    Get.close(1);
                     Get.to(() => BlankPage(
                           textStyle: const TextStyle(
                             color: Colors.white,
@@ -185,10 +202,10 @@ class _ProductPageState extends State<ProductPage> {
                           buttonStyle: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF673AB7),
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 1.2,
-                                color: Colors.black,
-                              ),
+                              // side: const BorderSide(
+                              //   width: 1.2,
+                              //   color: Colors.black,
+                              // ),
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
@@ -197,14 +214,14 @@ class _ProductPageState extends State<ProductPage> {
                             size: 48,
                           ),
                           text: "Your are not Logged In",
-                          interactionText: "Register or Sign In",
+                          interactionText: "Sign In or Register",
                           interactionIcon: const Icon(
                             Icons.person_2_outlined,
                             size: 24,
                             color: Colors.white,
                           ),
                           interactionFunction: () =>
-                              Get.to(() => SignInUpPage()),
+                              Get.to(() => const SignIn()),
                         ));
                   } else if (product!.hasOptions == true) {
                     if (selectedOptionHere == null) {
@@ -220,6 +237,7 @@ class _ProductPageState extends State<ProductPage> {
                         optionName:
                             "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
                       );
+                      Get.close(1);
                       Get.to(
                         () => InstallmentCheckoutPage(
                           products: [val],
@@ -252,6 +270,7 @@ class _ProductPageState extends State<ProductPage> {
               InkWell(
                 onTap: () {
                   if (userController.userState.value == null) {
+                    Get.close(1);
                     Get.to(() => BlankPage(
                           textStyle: const TextStyle(
                             color: Colors.white,
@@ -260,10 +279,10 @@ class _ProductPageState extends State<ProductPage> {
                           buttonStyle: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF673AB7),
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 1.2,
-                                color: Colors.black,
-                              ),
+                              // side: const BorderSide(
+                              //   width: 1.2,
+                              //   color: Colors.black,
+                              // ),
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
@@ -272,14 +291,14 @@ class _ProductPageState extends State<ProductPage> {
                             size: 48,
                           ),
                           text: "Your are not Logged In",
-                          interactionText: "Register or Sign In",
+                          interactionText: "Sign In or Register",
                           interactionIcon: const Icon(
                             Icons.person_2_outlined,
                             size: 24,
                             color: Colors.white,
                           ),
                           interactionFunction: () =>
-                              Get.to(() => SignInUpPage()),
+                              Get.to(() => const SignIn()),
                         ));
                   } else if (product!.hasOptions == true) {
                     if (selectedOptionHere == null) {
@@ -295,6 +314,7 @@ class _ProductPageState extends State<ProductPage> {
                         optionName:
                             "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
                       );
+                      Get.close(1);
                       Get.to(() => OnceCheckoutPage(
                             products: [val],
                           ));
@@ -307,8 +327,6 @@ class _ProductPageState extends State<ProductPage> {
                           (productController.quantity.value),
                       userController.userState.value!,
                     );
-
-                    print(checkOutController.checkOutItem.value.price);
                     Get.close(1);
                     Get.to(
                       () => OnceCheckoutPage(
@@ -409,7 +427,7 @@ class _ProductPageState extends State<ProductPage> {
                         borderRadius: BorderRadius.circular(20)),
                     height: 5,
                     width: 30,
-                    margin: EdgeInsets.symmetric(vertical: 8.0),
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
                   ),
                 ),
                 const Text(
@@ -470,11 +488,12 @@ class _ProductPageState extends State<ProductPage> {
 
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
+    num pictureHeight = 390;
 
-    CarouselController carouselController = CarouselController();
+    CarouselSliderController carouselController = CarouselSliderController();
     return PopScope(
       canPop: true,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, result) async {
         if (didPop) {
           productController.isOptionVisible.value = false;
           productController.quantity.value = 1;
@@ -738,7 +757,7 @@ class _ProductPageState extends State<ProductPage> {
                                 imageBuilder: (context, imageProvider) =>
                                     Container(
                                   width: double.infinity,
-                                  height: screenHeight * 0.40,
+                                  height: pictureHeight.toDouble(),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.rectangle,
                                     image: DecorationImage(
@@ -761,7 +780,7 @@ class _ProductPageState extends State<ProductPage> {
                                 child: Container(
                                   width: 40,
                                   height: 30,
-                                  padding: EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
@@ -789,18 +808,25 @@ class _ProductPageState extends State<ProductPage> {
                                           onTap: (isTapped) async {
                                             // Only proceed if the user is logged in
                                             if (isUserLoggedIn) {
-                                              if (isLiked) {
-                                                await wishListController
-                                                    .removeFromWishlistWithProductID(
-                                                        widget.id!);
+                                              if (userController
+                                                      .userState.value!.uid ==
+                                                  product!.vendorId) {
+                                                wishListController.showMyToast(
+                                                    "Cannot add your own product to wishlist");
                                               } else {
-                                                WishlistItem wishlistItem =
-                                                    WishlistItem(
-                                                        wishListItemID:
-                                                            widget.id!);
-                                                await wishListController
-                                                    .addToWishlist(
-                                                        wishlistItem);
+                                                if (isLiked) {
+                                                  await wishListController
+                                                      .removeFromWishlistWithProductID(
+                                                          widget.id!);
+                                                } else {
+                                                  WishlistItem wishlistItem =
+                                                      WishlistItem(
+                                                          wishListItemID:
+                                                              widget.id!);
+                                                  await wishListController
+                                                      .addToWishlist(
+                                                          wishlistItem);
+                                                }
                                               }
                                             }
                                             return isUserLoggedIn
@@ -845,7 +871,7 @@ class _ProductPageState extends State<ProductPage> {
                                 imageBuilder: (context, imageProvider) =>
                                     Container(
                                   width: double.infinity,
-                                  height: screenHeight * 0.40,
+                                  height: pictureHeight.toDouble(),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.rectangle,
                                     image: DecorationImage(
@@ -867,7 +893,7 @@ class _ProductPageState extends State<ProductPage> {
                                 child: Container(
                                   width: 40,
                                   height: 30,
-                                  padding: EdgeInsets.all(4),
+                                  padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.7),
                                     borderRadius: BorderRadius.circular(16),
@@ -890,7 +916,7 @@ class _ProductPageState extends State<ProductPage> {
                                 child: Container(
                                   width: 40,
                                   height: 30,
-                                  padding: EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.7),
                                     borderRadius: BorderRadius.circular(16),
@@ -975,7 +1001,7 @@ class _ProductPageState extends State<ProductPage> {
                                             (context, imageProvider) =>
                                                 Container(
                                           width: double.infinity,
-                                          height: screenHeight * 0.40,
+                                          height: pictureHeight.toDouble(),
                                           decoration: BoxDecoration(
                                             shape: BoxShape.rectangle,
                                             image: DecorationImage(
@@ -999,7 +1025,7 @@ class _ProductPageState extends State<ProductPage> {
                                         child: Container(
                                           width: 40,
                                           height: 30,
-                                          padding: EdgeInsets.all(4),
+                                          padding: const EdgeInsets.all(4),
                                           decoration: BoxDecoration(
                                             color:
                                                 Colors.white.withOpacity(0.7),
@@ -1024,14 +1050,14 @@ class _ProductPageState extends State<ProductPage> {
                                 ),
                                 carouselController: carouselController,
                                 options: CarouselOptions(
-                                  enlargeFactor: 0.1,
-                                  height: screenHeight * 0.40,
+                                  enlargeFactor: 0.08,
+                                  height: pictureHeight.toDouble(),
                                   autoPlay: true,
                                   pauseAutoPlayOnManualNavigate: true,
                                   enlargeCenterPage: true,
-                                  viewportFraction: 0.9,
+                                  viewportFraction: 0.95,
                                   autoPlayInterval:
-                                      const Duration(milliseconds: 2000),
+                                      const Duration(milliseconds: 1900),
                                 ),
                               ),
                               Positioned(
@@ -1040,7 +1066,7 @@ class _ProductPageState extends State<ProductPage> {
                                 child: Container(
                                   width: 40,
                                   height: 30,
-                                  padding: EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.7),
                                     borderRadius: BorderRadius.circular(16),
@@ -1185,7 +1211,7 @@ class _ProductPageState extends State<ProductPage> {
                                 vertical: 10, horizontal: 10),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              color: Color(0xFFF5F5F5),
+                              color: const Color(0xFFF5F5F5),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1518,7 +1544,7 @@ class _ProductPageState extends State<ProductPage> {
                                       children: [
                                         SvgPicture.asset(
                                           'assets/Icons/shop.svg',
-                                          color: Color(0xFF673AB7),
+                                          color: const Color(0xFF673AB7),
                                           height: 18,
                                           width: 18,
                                         ),
@@ -1591,21 +1617,20 @@ class _ProductPageState extends State<ProductPage> {
                                   } else {
                                     Get.to(
                                       () => MessagesPage(
-                                        senderID:
+                                        participant1:
                                             userController.userState.value!.uid,
-                                        receiverID: product!.vendorId,
+                                        participant2: product!.vendorId,
                                       ),
                                     );
                                   }
                                 },
-                                style: TextButton.styleFrom(
-                                  backgroundColor:
-                                      Colors.black.withOpacity(0.70),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF673AB7),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(50),
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 8),
+                                      vertical: 2, horizontal: 18),
                                 ),
                                 child: const Text(
                                   "Message",
@@ -1681,7 +1706,7 @@ class _ProductPageState extends State<ProductPage> {
                                           .cast<Review>()));
                                     },
                                     icon: const Icon(
-                                      Icons.arrow_forward_rounded,
+                                      Icons.arrow_forward_ios_rounded,
                                       size: 20,
                                       color: Colors.black,
                                     ),
@@ -1706,18 +1731,49 @@ class _ProductPageState extends State<ProductPage> {
                             ),
                           ),
                         ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        const Text(
+                          "See Also",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Divider(
+                          height: 1.5,
+                          thickness: 1.5,
+                          color: Colors.black.withOpacity(0.50),
+                        ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 2,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              ...List.generate(
+                                  numberOfProductsToShow(
+                                    productController.seeAlsoProducts.length,
+                                  ), (index) {
+                                return SeeAlsoCard(
+                                  index: index,
+                                );
+                              }),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   );
                 } else {
-                  return const SizedBox(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.black,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  );
+                  return const LoadingWidget();
                 }
               }),
         ),
@@ -1811,10 +1867,10 @@ class _ProductPageState extends State<ProductPage> {
                                   buttonStyle: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF673AB7),
                                     shape: RoundedRectangleBorder(
-                                      side: const BorderSide(
-                                        width: 1.2,
-                                        color: Colors.black,
-                                      ),
+                                      // side: const BorderSide(
+                                      //   width: 1.2,
+                                      //   color: Colors.black,
+                                      // ),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
@@ -1823,30 +1879,38 @@ class _ProductPageState extends State<ProductPage> {
                                     size: 48,
                                   ),
                                   text: "Your are not Logged In",
-                                  interactionText: "Register or Sign In",
+                                  interactionText: "Sign In or Register",
                                   interactionIcon: const Icon(
                                     Icons.person_2_outlined,
                                     size: 24,
                                     color: Colors.white,
                                   ),
                                   interactionFunction: () =>
-                                      Get.to(() => SignInUpPage()),
+                                      Get.to(() => const SignIn()),
                                 ));
                           } else if (product!.hasOptions == false) {
-                            print("run 1");
-                            cartController.addToCart(
-                              CartItem(
-                                price: product!.price! *
-                                    (productController.quantity.value),
-                                quantity: productController.quantity.value,
-                                productID: product!.productID,
-                              ),
-                            );
+                            if (userController.userState.value!.uid ==
+                                product!.vendorId) {
+                              productController.showMyToast(
+                                  "Cannot add your own product to cart");
+                            } else {
+                              cartController.addToCart(
+                                CartItem(
+                                  price: product!.price! *
+                                      (productController.quantity.value),
+                                  quantity: productController.quantity.value,
+                                  productID: product!.productID,
+                                ),
+                              );
+                            }
                           } else {
-                            print("run 2");
                             if (selectedOptionHere == null) {
                               productController.showMyToast(
                                   "Please Select a product Option First");
+                            } else if (userController.userState.value!.uid ==
+                                product!.vendorId) {
+                              productController.showMyToast(
+                                  "Cannot add your own product to cart");
                             } else {
                               cartController.addToCart(
                                 CartItem(
@@ -1901,7 +1965,14 @@ class _ProductPageState extends State<ProductPage> {
                           ),
                         ),
                         onPressed: () {
-                          showPaymentDialog();
+                          if (isUserLoggedIn &&
+                              userController.userState.value!.uid ==
+                                  product!.vendorId) {
+                            productController.showMyToast(
+                                "Cannot place order for your own products");
+                          } else {
+                            showPaymentDialog();
+                          }
                         },
                         child: const Text(
                           "Buy",

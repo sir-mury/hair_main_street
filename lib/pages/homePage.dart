@@ -1,6 +1,7 @@
 //import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/cartController.dart';
 import 'package:hair_main_street/controllers/notificationController.dart';
@@ -12,8 +13,7 @@ import 'package:hair_main_street/controllers/vendorController.dart';
 import 'package:hair_main_street/pages/cart.dart';
 import 'package:hair_main_street/pages/menu.dart';
 import 'package:hair_main_street/pages/new_feed.dart';
-import 'package:hair_main_street/pages/notifcation.dart';
-import 'package:iconify_flutter_plus/icons/ion.dart';
+import 'package:hair_main_street/pages/vendors.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/teenyicons.dart';
 import 'package:iconify_flutter_plus/icons/material_symbols.dart';
@@ -39,12 +39,12 @@ class _HomePageState extends State<HomePage> {
 
   //var anotherController = Get.put(VendorController());
   List<Widget> tabs = [
-    NewFeedPage(),
-    NotificationsPage(),
-    CartPage(),
-    MenuPage()
+    const NewFeedPage(),
+    // const VendorsPage(),
+    const CartPage(),
+    const MenuPageSubstitute()
   ];
-  var _selectedTab = 0;
+  //final _selectedTab = 0;
 
   CartController cartController = Get.put(CartController());
   CheckOutController checkOutController = Get.put(CheckOutController());
@@ -136,30 +136,48 @@ class _HomePageState extends State<HomePage> {
                   child: NavigationDestination(
                     icon: Iconify(
                       Teenyicons.home_alt_outline,
-                      size: 20,
+                      size: 24,
                       // color: Color(0xFF673AB7),
                     ),
                     label: "Home",
                     selectedIcon: Iconify(
                       Teenyicons.home_alt_solid,
                       color: Color(0xFF673AB7),
-                      size: 20,
+                      size: 24,
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: NavigationDestination(
-                  icon: Iconify(Ion.md_notifications_outline),
-                  label: "Notifications",
-                  selectedIcon: Iconify(
-                    Ion.md_notifications,
-                    color: Color(0xFF673AB7),
-                  ),
-                ),
-              ),
-              Padding(
+              // const Padding(
+              //   padding: EdgeInsets.symmetric(vertical: 8.0),
+              //   child: NavigationDestination(
+              //     icon: Iconify(Ion.md_notifications_outline),
+              //     label: "Notifications",
+              //     selectedIcon: Iconify(
+              //       Ion.md_notifications,
+              //       color: Color(0xFF673AB7),
+              //     ),
+              //   ),
+              // ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+              //   child: NavigationDestination(
+              //     icon: SvgPicture.asset(
+              //       'assets/Icons/shop.svg',
+              //       color: Colors.black,
+              //       height: 24,
+              //       width: 24,
+              //     ),
+              //     label: "Vendors",
+              //     selectedIcon: SvgPicture.asset(
+              //       'assets/Icons/shop.svg',
+              //       color: const Color(0xFF673AB7),
+              //       height: 24,
+              //       width: 24,
+              //     ),
+              //   ),
+              // ),
+              const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: NavigationDestination(
                   icon: Iconify(MaterialSymbols.shopping_cart_outline_rounded),
@@ -170,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              Padding(
+              const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: NavigationDestination(
                   icon: Iconify(Ci.user),

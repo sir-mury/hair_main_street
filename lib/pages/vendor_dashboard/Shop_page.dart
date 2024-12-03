@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hair_main_street/blankPage.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/controllers/vendorController.dart';
-import 'package:hair_main_street/models/productModel.dart';
-import 'package:hair_main_street/pages/vendor_dashboard/add_product.dart';
-import 'package:hair_main_street/pages/vendor_dashboard/edit_product.dart';
-import 'package:hair_main_street/services/database.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../widgets/cards.dart';
 
 // ignore: must_be_immutable
 class ShopSetupPage extends StatefulWidget {
-  ShopSetupPage({super.key});
+  const ShopSetupPage({super.key});
 
   @override
   State<ShopSetupPage> createState() => _ShopSetupPageState();
@@ -53,7 +48,7 @@ class _ShopSetupPageState extends State<ShopSetupPage> {
         ),
         centerTitle: true,
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(0.7), // Adjust height as needed
+          preferredSize: const Size.fromHeight(0.7), // Adjust height as needed
           child: Divider(
             thickness: 0.5, // Adjust thickness as needed
             color: Colors.black.withOpacity(0.2), // Adjust color as needed
@@ -64,7 +59,7 @@ class _ShopSetupPageState extends State<ShopSetupPage> {
         // ),
       ),
       backgroundColor: Colors.white,
-      body: ShopDetailsCard(),
+      body: const ShopDetailsCard(),
     );
   }
 }

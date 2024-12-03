@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hair_main_street/blankPage.dart';
 
 class AnalyticsPage extends StatelessWidget {
@@ -7,6 +8,29 @@ class AnalyticsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              size: 20, color: Colors.black),
+        ),
+        title: const Text(
+          'Analytics',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Lato',
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: true,
+        // flexibleSpace: Container(
+        //   decoration: BoxDecoration(gradient: appBarGradient),
+        // ),
+        backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+      ),
       body: BlankPage(
         text: "This page is under construction",
         haveAppBar: true,

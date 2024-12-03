@@ -237,7 +237,7 @@ class WishListPage extends StatelessWidget {
                               ),
                               actionsAlignment: MainAxisAlignment.spaceEvenly,
                               actionsPadding:
-                                  EdgeInsets.fromLTRB(16, 4, 16, 10),
+                                  const EdgeInsets.fromLTRB(16, 4, 16, 10),
                               actions: [
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(

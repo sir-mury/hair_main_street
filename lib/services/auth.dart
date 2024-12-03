@@ -26,6 +26,7 @@ class AuthService {
         isBuyer: data["isBuyer"] ?? true, // Ensure isBuyer has a default value
         phoneNumber: data["phonenumber"],
         isVendor: data["isVendor"],
+        isAdmin: data["isAdmin"],
         fullname: data["fullname"],
         address:
             data["address"] != null ? Address.fromJson(data["address"]) : null,
@@ -100,11 +101,21 @@ class AuthService {
   //sign out
   Future signOut() async {
     try {
-      var userID = auth.currentUser!.uid;
-      await auth.signOut();
-      userProfileCollection.doc(userID).update({"token": null});
+      // Disconnect from Google Sign-In
+      await GoogleSignIn().signOut();
+
+      var userID = auth.currentUser?.uid;
+      if (userID != null) {
+        await auth.signOut();
+        userProfileCollection.doc(userID).update({"token": null});
+        return 'success';
+      } else {
+        // Handle the case where the user is not signed in
+        print('User is not signed in.');
+        return null;
+      }
     } catch (e) {
-      //print(e.toString());
+      print('Failed to sign out: $e');
       return null;
     }
   }
@@ -115,6 +126,7 @@ class AuthService {
       var currentUser = auth.currentUser;
       if (currentUser != null) {
         await currentUser.delete();
+        await userProfileCollection.doc(currentUser.uid).delete();
       } else {}
     } catch (e) {
       print(e);
@@ -169,7 +181,6 @@ class AuthService {
   }
 
   Future<Object?> signInWithGoogle() async {
-    print("executing this");
     try {
       final googleUser = await GoogleSignIn().signIn();
 
@@ -189,6 +200,7 @@ class AuthService {
         var referralLink = DataBaseService().generateReferralLink(referralCode);
         String? token = await NotificationService().getDeviceToken();
         await userProfileCollection.doc(user.uid).update({
+          "fullname": user.displayName ?? "",
           "token": token,
           "referral code": referralCode,
           "referral link": referralLink
@@ -210,6 +222,8 @@ class AuthService {
       }
     } on FirebaseAuthException catch (e) {
       return e;
+    } on FirebaseException catch (e) {
+      print("an error occured: ${e.code}");
     } catch (e) {
       print("the google sign in error: $e");
     }

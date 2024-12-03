@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
-import 'package:hair_main_street/controllers/productController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/auxModels.dart';
 import 'package:hair_main_street/models/cartItemModel.dart';
-import 'package:hair_main_street/models/productModel.dart';
 import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/loading.dart';
@@ -66,7 +64,7 @@ class CartController extends GetxController {
         "Error",
         "Problem adding to cart",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -83,7 +81,7 @@ class CartController extends GetxController {
         "Success",
         "Added to cart",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -103,7 +101,7 @@ class CartController extends GetxController {
         "Error",
         "Failed to Fetch Cart",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -142,6 +140,8 @@ class CartController extends GetxController {
       Get.back();
       showMyToast("Operation Success");
       fetchCart();
+      //checkOutController.updateCheckoutItemFromCartItems(cartItems);
+      print(checkOutController.checkoutList);
 
       // CartItem cartItem =
       //     cartItems.firstWhere((element) => element.cartItemID == cartItemID);
@@ -167,11 +167,11 @@ class CartController extends GetxController {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
-      gravity: ToastGravity.BOTTOM, // Position at the bottom of the screen
+      gravity: ToastGravity.CENTER, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
-      backgroundColor: const Color(0xFF673AB7)
-          .withOpacity(0.70), // Optional: Set background color
-      textColor: Colors.white, // Optional: Set text color
+      backgroundColor:
+          const Color(0xFFf5f5f5), // Optional: Set background color
+      textColor: Colors.black, // Optional: Set text color
       fontSize: 14.0,
       // Optional: Set font size
     );
@@ -236,7 +236,7 @@ class WishListController extends GetxController {
         "Error",
         "Problem adding to wishlist",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -252,7 +252,7 @@ class WishListController extends GetxController {
         "Success",
         "Added to wishList",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -268,7 +268,7 @@ class WishListController extends GetxController {
         "Already in your wishlists",
         "",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -288,7 +288,7 @@ class WishListController extends GetxController {
         "Error",
         "Failed to Fetch WishList",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[200],
@@ -313,7 +313,7 @@ class WishListController extends GetxController {
         "Deleted",
         "Successfully Deleted Items from Wishlist",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.green[200],
@@ -330,7 +330,7 @@ class WishListController extends GetxController {
         "Error",
         "Error Deleting Items from Wishlist",
         snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 1, milliseconds: 800),
+        duration: const Duration(seconds: 1, milliseconds: 800),
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeOut,
         backgroundColor: Colors.red[300],
@@ -389,9 +389,9 @@ class WishListController extends GetxController {
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
       gravity: ToastGravity.BOTTOM, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
-      backgroundColor: const Color(0xFF673AB7)
-          .withOpacity(0.70), // Optional: Set background color
-      textColor: Colors.white, // Optional: Set text color
+      backgroundColor:
+          const Color(0xFFf5f5f5), // Optional: Set background color
+      textColor: Colors.black, // Optional: Set text color
       fontSize: 14.0,
       // Optional: Set font size
     );

@@ -9,7 +9,6 @@ import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/ic.dart';
-import 'package:iconify_flutter_plus/icons/lucide.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
 import 'package:string_validator/string_validator.dart' as validator;
@@ -224,7 +223,9 @@ class _RefundPageState extends State<RefundPage> {
                   ],
                 ),
               ),
-
+              const SizedBox(
+                height: 6,
+              ),
               // Reason for Refund Row
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,9 +233,10 @@ class _RefundPageState extends State<RefundPage> {
                   const Text(
                     "Reason for Refund:",
                     style: TextStyle(
-                        fontSize: 16.0,
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w500),
+                      fontSize: 16.0,
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 10.0),
                   widget.reason != null
@@ -301,8 +303,8 @@ class _RefundPageState extends State<RefundPage> {
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: Colors.black,
-                                width: 0.6,
+                                color: Colors.black12,
+                                width: 0.8,
                               ),
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -342,7 +344,8 @@ class _RefundPageState extends State<RefundPage> {
                       }
                       return null;
                     },
-                    maxLines: 3,
+                    maxLines: 7,
+                    minLines: 3,
                     // decoration: const InputDecoration(
                     //   filled: true,
                     //   fillColor: Colors.white,
@@ -450,11 +453,26 @@ class _RefundPageState extends State<RefundPage> {
                       height: 4,
                     ),
                     DropdownSearch(
-                      dropdownButtonProps: const DropdownButtonProps(
-                        icon: Iconify(
-                          Ic.baseline_keyboard_arrow_down,
-                          size: 24,
-                          color: Colors.black,
+                      compareFn: (item1, item2) => item1 == item2,
+                      suffixProps: DropdownSuffixProps(
+                        clearButtonProps: ClearButtonProps(
+                          icon: Iconify(
+                            Ic.baseline_keyboard_arrow_down,
+                            size: 24,
+                            color: Colors.black,
+                          ),
+                        ),
+                        dropdownButtonProps: const DropdownButtonProps(
+                          iconClosed: Iconify(
+                            Ic.baseline_keyboard_arrow_down,
+                            size: 24,
+                            color: Colors.black,
+                          ),
+                          iconOpened: Iconify(
+                            Ic.baseline_keyboard_arrow_down,
+                            size: 24,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       dropdownBuilder: (context, selectedItem) =>
@@ -479,7 +497,8 @@ class _RefundPageState extends State<RefundPage> {
                                 ),
                       popupProps: PopupProps.dialog(
                         fit: FlexFit.loose,
-                        itemBuilder: (context, item, isSelected) => Padding(
+                        itemBuilder: (context, item, isDisabled, isSelected) =>
+                            Padding(
                           padding: const EdgeInsets.symmetric(vertical: 6),
                           child: Text(
                             "${item.toString().capitalizeFirst}",
@@ -552,7 +571,7 @@ class _RefundPageState extends State<RefundPage> {
                         ),
                         showSearchBox: true,
                       ),
-                      items: banksandCodes.keys.toList(),
+                      items: (f, cs) => banksandCodes.keys.toList(),
                       validator: (value) {
                         if (value.toString().isEmpty) {
                           return "Please choose your Bank name";
@@ -564,10 +583,10 @@ class _RefundPageState extends State<RefundPage> {
                           bankName = value.toString();
                         });
                       },
-                      dropdownDecoratorProps: DropDownDecoratorProps(
-                        dropdownSearchDecoration: InputDecoration(
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: Color(0xFFf5f5f5),
+                          fillColor: const Color(0xFFf5f5f5),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 2, horizontal: 10),
                           hintText: "Select Bank",

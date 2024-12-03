@@ -3,14 +3,13 @@ import 'package:get/get.dart';
 import 'package:hair_main_street/blankPage.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
 import 'package:hair_main_street/controllers/userController.dart';
-import 'package:hair_main_street/models/orderModel.dart';
-import 'package:hair_main_street/pages/menu/order_detail.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/cards.dart';
+import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class OrdersPage extends StatefulWidget {
-  OrdersPage({super.key});
+  const OrdersPage({super.key});
 
   @override
   State<OrdersPage> createState() => _OrdersPageState();
@@ -26,7 +25,7 @@ class _OrdersPageState extends State<OrdersPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     checkOutController.getBuyerOrders(userController.userState.value!.uid!);
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 800), () {
       setState(() {
         showContent = true;
       });
@@ -146,9 +145,9 @@ class _OrdersPageState extends State<OrdersPage> with TickerProviderStateMixin {
           builder: (context, snapshot) {
             // print(snapshot.data);
             if (snapshot.hasData) {
-              if (!showContent) {
-                return const SizedBox(); // Return an empty SizedBox if content should not be displayed yet
-              }
+              // if (!showContent) {
+              //   return const SizedBox(); // Return an empty SizedBox if content should not be displayed yet
+              // }
               return checkOutController.buyerOrderList.isEmpty
                   ? BlankPage(
                       text: "No Orders Currently",
@@ -175,11 +174,7 @@ class _OrdersPageState extends State<OrdersPage> with TickerProviderStateMixin {
                       ],
                     );
             } else {
-              return const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 4,
-                ),
-              );
+              return const LoadingWidget();
             }
           },
         ),
@@ -191,9 +186,16 @@ class _OrdersPageState extends State<OrdersPage> with TickerProviderStateMixin {
     return Obx(() {
       final orders = checkOutController.buyerOrderMap[tabName]!;
       return orders.isNotEmpty
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          ? RefreshIndicator.adaptive(
+              color: Colors.white,
+              backgroundColor: Color(0xFF673AB7),
+              onRefresh: () {
+                return Future.delayed(
+                  Duration(milliseconds: 900),
+                );
+              },
               child: ListView.builder(
+                padding: EdgeInsets.all(8),
                 itemBuilder: (context, index) =>
                     OrderCard(mapKey: tabName, index: index),
                 itemCount: orders.length,
