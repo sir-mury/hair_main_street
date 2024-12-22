@@ -234,8 +234,6 @@ class _EditReviewPageState extends State<EditReviewPage> {
       });
     }
     setState(() {});
-    print(selectedImages);
-    print(index);
   }
 
   void removeImage(int index) {
@@ -334,58 +332,115 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Add Image",
+                      "Add/Edit Image",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(
-                        3,
-                        (index) => GestureDetector(
-                          onTap: () => selectImage(index),
-                          child: Container(
-                              margin: const EdgeInsets.only(right: 12),
-                              width: 88,
-                              height: 88,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: Colors.black, width: 0.8),
+                    review.reviewImages != null &&
+                            review.reviewImages!.isNotEmpty
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: List.generate(
+                              review.reviewImages!.length,
+                              (index) => GestureDetector(
+                                onTap: () => selectImage(index),
+                                child: Container(
+                                    margin: const EdgeInsets.only(right: 12),
+                                    width: 88,
+                                    height: 88,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: Colors.black, width: 0.8),
+                                    ),
+                                    child: Builder(builder: (context) {
+                                      return review.reviewImages!.isNotEmpty &&
+                                              index <
+                                                  review.reviewImages!.length
+                                          ? Stack(
+                                              children: [
+                                                Image.network(review
+                                                    .reviewImages![index]),
+                                                Positioned(
+                                                  top: 0,
+                                                  right: 0,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      // removeImage(index);
+                                                      review.reviewImages!
+                                                          .removeAt(index);
+                                                    },
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              4),
+                                                      color: Colors.black
+                                                          .withOpacity(0.5),
+                                                      child: const Icon(
+                                                          Icons.close,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : const Icon(Icons.add, size: 40);
+                                    })),
                               ),
-                              child: Builder(builder: (context) {
-                                print(
-                                    "selectedImages after build $selectedImages");
-                                return selectedImages.isNotEmpty &&
-                                        index < selectedImages.length
-                                    ? Stack(
-                                        children: [
-                                          Image.file(selectedImages[index]!),
-                                          Positioned(
-                                            top: 0,
-                                            right: 0,
-                                            child: GestureDetector(
-                                              onTap: () => removeImage(index),
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(4),
-                                                color: Colors.black
-                                                    .withOpacity(0.5),
-                                                child: const Icon(Icons.close,
-                                                    color: Colors.white),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : const Icon(Icons.add, size: 40);
-                              })),
-                        ),
-                      ),
-                    ),
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: List.generate(
+                              3,
+                              (index) => GestureDetector(
+                                onTap: () => selectImage(index),
+                                child: Container(
+                                    margin: const EdgeInsets.only(right: 12),
+                                    width: 88,
+                                    height: 88,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: Colors.black, width: 0.8),
+                                    ),
+                                    child: Builder(builder: (context) {
+                                      print(
+                                          "selectedImages after build $selectedImages");
+                                      return selectedImages.isNotEmpty &&
+                                              index < selectedImages.length
+                                          ? Stack(
+                                              children: [
+                                                Image.file(
+                                                    selectedImages[index]!),
+                                                Positioned(
+                                                  top: 0,
+                                                  right: 0,
+                                                  child: GestureDetector(
+                                                    onTap: () =>
+                                                        removeImage(index),
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              4),
+                                                      color: Colors.black
+                                                          .withOpacity(0.5),
+                                                      child: const Icon(
+                                                          Icons.close,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : const Icon(Icons.add, size: 40);
+                                    })),
+                              ),
+                            ),
+                          ),
                   ],
                 ),
                 const SizedBox(
