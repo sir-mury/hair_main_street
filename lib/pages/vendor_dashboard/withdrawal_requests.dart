@@ -56,7 +56,7 @@ class WithdrawalRequestsPage extends StatelessWidget {
               ),
             );
           } else {
-            print(snapshot.data);
+            // print(snapshot.data);
             if (snapshot.data!.isEmpty) {
               return BlankPage(
                 text: "Your have no withdrawal Requests",
@@ -190,13 +190,13 @@ class WithdrawalRequestsPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            "Time Stamp:",
+                            "Timestamp:",
                             style: TextStyle(
                               fontSize: 16,
                             ),
                           ),
                           Text(
-                            "${resolveTimestampWithoutAdding(walletController.withdrawalRequests[index].timestamp)}",
+                            "${resolveTimestampWithoutAdding(walletController.withdrawalRequests[index].createdAt!)}",
                             style: const TextStyle(
                               fontSize: 16,
                             ),

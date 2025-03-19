@@ -138,7 +138,7 @@ class _EditProductPageState extends State<EditProductPage> {
                       Get.close(2);
                     },
                     cancelAction: () {
-                      Get.back();
+                      Get.close(1);
                     },
                     subtitle:
                         "Are you sure you want to cancel editing this product?",
@@ -848,7 +848,7 @@ class _EditProductPageState extends State<EditProductPage> {
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 2, horizontal: 10),
-                              hintText: "Add Product Category",
+                              // hintText: "Add Product Category",
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
                                   color: Colors.black.withOpacity(0.35),

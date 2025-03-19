@@ -758,7 +758,7 @@ class _AddproductPageState extends State<AddproductPage> {
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 2, horizontal: 10),
-                              hintText: "Add Product Category",
+                              // hintText: "Add Product Category",
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
                                   color: Colors.black.withOpacity(0.35),

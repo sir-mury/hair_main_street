@@ -493,7 +493,7 @@ class _CancellationPageState extends State<CancellationPage> {
                             fillColor: const Color(0xFFf5f5f5),
                             contentPadding: const EdgeInsets.symmetric(
                                 vertical: 2, horizontal: 10),
-                            hintText: "Select Bank",
+                            // hintText: "Select Bank",
                             enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(
                                 color: Colors.black.withOpacity(0.35),

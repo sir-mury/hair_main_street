@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_paystack_tk/flutter_paystack_tk.dart';
+import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
 import 'package:hair_main_street/controllers/productController.dart';
@@ -37,7 +37,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
   String? monnifyAPIKey = dotenv.env["MONNIFY_API_KEY"];
   String? monnifyContractCode = dotenv.env["MONNIFY_CONTRACT_CODE"];
   String? callbackUrl = dotenv.env["CALLBACK_URL"];
-  final plugin = PaystackPlugin();
+  // final plugin = PaystackPlugin();
   late Monnify? monnify;
   Address? selectedAddress;
   num totalPrice = 0.0;
@@ -68,7 +68,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
 
   @override
   void initState() {
-    plugin.initialize(publicKey: publicKey!);
+    // plugin.initialize(publicKey: publicKey!);
     initializeMonnify();
     myStream = DataBaseService()
         .getDeliveryAddresses(userController.userState.value!.uid!)
@@ -161,7 +161,8 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
       );
     }
 
-    initiatePayment({
+    //payment for paystack
+    initializePaymentPaystack({
       int? paymentPrice,
       String? email,
       String? paymentMethod,
@@ -171,75 +172,101 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
       Product? product,
       int? installmentNumber,
     }) async {
-      if (!mounted) return;
-      checkOutController.isLoading.value = false;
       String reference = _getReference();
+      final request = PaystackTransactionRequest(
+        reference: reference,
+        secretKey: secretKey!,
+        email: email!,
+        amount: (paymentPrice! * 100).toDouble(),
+        currency: PaystackCurrency.ngn,
+        channel: [
+          PaystackPaymentChannel.mobileMoney,
+          PaystackPaymentChannel.card,
+          PaystackPaymentChannel.ussd,
+          PaystackPaymentChannel.bankTransfer,
+          PaystackPaymentChannel.bank,
+          PaystackPaymentChannel.qr,
+          PaystackPaymentChannel.eft,
+        ],
+      );
 
-      try {
-        Charge charge = Charge()
-          ..amount = paymentPrice! * 100
-          ..reference = reference
-          ..accessCode = await getAccessCode(reference, email!, paymentPrice)
-          ..email = email;
+      final initializedTransaction =
+          await PaymentService.initializeTransaction(request);
 
-        if (!mounted) return;
-
-        CheckoutResponse response = await plugin.checkout(
-          _paymentContext,
-          charge: charge,
-          method: CheckoutMethod.card,
+      if (!initializedTransaction.status) {
+        Get.snackbar(
+          "Error",
+          initializedTransaction.message,
+          backgroundColor: Colors.red.shade200,
+          colorText: Colors.black,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(
+            milliseconds: 400,
+          ),
         );
+        return;
+      }
 
-        if (response.status) {
-          bool isVerified = await DataBaseService()
-              .verifyTransaction(reference: response.reference!);
-          if (isVerified && mounted) {
-            debugPrint("Success and everything works");
-            int installmentPaid;
-            if (installmentNumber != 0) {
-              installmentPaid = 1;
-            } else {
-              installmentPaid = 0;
-            }
-            var totalPrice = product!.price!;
-            var productPrice = (product.price!) / int.parse(orderQuantity!);
-            var result = await checkOutController.createOrder(
-              deliveryAddress:
-                  userController.selectedAddress.value ?? user!.address!,
-              totalPrice: totalPrice,
-              orderQuantity: orderQuantity,
-              installmentPaid: installmentPaid,
-              productID: product.productID,
-              productPrice: productPrice.toString(),
-              paymentMethod: paymentMethod,
-              paymentPrice: paymentPrice,
-              transactionID: reference,
-              user: user,
-              vendorID: vendorID,
-              installmentNumber: installmentNumber,
-              optionName: widget.products[0].optionName,
-            );
-            if (result == 'success') {
-              checkOutController.isLoading.value = false;
-              Get.to(
-                () => const PaymentSuccessfulPage(),
-              );
-            }
+      if (!mounted) return null;
+      final response = await PaymentService.showPaymentModal(
+        _paymentContext,
+        transaction: initializedTransaction,
+        callbackUrl: callbackUrl!,
+      ).then((_) async {
+        if (!mounted) return null;
+        return await PaymentService.verifyTransaction(
+          paystackSecretKey: secretKey!,
+          initializedTransaction.data?.reference ?? request.reference,
+        );
+      });
+
+      //print(response);
+      switch (response?.data.status) {
+        case PaystackTransactionStatus.success:
+          int installmentPaid;
+          if (installmentNumber != 0) {
+            installmentPaid = 1;
+          } else {
+            installmentPaid = 0;
           }
-        } else {
-          if (mounted) {
-            showErrorDialog("Transaction not Completed");
-            checkOutController.isLoading.value = false;
-            print("transaction failed");
-          }
-        }
-      } catch (e) {
-        print(e);
-        if (mounted) {
-          ScaffoldMessenger.of(_paymentContext).showSnackBar(
-            SnackBar(content: Text("Error: $e")),
+          var totalPrice = product!.price!;
+          var productPrice = (product.price!) / int.parse(orderQuantity!);
+          var result = await checkOutController.createOrder(
+            deliveryAddress:
+                userController.selectedAddress.value ?? user!.address!,
+            totalPrice: totalPrice,
+            orderQuantity: orderQuantity,
+            installmentPaid: installmentPaid,
+            productID: product.productID,
+            productPrice: productPrice.toString(),
+            paymentMethod: paymentMethod,
+            paymentPrice: paymentPrice,
+            transactionID: reference,
+            user: user,
+            vendorID: vendorID,
+            installmentNumber: installmentNumber,
+            optionName: widget.products[0].optionName,
           );
-        }
+          if (result == 'success') {
+            checkOutController.isLoading.value = false;
+            Get.to(
+              () => const PaymentSuccessfulPage(),
+            );
+          }
+          break;
+
+        case PaystackTransactionStatus.failed:
+          showErrorDialog("Payment Failed");
+          break;
+        case PaystackTransactionStatus.abandoned:
+          showErrorDialog("Payment Abandoned");
+          break;
+        case null:
+          showErrorDialog("Payment Failed");
+          break;
+        default:
+          showErrorDialog("Payment Failed");
+          break;
       }
     }
 
@@ -354,7 +381,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                   InkWell(
                     radius: 40,
                     onTap: () {
-                      Get.back();
+                      !Get.isDialogOpen! ? Get.back() : Get.close(2);
                     },
                     child: const Padding(
                       padding: EdgeInsets.all(8.0),
@@ -370,12 +397,15 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
               const SizedBox(
                 height: 2,
               ),
-              const Text(
-                "Choose your payment gateway",
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Align(
+                alignment: Alignment.center,
+                child: const Text(
+                  "Choose your payment gateway",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(
@@ -402,7 +432,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                     child: Text(
-                      "Pay with paystack (Card Only)",
+                      "Pay with Paystack",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
@@ -414,7 +444,8 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                   ),
                 ),
                 onTap: () async {
-                  await initiatePayment(
+                  Get.close(1);
+                  await initializePaymentPaystack(
                     orderQuantity: widget.products.first.quantity.toString(),
                     product: product,
                     vendorID: product!.vendorId,
@@ -433,6 +464,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
               ),
               InkWell(
                 onTap: () async {
+                  Get.close(1);
                   await initiatePaymentMonnify(
                     orderQuantity: widget.products.first.quantity.toString(),
                     product: product,
@@ -842,7 +874,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                       checkOutController.isLoading.value = true;
                       if (checkOutController.isLoading.isTrue) {
                         Get.dialog(
-                          const Center(child: CircularProgressIndicator()),
+                          const Center(child: LoadingWidget()),
                         );
                       }
                       // showPaymentDialog(
@@ -855,17 +887,31 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                       //   installmentNumber: 0,
                       //   email: userController.userState.value!.email!,
                       // ),
-                      await initiatePaymentMonnify(
-                        orderQuantity:
-                            widget.products.first.quantity.toString(),
-                        product: product,
-                        vendorID: product!.vendorId,
-                        paymentMethod: "once",
-                        user: userController.userState.value,
-                        paymentPrice: widget.products.first.price!.toInt(),
-                        installmentNumber: 0,
-                        email: userController.userState.value!.email!,
-                      );
+                      !Platform.isIOS
+                          ? await showPaymentDialog(
+                              orderQuantity:
+                                  widget.products.first.quantity.toString(),
+                              product: product,
+                              vendorID: product!.vendorId,
+                              paymentMethod: "once",
+                              user: userController.userState.value,
+                              paymentPrice:
+                                  widget.products.first.price!.toInt(),
+                              installmentNumber: 0,
+                              email: userController.userState.value!.email!,
+                            )
+                          : await initializePaymentPaystack(
+                              orderQuantity:
+                                  widget.products.first.quantity.toString(),
+                              product: product,
+                              vendorID: product!.vendorId,
+                              paymentMethod: "once",
+                              user: userController.userState.value,
+                              paymentPrice:
+                                  widget.products.first.price!.toInt(),
+                              installmentNumber: 0,
+                              email: userController.userState.value!.email!,
+                            );
                     }
                   },
                   child: const Text(

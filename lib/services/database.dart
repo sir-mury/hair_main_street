@@ -79,6 +79,9 @@ class DataBaseService {
   CollectionReference remindersCollection =
       FirebaseFirestore.instance.collection('reminders');
 
+  CollectionReference withdrawalRequestCollection =
+      FirebaseFirestore.instance.collection('withdrawal requests');
+
   //get admin variables
   Stream<AdminVariableModel?> getAdminVariables() {
     var result = adminVariablesCollection.doc("admin").snapshots();
@@ -2043,21 +2046,12 @@ class DataBaseService {
   }
 
   // request withdrawal
-  Future requestWithdrawal(
-      num? withdrawalAmount, Map accountDetails, String userID) async {
+  Future requestWithdrawal(WithdrawalRequest withdrawalRequest) async {
+    Map<String, dynamic> withdrawalRequestFields = withdrawalRequest.toJson();
+    withdrawalRequestFields['created at'] = FieldValue.serverTimestamp();
     try {
-      await walletCollection
-          .doc(userID)
-          .collection("withdrawal requests")
-          .doc()
-          .set({
-        "withdrawal amount": withdrawalAmount,
-        "account name": accountDetails["account name"],
-        "account number": accountDetails["account number"],
-        "bank name": accountDetails["bank name"],
-        "timestamp": FieldValue.serverTimestamp(),
-        "status": "Not approved",
-        "userID": userID,
+      await withdrawalRequestCollection.doc().set({
+        withdrawalRequestFields,
       });
       return "success";
     } on FirebaseException catch (e) {
@@ -2069,14 +2063,14 @@ class DataBaseService {
 
   //get vendor withdrawal requests
   Stream<List<WithdrawalRequest>> getWithdrawalRequests(String userId) {
-    var result = walletCollection
-        .doc(userId)
-        .collection("withdrawal requests")
+    var result = withdrawalRequestCollection
+        .where('userID', isEqualTo: userId)
         .snapshots();
     return result.map(
       (event) => event.docs
           .map(
-            (doc) => WithdrawalRequest.fromJson(doc.data()),
+            (doc) =>
+                WithdrawalRequest.fromJson(doc.data() as Map<String, dynamic>),
           )
           .toList(),
     );
@@ -2135,6 +2129,7 @@ class DataBaseService {
           "reason": refundRequest.reason,
           "refund status": "pending",
           "orderID": refundRequest.orderID,
+          "created at": FieldValue.serverTimestamp(),
         });
         return "success";
       } else {
@@ -2160,6 +2155,7 @@ class DataBaseService {
           "reason": cancellationRequest.reason,
           "cancellation status": "pending",
           "orderID": cancellationRequest.orderID,
+          "created": FieldValue.serverTimestamp(),
         });
         return "success";
       } else {

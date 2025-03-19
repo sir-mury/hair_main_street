@@ -33,10 +33,8 @@ class WalletController extends GetxController {
     return DataBaseService().getWithdrawalRequests(userID);
   }
 
-  Future withdrawalRequest(
-      num withdrawalAmount, Map accountDetails, String userId) async {
-    var result = await DataBaseService()
-        .requestWithdrawal(withdrawalAmount, accountDetails, userId);
+  Future withdrawalRequest(WithdrawalRequest withdrawalRequest) async {
+    var result = await DataBaseService().requestWithdrawal(withdrawalRequest);
     isLoading.value = true;
     if (result == 'success') {
       isLoading.value = false;

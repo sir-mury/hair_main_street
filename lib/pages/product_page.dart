@@ -12,7 +12,6 @@ import 'package:hair_main_street/models/cartItemModel.dart';
 import 'package:hair_main_street/models/productModel.dart';
 import 'package:hair_main_street/models/review.dart';
 import 'package:hair_main_street/controllers/productController.dart';
-import 'package:hair_main_street/pages/authentication/authentication.dart';
 import 'package:hair_main_street/pages/authentication/sign_in.dart';
 import 'package:hair_main_street/pages/chats_page.dart';
 import 'package:hair_main_street/pages/client_shop_page.dart';

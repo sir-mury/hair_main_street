@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_paystack_max/flutter_paystack_max.dart';
+import 'package:http/http.dart' as http;
 // import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
@@ -35,6 +38,7 @@ class _PaymentPageState extends State<PaymentPage> {
   String? secretKey = dotenv.env["PAYSTACK_SECRET_KEY"];
   String? callbackUrl = dotenv.env["CALLBACK_URL"];
   String? monnifyAPIKey = dotenv.env["MONNIFY_API_KEY"];
+  String? monnifySecretKey = dotenv.env["MONNIFY_SECRET_KEY"];
   String? monnifyContractCode = dotenv.env["MONNIFY_CONTRACT_CODE"];
   Monnify? monnify;
   Orders? orders;
@@ -164,12 +168,112 @@ class _PaymentPageState extends State<PaymentPage> {
       );
     }
 
+    //initialize payment for paystack
+    initializePaymentPaystack({
+      num? paymentPrice,
+      String? orderID,
+      String? email,
+    }) async {
+      String reference = getReference();
+      final request = PaystackTransactionRequest(
+        reference: reference,
+        secretKey: secretKey!,
+        email: email!,
+        amount: (paymentPrice! * 100).toDouble(),
+        currency: PaystackCurrency.ngn,
+        channel: [
+          PaystackPaymentChannel.mobileMoney,
+          PaystackPaymentChannel.card,
+          PaystackPaymentChannel.ussd,
+          PaystackPaymentChannel.bankTransfer,
+          PaystackPaymentChannel.bank,
+          PaystackPaymentChannel.qr,
+          PaystackPaymentChannel.eft,
+        ],
+      );
+
+      final initializedTransaction =
+          await PaymentService.initializeTransaction(request);
+
+      if (!initializedTransaction.status) {
+        Get.snackbar(
+          "Error",
+          initializedTransaction.message,
+          backgroundColor: Colors.red.shade200,
+          colorText: Colors.black,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(
+            milliseconds: 400,
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return null;
+      final response = await PaymentService.showPaymentModal(
+        context,
+        transaction: initializedTransaction,
+        callbackUrl: callbackUrl!,
+        backgroundColor: Colors.white,
+      ).then((_) async {
+        if (!mounted) return null;
+        return await PaymentService.verifyTransaction(
+          paystackSecretKey: secretKey!,
+          initializedTransaction.data?.reference ?? request.reference,
+        );
+      });
+
+      //print(response);
+      switch (response?.data.status) {
+        case PaystackTransactionStatus.success:
+          try {
+            orders?.installmentPaid = widget.orderDetails!.installmentPaid! + 1;
+            orders?.transactionID = orders?.transactionID == null
+                ? [reference]
+                : [
+                    ...widget.orderDetails!.transactionID!,
+                    ...[reference]
+                  ];
+            orders?.paymentPrice =
+                widget.orderDetails!.paymentPrice! + paymentPrice;
+            // orders.orderId = orderID;
+            var result = await checkOutController.updateOrder(orders!);
+            if (result == "success") {
+              int installmentRemaining =
+                  orders!.installmentNumber! - orders!.installmentPaid!;
+              Get.to(
+                () => InstallmentPaymentSuccessfulPage(
+                    installmentRemaining: installmentRemaining),
+              );
+            }
+          } catch (e) {
+            print("error: $e");
+          }
+          break;
+
+        case PaystackTransactionStatus.failed:
+          showErrorDialog("Payment Failed");
+          break;
+        case PaystackTransactionStatus.abandoned:
+          showErrorDialog("Payment Abandoned");
+          break;
+        case null:
+          showErrorDialog("Payment Failed");
+          break;
+        default:
+          showErrorDialog("Payment Failed");
+          break;
+      }
+    }
+
+//initiate payment for monnify
     initiatePaymentMonnify({
       num? paymentPrice,
       String? orderID,
       String? email,
     }) async {
       String reference = getReference();
+      print(reference);
       TransactionDetails transactionDetails = TransactionDetails().copyWith(
         currencyCode: "NGN",
         customerEmail: email!,
@@ -477,45 +581,53 @@ class _PaymentPageState extends State<PaymentPage> {
               ),
             );
           }),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF673AB7),
-              padding: const EdgeInsets.all(8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF673AB7),
+                padding: const EdgeInsets.all(8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-            ),
-            onPressed: () async {
-              bool validated = formKey.currentState!.validate();
-              if (validated) {
-                checkOutController.isLoading.value = true;
-                if (checkOutController.isLoading.isTrue) {
-                  Get.dialog(
-                    const Center(child: CircularProgressIndicator()),
-                  );
+              onPressed: () async {
+                bool validated = formKey.currentState!.validate();
+                if (validated) {
+                  checkOutController.isLoading.value = true;
+                  if (checkOutController.isLoading.isTrue) {
+                    Get.dialog(
+                      const Center(child: LoadingWidget()),
+                    );
+                  }
+                  try {
+                    !Platform.isIOS
+                        ? initiatePaymentMonnify(
+                            paymentPrice: amountPaid,
+                            orderID: orders?.orderId,
+                            email: userEmail,
+                          )
+                        : initializePaymentPaystack(
+                            paymentPrice: amountPaid,
+                            orderID: orders?.orderId,
+                            email: userEmail,
+                          );
+                  } catch (e) {
+                    print(e);
+                  }
                 }
-                try {
-                  initiatePaymentMonnify(
-                    paymentPrice: amountPaid,
-                    orderID: orders?.orderId,
-                    email: userEmail,
-                  );
-                } catch (e) {
-                  print(e);
-                }
-              }
-            },
-            child: const Text(
-              "Pay Now",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontFamily: "Lato",
-                fontWeight: FontWeight.w600,
+              },
+              child: const Text(
+                "Pay Now",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontFamily: "Lato",
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

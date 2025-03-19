@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/vendorController.dart';
 import 'package:hair_main_street/controllers/walletController.dart';
+import 'package:hair_main_street/extras/banks_bank_code.dart';
+import 'package:hair_main_street/models/wallet_transaction.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -320,7 +322,8 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   visible:
                       checkboxValue == false || vendorAccountDetails == null,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.white,
@@ -363,7 +366,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           onChanged: (val) {
                             setState(() {
                               accountNameController!.text = val!;
-                              accountName = val;
+                              accountName = accountNameController!.text;
                             });
                           },
                         ),
@@ -391,7 +394,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           onChanged: (val) {
                             setState(() {
                               accountNumberController!.text = val!;
-                              accountNumber = val;
+                              accountNumber = accountNameController!.text;
                             });
                           },
                         ),
@@ -414,7 +417,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                           onChanged: (val) {
                             setState(() {
                               bankNameController!.text = val!;
-                              bankName = val;
+                              bankName = bankNameController!.text;
                             });
                           },
                         ),
@@ -455,26 +458,36 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   Get.dialog(const LoadingWidget());
                 }
                 if (checkboxValue == true) {
+                  String? bankCode = BanksAndBankCodes().bankNamesWithBankCodes[
+                      vendorController.vendor.value!.accountInfo?["bank name"]];
+                  WithdrawalRequest withdrawalRequest = WithdrawalRequest(
+                    bankCode: bankCode,
+                    withdrawalAmount:
+                        num.parse(withdrawalAmountController!.text),
+                    accountName: vendorController
+                        .vendor.value!.accountInfo?["account name"],
+                    accountNumber: vendorController
+                        .vendor.value!.accountInfo?["account number"],
+                    bankName: vendorController
+                        .vendor.value!.accountInfo?["bank name"],
+                    userId: vendorController.vendor.value!.userID!,
+                  );
                   walletController.withdrawalRequest(
-                      num.parse(withdrawalAmountController!.text),
-                      {
-                        "account name": vendorController
-                            .vendor.value!.accountInfo?["account name"],
-                        "account number": vendorController
-                            .vendor.value!.accountInfo?["account number"],
-                        "bank name": vendorController
-                            .vendor.value!.accountInfo?["bank name"],
-                      },
-                      vendorController.vendor.value!.userID!);
+                    withdrawalRequest,
+                  );
                 } else {
-                  walletController.withdrawalRequest(
-                      num.parse(withdrawalAmountController!.text),
-                      {
-                        "account name": accountNameController!.text,
-                        "account number": accountNumberController!.text,
-                        "bank name": bankNameController!.text,
-                      },
-                      vendorController.vendor.value!.userID!);
+                  String? bankCode = BanksAndBankCodes().bankNamesWithBankCodes[
+                      vendorController.vendor.value!.accountInfo?["bank name"]];
+                  WithdrawalRequest withdrawalRequest = WithdrawalRequest(
+                    bankCode: bankCode,
+                    withdrawalAmount:
+                        num.parse(withdrawalAmountController!.text),
+                    accountName: accountName,
+                    accountNumber: accountNumber,
+                    bankName: bankName,
+                    userId: vendorController.vendor.value!.userID!,
+                  );
+                  walletController.withdrawalRequest(withdrawalRequest);
                 }
                 // Get.back();
               }

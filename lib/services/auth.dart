@@ -76,7 +76,7 @@ class AuthService {
       UserCredential result = await auth.signInWithEmailAndPassword(
           email: email!, password: password!);
       User? user = result.user;
-      String? token = await NotificationService().getDeviceToken();
+      //String? token = await NotificationService().getDeviceToken();
       var profile = await userProfileCollection.doc(user!.uid).get();
       var data = profile.data() as Map<String, dynamic>;
       if (data["referral code"] == null && data["referral link"] == null) {
@@ -85,9 +85,9 @@ class AuthService {
         await userProfileCollection.doc(user.uid).update(
             {"referral code": referralCode, "referral link": referralLink});
       }
-      await userProfileCollection.doc(user.uid).set({
-        "token": token,
-      }, SetOptions(merge: true));
+      // await userProfileCollection.doc(user.uid).set({
+      //   "token": token,
+      // }, SetOptions(merge: true));
       return await convertToMyUserType(user);
     } on FirebaseAuthException catch (e) {
       //print(e.toString());

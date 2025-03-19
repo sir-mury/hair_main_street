@@ -28,10 +28,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var pageHeight = screenHeight - kToolbarHeight;
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
-          height: screenHeight * 0.90,
+          height: pageHeight,
           child: PageView(
             controller: pageController,
             onPageChanged: (index) {
@@ -40,358 +41,337 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               });
             },
             children: [
-              Container(
-                color: Colors.red,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      color: Colors.white,
-                      height: screenHeight * 0.65,
-                      //padding: EdgeInsets.zero,
-                      child: Column(
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topRight: Radius.circular(15),
-                                  topLeft: Radius.circular(0),
-                                  bottomLeft: Radius.circular(0),
-                                  bottomRight: Radius.circular(15),
-                                ),
-                                child: Transform.rotate(
-                                  angle: -pi / 0.5,
-                                  child: Container(
-                                    height: screenHeight * 0.31,
-                                    width: screenWidth * 0.65,
-                                    decoration: const BoxDecoration(
-                                      image: DecorationImage(
-                                        fit: BoxFit.fill,
-                                        image: AssetImage(
-                                          "assets/images/Frame 53image 1.png",
-                                        ),
-                                      ),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(15),
+                              topLeft: Radius.circular(0),
+                              bottomLeft: Radius.circular(0),
+                              bottomRight: Radius.circular(15),
+                            ),
+                            child: Transform.rotate(
+                              angle: -pi / 0.5,
+                              child: Container(
+                                height: screenHeight * 0.31,
+                                width: screenWidth * 0.65,
+                                decoration: const BoxDecoration(
+                                  image: DecorationImage(
+                                    fit: BoxFit.fill,
+                                    image: AssetImage(
+                                      "assets/images/Frame 53image 1.png",
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topRight: Radius.circular(0),
-                                  topLeft: Radius.circular(15),
-                                  bottomLeft: Radius.circular(15),
-                                  bottomRight: Radius.circular(0),
-                                ),
-                                child: Container(
-                                  height: screenHeight * 0.31,
-                                  width: screenWidth * 0.30,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      fit: BoxFit.fill,
-                                      image: AssetImage(
-                                        "assets/images/Frame 542nd image.png",
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                           const SizedBox(
-                            height: 12,
+                            width: 12,
                           ),
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topRight: Radius.circular(15),
-                                  topLeft: Radius.circular(0),
-                                  bottomLeft: Radius.circular(0),
-                                  bottomRight: Radius.circular(15),
-                                ),
-                                child: Container(
-                                  height: screenHeight * 0.32,
-                                  width: screenWidth * 0.35,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: AssetImage(
-                                        "assets/images/Frame 56image 3 .png",
-                                      ),
-                                    ),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(0),
+                              topLeft: Radius.circular(15),
+                              bottomLeft: Radius.circular(15),
+                              bottomRight: Radius.circular(0),
+                            ),
+                            child: Container(
+                              height: screenHeight * 0.31,
+                              width: screenWidth * 0.30,
+                              decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  fit: BoxFit.fill,
+                                  image: AssetImage(
+                                    "assets/images/Frame 542nd image.png",
                                   ),
                                 ),
                               ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topRight: Radius.circular(0),
-                                  topLeft: Radius.circular(15),
-                                  bottomLeft: Radius.circular(15),
-                                  bottomRight: Radius.circular(0),
-                                ),
-                                child: Container(
-                                  height: screenHeight * 0.32,
-                                  width: screenWidth * 0.60,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      fit: BoxFit.fill,
-                                      image: AssetImage(
-                                        "assets/images/Frame 55image 4.png",
-                                      ),
-                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(15),
+                              topLeft: Radius.circular(0),
+                              bottomLeft: Radius.circular(0),
+                              bottomRight: Radius.circular(15),
+                            ),
+                            child: Container(
+                              height: screenHeight * 0.32,
+                              width: screenWidth * 0.35,
+                              decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: AssetImage(
+                                    "assets/images/Frame 56image 3 .png",
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 12,
+                          ),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(0),
+                              topLeft: Radius.circular(15),
+                              bottomLeft: Radius.circular(15),
+                              bottomRight: Radius.circular(0),
+                            ),
+                            child: Container(
+                              height: screenHeight * 0.32,
+                              width: screenWidth * 0.60,
+                              decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  fit: BoxFit.fill,
+                                  image: AssetImage(
+                                    "assets/images/Frame 55image 4.png",
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
                     ),
-                    Container(
-                      color: Colors.white,
-                      height: screenHeight * 0.25,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Welcome to ",
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black,
-                                ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "Welcome to ",
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black,
                               ),
-                              Text(
-                                "Hair Main Street",
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF673AB7),
-                                ),
+                            ),
+                            Text(
+                              "Hair Main Street",
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF673AB7),
                               ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 8,
-                          ),
-                          Text(
-                            "Your ultimate Hair market place that lets you pay in installments.",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
                             ),
-                            maxLines: 2,
-                          ),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          Text(
-                            "Discover a world of beautiful wigs, stylish hair accessories, and more. Enhance your look or start selling with just a few taps!",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              color: Colors.black,
-                            ),
-                            maxLines: 3,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                color: Colors.blue,
-                child: Column(
-                  children: [
-                    Container(
-                      color: Colors.white,
-                      height: screenHeight * 0.65,
-                      child: Container(
-                        height: screenHeight * 0.65,
-                        width: screenWidth,
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: AssetImage(
-                                'assets/images/Frame 62next page.png'),
-                          ),
+                          ],
                         ),
-                      ),
-                    ),
-                    Container(
-                      color: Colors.white,
-                      height: screenHeight * 0.25,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Easy Shopping ",
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF673AB7),
-                                ),
-                              ),
-                              Text(
-                                "Experience",
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          Text(
-                            "Convenient & Secure",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                            maxLines: 2,
-                          ),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          Text(
-                            "Enjoy a seamless shopping experience with our user-friendly interface and secure checkout process. Shop with confidence",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              color: Colors.black,
-                            ),
-                            maxLines: 3,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                color: Colors.green,
-                child: Column(
-                  children: [
-                    Container(
-                      color: Colors.green,
-                      height: screenHeight * 0.65,
-                      child: Container(
-                        height: screenHeight * 0.65,
-                        width: screenWidth,
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: AssetImage(
-                                'assets/images/Frame 65next page 2.png'),
-                          ),
+                        SizedBox(
+                          height: 8,
                         ),
+                        Text(
+                          "Your ultimate Hair market place that lets you pay in installments.",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                          maxLines: 2,
+                        ),
+                        SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          "Discover a world of beautiful wigs, stylish hair accessories, and more. Enhance your look or start selling with just a few taps!",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                          maxLines: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Container(
+                    height: screenHeight * 0.65,
+                    width: screenWidth,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.fill,
+                        image:
+                            AssetImage('assets/images/Frame 62next page.png'),
                       ),
                     ),
-                    Container(
-                      color: Colors.white,
-                      height: screenHeight * 0.25,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Become a ",
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black,
-                                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "Easy Shopping ",
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF673AB7),
                               ),
-                              Text(
-                                "Vendor",
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF673AB7),
-                                ),
+                            ),
+                            Text(
+                              "Experience",
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black,
                               ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          Text(
-                            "Start selling with ease",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
                             ),
-                            maxLines: 2,
+                          ],
+                        ),
+                        SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          "Convenient & Secure",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
                           ),
-                          SizedBox(
-                            height: 12,
+                          maxLines: 2,
+                        ),
+                        SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          "Enjoy a seamless shopping experience with our user-friendly interface and secure checkout process. Shop with confidence",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
                           ),
-                          Text(
-                            "Have hair accesories or wigs to sell? Join our platform as a vendor and reach thousands of customers. It's simple and profitable!",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              color: Colors.black,
-                            ),
-                            maxLines: 3,
-                          ),
-                        ],
+                          maxLines: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Container(
+                    height: screenHeight * 0.65,
+                    width: screenWidth,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.fill,
+                        image:
+                            AssetImage('assets/images/Frame 65next page 2.png'),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "Become a ",
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              "Vendor",
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF673AB7),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          "Start selling with ease",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                          maxLines: 2,
+                        ),
+                        SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          "Have hair accesories or wigs to sell? Join our platform as a vendor and reach thousands of customers. It's simple and profitable!",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                          maxLines: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
-      bottomSheet: isLastPage
+      bottomNavigationBar: isLastPage
           ? SafeArea(
+              maintainBottomViewPadding: true,
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 child: SizedBox(
-                  height: screenHeight * 0.06,
+                  height: kToolbarHeight * 0.75,
                   width: double.infinity,
                   child: TextButton(
                     style: TextButton.styleFrom(
@@ -423,7 +403,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             )
           : SafeArea(
               child: Container(
-                height: screenHeight * 0.10,
+                height: kToolbarHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 color: Colors.white,
                 child: Row(

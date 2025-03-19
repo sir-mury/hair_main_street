@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 // import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/order_checkoutController.dart';
@@ -11,6 +12,7 @@ import 'package:hair_main_street/controllers/userController.dart';
 import 'package:hair_main_street/models/auxModels.dart';
 import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/pages/orders_stuff/payment_successful_page.dart';
+import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:monnify_payment_sdk/monnify_payment_sdk.dart';
 import 'package:recase/recase.dart';
@@ -108,7 +110,7 @@ class _CartCheckoutConfirmationPageState
           ),
           actions: [
             TextButton(
-              onPressed: () => Get.back(),
+              onPressed: () => Get.close(2),
               style: TextButton.styleFrom(
                 backgroundColor: Colors.red.shade300,
                 shape: RoundedRectangleBorder(
@@ -129,6 +131,116 @@ class _CartCheckoutConfirmationPageState
       );
     }
 
+    //initialise payment for paystack
+    initializePaymentPaystack(
+      List<Map<String, dynamic>> productStates,
+      String email,
+      MyUser user,
+    ) async {
+      String reference = _getReference();
+      final request = PaystackTransactionRequest(
+        reference: reference,
+        secretKey: secretKey!,
+        email: email,
+        amount: (widget.payableAmount!.toDouble() * 100),
+        currency: PaystackCurrency.ngn,
+        channel: [
+          PaystackPaymentChannel.mobileMoney,
+          PaystackPaymentChannel.card,
+          PaystackPaymentChannel.ussd,
+          PaystackPaymentChannel.bankTransfer,
+          PaystackPaymentChannel.bank,
+          PaystackPaymentChannel.qr,
+          PaystackPaymentChannel.eft,
+        ],
+      );
+
+      final initializedTransaction =
+          await PaymentService.initializeTransaction(request);
+
+      if (!initializedTransaction.status) {
+        Get.snackbar(
+          "Error",
+          initializedTransaction.message,
+          backgroundColor: Colors.red.shade200,
+          colorText: Colors.black,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(
+            milliseconds: 400,
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return null;
+      final response = await PaymentService.showPaymentModal(
+        context,
+        transaction: initializedTransaction,
+        callbackUrl: callbackUrl!,
+      ).then((_) async {
+        if (!mounted) return null;
+        return await PaymentService.verifyTransaction(
+          paystackSecretKey: secretKey!,
+          initializedTransaction.data?.reference ?? request.reference,
+        );
+      });
+
+      //print(response);
+      switch (response?.data.status) {
+        case PaystackTransactionStatus.success:
+          try {
+            for (var states in productStates) {
+              int installmentPaid;
+              var totalPrice = states["productPrice"];
+              var productPrice =
+                  (states["productPrice"]) / states["orderQuantity"];
+              if (states["paymentMethod"] == "installment") {
+                installmentPaid = 1;
+              } else {
+                installmentPaid = 0;
+              }
+              var result = await checkOutController.createOrder(
+                deliveryAddress: widget.selectedAddress,
+                installmentPaid: installmentPaid,
+                totalPrice: totalPrice,
+                paymentMethod: states["paymentMethod"],
+                paymentPrice: states["installmentAmountPaid"],
+                productID: states["productID"],
+                transactionID: reference,
+                vendorID: states["vendorID"],
+                installmentNumber: states["numberOfInstallments"],
+                orderQuantity: states["orderQuantity"].toString(),
+                productPrice: productPrice.toString(),
+                user: user,
+              );
+              if (result == 'success') {
+                Get.to(
+                  () => const PaymentSuccessfulPage(),
+                );
+                checkOutController.checkoutList.clear();
+              }
+            }
+          } catch (e) {
+            print("error: $e");
+          }
+          break;
+
+        case PaystackTransactionStatus.failed:
+          showErrorDialog("Payment Failed");
+          break;
+        case PaystackTransactionStatus.abandoned:
+          showErrorDialog("Payment Abandoned");
+          break;
+        case null:
+          showErrorDialog("Payment Failed");
+          break;
+        default:
+          showErrorDialog("Payment Failed");
+          break;
+      }
+    }
+
+    //initiate monnify payment for a list of products
     initatePaymentForProducts(
       List<Map<String, dynamic>> productStates,
       String email,
@@ -207,73 +319,144 @@ class _CartCheckoutConfirmationPageState
       }
     }
 
-    //initiate paystack payment for a list of products
-    // Future<void> initiatePaymentForProducts(
-    //   List<Map<String, dynamic>> productStates,
-    //   String email,
-    //   MyUser user,
-    // ) async {
-    //   Charge charge = Charge()
-    //     ..amount = (widget.payableAmount!.round()) * 100
-    //     ..reference = _getReference()
-    //     ..email = email;
-
-    //   CheckoutResponse response = await plugin.checkout(
-    //     context,
-    //     method: CheckoutMethod.card,
-    //     charge: charge,
-    //   );
-    //   if (response.status) {
-    //     bool verified = await checkOutController.verifyTransaction(
-    //         reference: response.reference!);
-    //     print(response);
-    //     print(response.reference);
-    //     print("verified:$verified");
-    //     if (verified) {
-    //       try {
-    //         for (var states in productStates) {
-    //           int installmentPaid;
-    //           var totalPrice = states["productPrice"];
-    //           var productPrice =
-    //               (states["productPrice"]) / states["orderQuantity"];
-    //           if (states["paymentMethod"] == "installment") {
-    //             installmentPaid = 1;
-    //           } else {
-    //             installmentPaid = 0;
-    //           }
-    //           var result = await checkOutController.createOrder(
-    //             deliveryAddress: widget.selectedAddress,
-    //             installmentPaid: installmentPaid,
-    //             totalPrice: totalPrice,
-    //             paymentMethod: states["paymentMethod"],
-    //             paymentPrice: states["installmentAmountPaid"],
-    //             productID: states["productID"],
-    //             transactionID: response.reference,
-    //             vendorID: states["vendorID"],
-    //             installmentNumber: states["numberOfInstallments"],
-    //             orderQuantity: states["orderQuantity"].toString(),
-    //             productPrice: productPrice.toString(),
-    //             user: user,
-    //           );
-    //           if (result == 'success') {
-    //             Get.offNamedUntil("/orders", (route) => route.isFirst);
-    //             checkOutController.checkoutList.clear();
-    //           }
-    //         }
-    //       } catch (e) {
-    //         print("error: $e");
-    //       }
-    //     } else {
-    //       showErrorDialog("An Error Occured in Payment");
-    //     }
-    //   } else {
-    //     showErrorDialog("You Cancelled Your Payment");
-    //   }
-    // }
+    showPaymentDialog(
+      List<Map<String, dynamic>> productStates,
+      String email,
+      MyUser user,
+    ) {
+      return Get.dialog(
+        AlertDialog(
+          backgroundColor: Colors.white,
+          alignment: Alignment.center,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          contentPadding: const EdgeInsets.all(8),
+          elevation: 0,
+          content: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  InkWell(
+                    radius: 40,
+                    onTap: () {
+                      !Get.isDialogOpen! ? Get.back() : Get.close(2);
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.clear,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: const Text(
+                  "Choose your payment gateway",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              const Text(
+                "Choose between the various payment gateways we have available",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                ),
+                maxLines: 3,
+                textAlign: TextAlign.center,
+              ),
+              const Divider(
+                height: 12,
+                color: Colors.grey,
+                thickness: 1,
+              ),
+              InkWell(
+                child: const SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                    child: Text(
+                      "Pay with Paystack",
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.black,
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                onTap: () async {
+                  Get.close(1);
+                  await initializePaymentPaystack(
+                    widget.productStates,
+                    userController.userState.value!.email!,
+                    userController.userState.value!,
+                  );
+                },
+              ),
+              const Divider(
+                height: 4,
+                color: Colors.grey,
+                thickness: 1,
+              ),
+              InkWell(
+                onTap: () async {
+                  Get.close(1);
+                  await initatePaymentForProducts(
+                    widget.productStates,
+                    userController.userState.value!.email!,
+                    userController.userState.value!,
+                  );
+                },
+                child: const SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    child: Text(
+                      "Pay with Monnify",
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.black,
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // const SizedBox(
+              //   width: 4,
+              // ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return PopScope(
       canPop: true,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, value) async {
         if (didPop) {
           payableAmount = 0.0;
         }
@@ -617,19 +800,22 @@ class _CartCheckoutConfirmationPageState
                         ),
                       ),
                       onPressed: () async {
-                        initatePaymentForProducts(
-                            widget.productStates,
-                            userController.userState.value!.email!,
-                            userController.userState.value!);
+                        checkOutController.isLoading.value = true;
                         if (checkOutController.isLoading.value) {
                           Get.dialog(
-                            const Center(
-                              child: CircularProgressIndicator(
-                                backgroundColor: Colors.black,
-                                strokeWidth: 4,
-                              ),
-                            ),
+                            const LoadingWidget(),
                           );
+                          !Platform.isIOS
+                              ? await showPaymentDialog(
+                                  widget.productStates,
+                                  userController.userState.value!.email!,
+                                  userController.userState.value!,
+                                )
+                              : await initializePaymentPaystack(
+                                  widget.productStates,
+                                  userController.userState.value!.email!,
+                                  userController.userState.value!,
+                                );
                         }
                       },
                       child: const Text(

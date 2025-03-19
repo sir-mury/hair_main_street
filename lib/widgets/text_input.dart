@@ -27,8 +27,10 @@ class TextInputWidget extends StatelessWidget {
   final TextEditingController? controller;
   final IconButton? visibilityIcon;
   final bool? asCurrency;
+  final List<String>? autofillHints;
   const TextInputWidget({
     this.labelColor,
+    this.autofillHints,
     this.asCurrency,
     this.focusNode,
     this.controller,
@@ -66,6 +68,7 @@ class TextInputWidget extends StatelessWidget {
           height: 4,
         ),
         TextFormField(
+          autofillHints: autofillHints ?? [],
           focusNode: focusNode,
           style: const TextStyle(
             fontFamily: "Lato",

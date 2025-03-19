@@ -41,7 +41,7 @@ class _SignInState extends State<SignIn> {
 
     return PopScope(
       canPop: true,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) {
           userController.error.value = '';
         }
@@ -97,6 +97,7 @@ class _SignInState extends State<SignIn> {
                     labelText: "Email",
                     hintText: "Enter email address",
                     fontSize: 15,
+                    autofillHints: [AutofillHints.email],
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (val) {
                       if (!validator.isEmail(val!)) {
@@ -132,6 +133,7 @@ class _SignInState extends State<SignIn> {
                         ),
                         labelText: "Password",
                         hintText: "Enter password",
+                        autofillHints: [AutofillHints.password],
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         validator: (value) {
                           if (value == null || value.isEmpty) {

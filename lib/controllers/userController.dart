@@ -62,7 +62,7 @@ class UserController extends GetxController {
   void getDeliveryAddresses(String userID) {
     deliveryAddresses
         .bindStream(DataBaseService().getDeliveryAddresses(userID));
-    update();
+    //update();
   }
 
   //get admin variables

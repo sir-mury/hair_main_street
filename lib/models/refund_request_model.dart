@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class RefundRequest {
   String? requestID;
   String? orderID;
@@ -8,6 +10,7 @@ class RefundRequest {
   String? refundAccountNumber;
   String? refundBankCode;
   num? refundAmount;
+  Timestamp? createdAt;
 
   RefundRequest({
     this.orderID,
@@ -19,6 +22,7 @@ class RefundRequest {
     this.userID,
     this.refundAccountNumber,
     this.refundBankCode,
+    this.createdAt,
   });
 
   factory RefundRequest.fromData(Map<String, dynamic> data) {
@@ -32,6 +36,7 @@ class RefundRequest {
       userID: data['userId'],
       refundAccountNumber: data['refund account'] ?? '',
       refundBankCode: data['refund bank_code'] ?? '',
+      createdAt: data["created at"],
     );
   }
 
@@ -46,6 +51,7 @@ class RefundRequest {
       'refund amount': refundAmount,
       'refund bank_code': refundBankCode,
       'refund account': refundAccountNumber,
+      'created at': createdAt,
     };
   }
 }
@@ -59,6 +65,7 @@ class CancellationRequest {
   String? cancellationAccount;
   String? cancellationBankCode;
   num? cancellationAmount;
+  Timestamp? createdAt;
 
   CancellationRequest({
     this.orderID,
@@ -69,6 +76,7 @@ class CancellationRequest {
     this.cancellationAccount,
     this.cancellationBankCode,
     this.userID,
+    this.createdAt,
   });
 
   factory CancellationRequest.fromData(Map<String, dynamic> data) {
@@ -81,6 +89,7 @@ class CancellationRequest {
       userID: data["userID"],
       cancellationAccount: data['cancellation account'],
       cancellationBankCode: data['cancellation bank_code'],
+      createdAt: data['created at'],
     );
   }
 
@@ -94,6 +103,7 @@ class CancellationRequest {
       'userID': userID,
       'cancellation account': cancellationAccount,
       'cancellation bank_code': cancellationBankCode,
+      'created at': createdAt,
     };
   }
 }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 Wallet walletFromJson(String str) => Wallet.fromJson(json.decode(str));
 
 String walletToJson(Wallet data) => json.encode(data.toJson());
@@ -121,13 +123,15 @@ class WithdrawalRequest {
   String? accountNumber;
   String? accountName;
   String? bankName;
+  String? bankCode;
   String? status;
-  dynamic timestamp;
+  Timestamp? createdAt;
 
   WithdrawalRequest({
     this.withdrawalAmount,
     this.accountName,
-    this.timestamp,
+    this.bankCode,
+    this.createdAt,
     this.accountNumber,
     this.bankName,
     this.status,
@@ -135,23 +139,26 @@ class WithdrawalRequest {
   });
 
   factory WithdrawalRequest.fromJson(Map<String, dynamic> json) {
-    final withdrawalAmountValue = json['withdrawal amount'] ?? '';
-    num? withdrawalAmount;
-
-    if (withdrawalAmountValue.isNotEmpty) {
-      withdrawalAmount = num.tryParse(withdrawalAmountValue.toString()) ?? 0;
-    } else {
-      withdrawalAmount = 0;
-    }
-
     return WithdrawalRequest(
       accountName: json["account name"],
       accountNumber: json["account number"],
-      timestamp: json["timestamp"],
+      createdAt: json["created at"],
       bankName: json["bank name"],
       status: json["status"],
+      bankCode: json["bank code"],
       userId: json['userID'],
-      withdrawalAmount: withdrawalAmount,
+      withdrawalAmount: json['withdrawal amount'],
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        "account name": accountName,
+        "account number": accountNumber,
+        "created at": createdAt,
+        "bank name": bankName,
+        "status": status,
+        "userID": userId,
+        "withdrawal amount": withdrawalAmount,
+        "bank code": bankCode,
+      };
 }
