@@ -19,6 +19,7 @@ class AdminController extends GetxController {
     stream.listen((onData) {
       if (onData != null) {
         adminSettings.value = onData;
+        debugPrint("Is Live: ${adminSettings.value?.isLive}");
         isLoading.value = false;
       } else {
         isLoading.value = false;

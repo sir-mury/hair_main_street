@@ -19,6 +19,7 @@ import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/pages/orders_stuff/payment_successful_page.dart';
 import 'package:hair_main_street/pages/profile/add_delivery_address.dart';
 import 'package:hair_main_street/services/database.dart';
+import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -1005,112 +1006,7 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                                               ),
                                             ),
                                           ]
-                                        : List.generate(
-                                            userController
-                                                .deliveryAddresses.length,
-                                            (index) {
-                                              Address address = userController
-                                                  .deliveryAddresses[index]!;
-                                              bool isSelected = userController
-                                                      .selectedAddress.value ==
-                                                  address;
-                                              return userController
-                                                          .isLoading.value ==
-                                                      true
-                                                  ? const LoadingWidget()
-                                                  : GestureDetector(
-                                                      onTap: () {
-                                                        userController
-                                                            .selectedAddress
-                                                            .value = address;
-                                                      },
-                                                      child: Container(
-                                                        margin: const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 4),
-                                                        height: 130,
-                                                        width: 250,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 4,
-                                                                vertical: 4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(10),
-                                                          border: Border.all(
-                                                            color: isSelected
-                                                                ? const Color(
-                                                                    0xFF673AB7)
-                                                                : Colors.black,
-                                                            width: isSelected
-                                                                ? 2
-                                                                : 0.5,
-                                                          ),
-                                                        ),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              [
-                                                                if (address
-                                                                        .landmark !=
-                                                                    null)
-                                                                  address
-                                                                      .landmark!,
-                                                                address
-                                                                    .streetAddress,
-                                                                address.lGA,
-                                                                address.state,
-                                                                if (address
-                                                                        .zipCode !=
-                                                                    null)
-                                                                  address
-                                                                      .zipCode!,
-                                                              ]
-                                                                  .where((element) =>
-                                                                      element !=
-                                                                      null)
-                                                                  .join(', '),
-                                                              style:
-                                                                  const TextStyle(
-                                                                fontFamily:
-                                                                    'Lato',
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color: Colors
-                                                                    .black,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Text(
-                                                              "${address.contactName ?? ""},${address.contactPhoneNumber}",
-                                                              style:
-                                                                  const TextStyle(
-                                                                fontFamily:
-                                                                    'Raleway',
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                color: Colors
-                                                                    .black,
-                                                                fontSize: 14,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    );
-                                            },
-                                          ),
+                                        : buildAddressCard(),
                                   ),
                                 ),
                               ),
@@ -1185,52 +1081,51 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                         const SizedBox(
                           height: 4,
                         ),
-                        Container(
-                          // width: double.infinity, // Takes the available width
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F5F5),
-                            borderRadius: BorderRadius.circular(8.0),
-                            //border: Border.all(color: Colors.grey),
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            value: installmentValue,
-                            dropdownColor: Colors.white,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            hint: const Text(
-                              "Select",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'Lato',
-                                color: Colors.black,
-                              ),
+                        DropdownButtonFormField<String>(
+                          elevation: 8,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          value: installmentValue,
+                          dropdownColor: AppColors.shade1,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please select an option';
-                              }
-                              return null;
-                            },
-                            items: List.generate(2, (index) {
-                              int newIndex = index + 2;
-                              return DropdownMenuItem(
-                                value: newIndex.toString(),
-                                child: Text(
-                                  "$newIndex",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
-                                    fontFamily: 'Lato',
-                                  ),
-                                ),
-                              );
-                            }),
-                            onChanged: (value) =>
-                                updateInstallmentValue(value!),
                           ),
+                          hint: const Text(
+                            "Select",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Lato',
+                              color: Colors.black,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select an option';
+                            }
+                            return null;
+                          },
+                          items: List.generate(2, (index) {
+                            int newIndex = index + 2;
+                            return DropdownMenuItem(
+                              value: newIndex.toString(),
+                              child: Text(
+                                "$newIndex",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                  fontFamily: 'Lato',
+                                ),
+                              ),
+                            );
+                          }),
+                          onChanged: (value) => updateInstallmentValue(value!),
                         ),
                         const SizedBox(
                           height: 8,
@@ -1468,5 +1363,71 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
     }
 
     return 'ChargedFrom${platform}_${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  List<Widget> buildAddressCard() {
+    return List.generate(
+      userController.deliveryAddresses.length,
+      (index) {
+        Address address = userController.deliveryAddresses[index]!;
+        bool isSelected = userController.selectedAddress.value == address;
+        return userController.isLoading.value == true
+            ? const LoadingWidget()
+            : GestureDetector(
+                onTap: () {
+                  userController.selectedAddress.value = address;
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 130,
+                  width: 250,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.shade2.withValues(alpha: 0.5)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected ? AppColors.main : Colors.black,
+                      width: isSelected ? 2 : 0.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        [
+                          if (address.landmark != null) address.landmark!,
+                          address.streetAddress,
+                          address.lGA,
+                          address.state,
+                          if (address.zipCode != null) address.zipCode!,
+                        ].where((element) => element != null).join(', '),
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Text(
+                        "${address.contactName ?? ""},${address.contactPhoneNumber}",
+                        style: const TextStyle(
+                          fontFamily: 'Raleway',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+      },
+    );
   }
 }
