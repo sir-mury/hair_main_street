@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
+// import 'package:hair_main_street/models/order_model.dart';
+// import 'package:hair_main_street/pages/menu/order_detail.dart';
 
 class PaymentSuccessfulPage extends StatelessWidget {
   const PaymentSuccessfulPage({super.key});
@@ -66,8 +68,8 @@ class PaymentSuccessfulPage extends StatelessWidget {
           child: BottomAppBar(
             elevation: 0,
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            height: kToolbarHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            height: kToolbarHeight * 1.2,
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -100,10 +102,12 @@ class PaymentSuccessfulPage extends StatelessWidget {
 }
 
 class InstallmentPaymentSuccessfulPage extends StatelessWidget {
+  final String? orderID;
   final int installmentRemaining;
   const InstallmentPaymentSuccessfulPage({
     super.key,
     required this.installmentRemaining,
+    required this.orderID,
   });
 
   @override
@@ -112,7 +116,9 @@ class InstallmentPaymentSuccessfulPage extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        //Get.close(2);
+        // await checkOutController.getSingleOrder(orderID!);
+        // //Get.close(2);
+        // Get.close(3);
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -230,7 +236,7 @@ class InstallmentPaymentSuccessfulPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  checkOutController.toRebuild();
+                  await checkOutController.getSingleOrder(orderID!);
                   Get.close(3);
                 },
                 child: const Text(

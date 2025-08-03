@@ -22,9 +22,10 @@ import 'package:hair_main_street/pages/orders_stuff/installment_checkout.dart';
 import 'package:hair_main_street/pages/orders_stuff/once_checkout.dart';
 import 'package:hair_main_street/pages/review_page.dart';
 import 'package:hair_main_street/services/database.dart';
+import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
-import 'package:like_button/like_button.dart';
+// import 'package:like_button/like_button.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
 import 'package:share_plus/share_plus.dart';
@@ -54,6 +55,7 @@ class _ProductPageState extends State<ProductPage> {
   List<bool>? optionToggleSelection = [false];
   Product? product;
   ProductOption? selectedOptionHere;
+  SharePlus share = SharePlus.instance;
 
   //function to determine number of products to show in the see also panel
   int numberOfProductsToShow(int length) {
@@ -102,6 +104,12 @@ class _ProductPageState extends State<ProductPage> {
       // lengthToggleSelection = List.filled(totalLength, false);
       // colourToggleSelection = List.filled(totalColour, false);
     }
+  }
+
+  determineIfProductExist(Product product) {
+    WidgetsBinding.instance.scheduleFrameCallback((_) {
+      productController.determineIfProductExist(product);
+    });
   }
 
   @override
@@ -178,7 +186,7 @@ class _ProductPageState extends State<ProductPage> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                     child: Text(
-                      "Pay Installmentally",
+                      "Pay in Installments",
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
@@ -222,26 +230,21 @@ class _ProductPageState extends State<ProductPage> {
                               Get.to(() => const SignIn()),
                         ));
                   } else if (product!.hasOptions == true) {
-                    if (selectedOptionHere == null) {
-                      productController
-                          .showMyToast("Please Select a product Option First");
-                    } else {
-                      var val = checkOutController.createCheckBoxItem(
-                        product!.productID,
-                        productController.quantity.value,
-                        (selectedOptionHere?.price!)! *
-                            (productController.quantity.value),
-                        userController.userState.value!,
-                        optionName:
-                            "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
-                      );
-                      Get.close(1);
-                      Get.to(
-                        () => InstallmentCheckoutPage(
-                          products: [val],
-                        ),
-                      );
-                    }
+                    var val = checkOutController.createCheckBoxItem(
+                      product!.productID,
+                      productController.quantity.value,
+                      (selectedOptionHere?.price!)! *
+                          (productController.quantity.value),
+                      userController.userState.value!,
+                      optionName:
+                          "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
+                    );
+                    Get.close(1);
+                    Get.to(
+                      () => InstallmentCheckoutPage(
+                        products: [val],
+                      ),
+                    );
                   } else {
                     var val = checkOutController.createCheckBoxItem(
                         product!.productID,
@@ -300,24 +303,19 @@ class _ProductPageState extends State<ProductPage> {
                               Get.to(() => const SignIn()),
                         ));
                   } else if (product!.hasOptions == true) {
-                    if (selectedOptionHere == null) {
-                      productController
-                          .showMyToast("Please Select a product Option First");
-                    } else {
-                      var val = checkOutController.createCheckBoxItem(
-                        product!.productID,
-                        productController.quantity.value,
-                        (selectedOptionHere?.price!)! *
-                            (productController.quantity.value),
-                        userController.userState.value!,
-                        optionName:
-                            "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
-                      );
-                      Get.close(1);
-                      Get.to(() => OnceCheckoutPage(
-                            products: [val],
-                          ));
-                    }
+                    var val = checkOutController.createCheckBoxItem(
+                      product!.productID,
+                      productController.quantity.value,
+                      (selectedOptionHere?.price!)! *
+                          (productController.quantity.value),
+                      userController.userState.value!,
+                      optionName:
+                          "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
+                    );
+                    Get.close(1);
+                    Get.to(() => OnceCheckoutPage(
+                          products: [val],
+                        ));
                   } else {
                     var val = checkOutController.createCheckBoxItem(
                       product!.productID,
@@ -398,7 +396,7 @@ class _ProductPageState extends State<ProductPage> {
     String generateProductLink(String productID, String productName) {
       // Replace 'your_domain.com' with your actual domain
       final formattedName = productName.toLowerCase().replaceAll(' ', '_');
-      return 'https://hairmainstreet.com/products/$productID/$formattedName';
+      return 'https://app.hairmainstreet.com/products/$productID/$formattedName';
     }
 
     showSpecificationBottomSheet() {
@@ -522,7 +520,10 @@ class _ProductPageState extends State<ProductPage> {
                     generateProductLink(productID!, product!.name!);
                 String message =
                     "Hey, I am shopping on Hair Main Street\nCheck out this cool product with the link below\n$productLink";
-                Share.share(message, subject: "Product Listing");
+                share.share(ShareParams(
+                  title: "Product Listing",
+                  text: message,
+                ));
               },
               icon: const Icon(
                 Symbols.share,
@@ -758,395 +759,8 @@ class _ProductPageState extends State<ProductPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (product!.image == null || product!.image!.isEmpty)
-                          Stack(
-                            children: [
-                              CachedNetworkImage(
-                                fit: BoxFit.fill,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  width: double.infinity,
-                                  height: pictureHeight.toDouble(),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                imageUrl:
-                                    'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
-                                errorWidget: ((context, url, error) =>
-                                    const Text("Failed to Load Image")),
-                                placeholder: ((context, url) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    )),
-                              ),
-                              Positioned(
-                                bottom: 10,
-                                left: 10,
-                                child: Container(
-                                  width: 40,
-                                  height: 30,
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      width: 0.8,
-                                      color: const Color(0xFF673AB7),
-                                    ),
-                                  ),
-                                  child: FutureBuilder(
-                                      future: DataBaseService()
-                                          .isProductInWishlist(widget.id!),
-                                      builder: (context, snapshot) {
-                                        bool isLiked = false;
-                                        if (snapshot.hasData) {
-                                          isLiked = snapshot.data!;
-                                        }
-                                        return LikeButton(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          size: 16,
-                                          bubblesSize: 48,
-                                          isLiked: isLiked,
-                                          onTap: (isTapped) async {
-                                            // Only proceed if the user is logged in
-                                            if (isUserLoggedIn) {
-                                              if (userController
-                                                      .userState.value!.uid ==
-                                                  product!.vendorId) {
-                                                wishListController.showMyToast(
-                                                    "Cannot add your own product to wishlist");
-                                              } else {
-                                                if (isLiked) {
-                                                  await wishListController
-                                                      .removeFromWishlistWithProductID(
-                                                          widget.id!);
-                                                } else {
-                                                  WishlistItem wishlistItem =
-                                                      WishlistItem(
-                                                          wishListItemID:
-                                                              widget.id!);
-                                                  await wishListController
-                                                      .addToWishlist(
-                                                          wishlistItem);
-                                                }
-                                              }
-                                            }
-                                            return isUserLoggedIn
-                                                ? !isLiked
-                                                : false;
-                                          },
-                                          likeBuilder: (isLiked) {
-                                            if (isLiked) {
-                                              return const Icon(
-                                                Icons.favorite,
-                                                color: Color(0xFF673AB7),
-                                                size: 20,
-                                              );
-                                            } else {
-                                              return const Icon(
-                                                Icons.favorite_outline_rounded,
-                                                color: Color(0xFF673AB7),
-                                                size: 20,
-                                              );
-                                            }
-                                          },
-                                          bubblesColor: BubblesColor(
-                                            dotPrimaryColor:
-                                                const Color(0xFF673AB7),
-                                            dotSecondaryColor:
-                                                const Color(0xFF673AB7)
-                                                    .withValues(alpha: 0.70),
-                                            dotThirdColor: Colors.white,
-                                            dotLastColor: Colors.black,
-                                          ),
-                                        );
-                                      }),
-                                ),
-                              ),
-                            ],
-                          )
-                        else if (product!.image!.length == 1)
-                          Stack(
-                            children: [
-                              CachedNetworkImage(
-                                fit: BoxFit.fill,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  width: double.infinity,
-                                  height: pictureHeight.toDouble(),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                imageUrl: product!.image!.first,
-                                errorWidget: ((context, url, error) =>
-                                    const Text("Failed to Load Image")),
-                                placeholder: ((context, url) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    )),
-                              ),
-                              Positioned(
-                                top: 10,
-                                right: 10,
-                                child: Container(
-                                  width: 40,
-                                  height: 30,
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "1/${product!.image!.length}",
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: 'Raleway',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 10,
-                                left: 10,
-                                child: Container(
-                                  width: 40,
-                                  height: 30,
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: FutureBuilder(
-                                    future: DataBaseService()
-                                        .isProductInWishlist(widget.id!),
-                                    builder: (context, snapshot) {
-                                      bool isLiked = false;
-                                      if (snapshot.hasData) {
-                                        isLiked = snapshot.data!;
-                                      }
-                                      return LikeButton(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        size: 16,
-                                        bubblesSize: 48,
-                                        isLiked: isLiked,
-                                        onTap: (isTapped) async {
-                                          // Only proceed if the user is logged in
-                                          if (isUserLoggedIn) {
-                                            if (isLiked) {
-                                              await wishListController
-                                                  .removeFromWishlistWithProductID(
-                                                      widget.id!);
-                                            } else {
-                                              WishlistItem wishlistItem =
-                                                  WishlistItem(
-                                                      wishListItemID:
-                                                          widget.id!);
-                                              await wishListController
-                                                  .addToWishlist(wishlistItem);
-                                            }
-                                          }
-                                          return isUserLoggedIn
-                                              ? !isLiked
-                                              : false;
-                                        },
-                                        likeBuilder: (isLiked) {
-                                          if (isLiked) {
-                                            return const Icon(
-                                              Icons.favorite,
-                                              color: Color(0xFF673AB7),
-                                              size: 20,
-                                            );
-                                          } else {
-                                            return const Icon(
-                                              Icons.favorite_outline_rounded,
-                                              color: Color(0xFF673AB7),
-                                              size: 20,
-                                            );
-                                          }
-                                        },
-                                        bubblesColor: BubblesColor(
-                                          dotPrimaryColor:
-                                              const Color(0xFF673AB7),
-                                          dotSecondaryColor:
-                                              const Color(0xFF673AB7)
-                                                  .withValues(alpha: 0.70),
-                                          dotThirdColor: Colors.white,
-                                          dotLastColor: Colors.black,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          Stack(
-                            children: [
-                              CarouselSlider(
-                                items: List.generate(
-                                  product!.image!.length,
-                                  (index) => Stack(
-                                    children: [
-                                      CachedNetworkImage(
-                                        imageBuilder:
-                                            (context, imageProvider) =>
-                                                Container(
-                                          width: double.infinity,
-                                          height: pictureHeight.toDouble(),
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.rectangle,
-                                            image: DecorationImage(
-                                              image: imageProvider,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                        fit: BoxFit.fill,
-                                        imageUrl: "${product!.image![index]}",
-                                        errorWidget: ((context, url, error) =>
-                                            const Text("Failed to Load Image")),
-                                        placeholder: ((context, url) =>
-                                            const Center(
-                                                child:
-                                                    CircularProgressIndicator())),
-                                      ),
-                                      Positioned(
-                                        top: 10,
-                                        right: 10,
-                                        child: Container(
-                                          width: 40,
-                                          height: 30,
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.7),
-                                            borderRadius:
-                                                BorderRadius.circular(16),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              "${index + 1}/${product!.image!.length}",
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                fontFamily: 'Raleway',
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                carouselController: carouselController,
-                                options: CarouselOptions(
-                                  enlargeFactor: 0.08,
-                                  height: pictureHeight.toDouble(),
-                                  autoPlay: true,
-                                  pauseAutoPlayOnManualNavigate: true,
-                                  enlargeCenterPage: true,
-                                  viewportFraction: 0.95,
-                                  autoPlayInterval:
-                                      const Duration(milliseconds: 1900),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 10,
-                                left: 10,
-                                child: Container(
-                                  width: 40,
-                                  height: 30,
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: FutureBuilder(
-                                    future: DataBaseService()
-                                        .isProductInWishlist(widget.id!),
-                                    builder: (context, snapshot) {
-                                      bool isLiked = false;
-                                      if (snapshot.hasData) {
-                                        isLiked = snapshot.data!;
-                                      }
-                                      return LikeButton(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        size: 16,
-                                        bubblesSize: 48,
-                                        isLiked: isLiked,
-                                        onTap: (isTapped) async {
-                                          // Only proceed if the user is logged in
-                                          if (isUserLoggedIn) {
-                                            if (isLiked) {
-                                              await wishListController
-                                                  .removeFromWishlistWithProductID(
-                                                      widget.id!);
-                                            } else {
-                                              WishlistItem wishlistItem =
-                                                  WishlistItem(
-                                                      wishListItemID:
-                                                          widget.id!);
-                                              await wishListController
-                                                  .addToWishlist(wishlistItem);
-                                            }
-                                          }
-                                          return isUserLoggedIn
-                                              ? !isLiked
-                                              : false;
-                                        },
-                                        likeBuilder: (isLiked) {
-                                          if (isLiked) {
-                                            return const Icon(
-                                              Icons.favorite,
-                                              color: Color(0xFF673AB7),
-                                              size: 20,
-                                            );
-                                          } else {
-                                            return const Icon(
-                                              Icons.favorite_outline_rounded,
-                                              color: Color(0xFF673AB7),
-                                              size: 20,
-                                            );
-                                          }
-                                        },
-                                        bubblesColor: BubblesColor(
-                                          dotPrimaryColor:
-                                              const Color(0xFF673AB7),
-                                          dotSecondaryColor:
-                                              const Color(0xFF673AB7)
-                                                  .withValues(alpha: 0.70),
-                                          dotThirdColor: Colors.white,
-                                          dotLastColor: Colors.black,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        buildImageSection(productID!, product!, isUserLoggedIn,
+                            pictureHeight, carouselController),
                         const SizedBox(
                           height: 8,
                         ),
@@ -1212,275 +826,135 @@ class _ProductPageState extends State<ProductPage> {
                         const SizedBox(
                           height: 8,
                         ),
-                        Visibility(
-                          visible: product!.hasOptions! == true,
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: const Color(0xFFF5F5F5),
-                            ),
-                            child: Column(
+                        // ...existing code...
+                        // Place optionsWidget() as a method call, not as a widget in a list
+                        optionsWidget(),
+
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        GetX<ProductController>(
+                          builder: (controller) {
+                            determineIfProductExist(product!);
+                            if (controller.stockRemaining.value == 0) {
+                              return Text(
+                                "Out of stock".titleCase,
+                                style: TextStyle(
+                                  color: AppColors.cancelled,
+                                  fontSize: 16,
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w700,
+                                  //backgroundColor: Colors.blue,
+                                ),
+                              );
+                            }
+                            return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "Options",
+                                  "Quantity",
                                   style: TextStyle(
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 18,
                                     color: Colors.black,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Lato',
                                   ),
                                 ),
                                 const SizedBox(
-                                  height: 2,
+                                  height: 6,
                                 ),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: ToggleButtons(
-                                    borderWidth: 1.5,
-                                    isSelected: optionToggleSelection!,
-                                    selectedBorderColor: Colors.black,
-                                    // selectedColor: Colors.green,
-                                    fillColor: Colors.white,
-                                    onPressed: (index) {
-                                      for (int i = 0;
-                                          i < optionToggleSelection!.length;
-                                          i++) {
-                                        setState(() {
-                                          optionToggleSelection![i] =
-                                              i == index;
-                                        });
-                                      }
-                                      selectedOptionHere =
-                                          product!.options![index];
-                                    },
-                                    children: List.generate(
-                                      optionToggleSelection?.length ?? 1,
-                                      (index) => TogglesProductPage(
-                                        length:
-                                            product!.options?[index].length ??
-                                                "",
-                                        color: product!.options?[index].color ??
-                                            "",
-                                        price:
-                                            product!.options?[index].price ?? 0,
-                                        stockAvailable: product!.options?[index]
-                                                .stockAvailable ??
-                                            0,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    InkWell(
+                                      radius: 17,
+                                      onTap: () async {
+                                        productController.decreaseQuantity();
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(0.5),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: const Color(0xFF673AB7)
+                                              .withValues(alpha: 0.10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.remove,
+                                          size: 20,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Text(
+                                      "${productController.quantity}",
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontFamily: 'Lato',
+                                        fontWeight: FontWeight.w600,
+                                        //backgroundColor: Colors.blue,
+                                      ),
+                                      textAlign: TextAlign.start,
+                                    ),
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    InkWell(
+                                      radius: 50,
+                                      onTap: () async {
+                                        if (product!.hasOptions! &&
+                                            selectedOptionHere == null) {
+                                          productController.showMyToast(
+                                              "Please select an option first");
+                                        } else if (product!.hasOptions! &&
+                                            selectedOptionHere != null) {
+                                          productController.increaseQuantity(
+                                            selectedOption: selectedOptionHere,
+                                            product: product!,
+                                          );
+                                        } else {
+                                          productController.increaseQuantity(
+                                            product: product!,
+                                            selectedOption: null,
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(0.5),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: const Color(0xFF673AB7)
+                                              .withValues(alpha: 0.10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.add,
+                                          size: 20,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Text(
+                                  "${product!.quantity}pcs left in stock",
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Lato',
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        // Center(
-                        //   child: TextButton(
-                        //     style: TextButton.styleFrom(
-                        //       shape: const RoundedRectangleBorder(
-                        //         side: BorderSide(
-                        //           width: 0.4,
-                        //           color: Colors.black45,
-                        //         ),
-                        //         borderRadius: BorderRadius.all(
-                        //           Radius.circular(12),
-                        //         ),
-                        //       ),
-                        //     ),
-                        //     onPressed: () {
-                        //       Get.bottomSheet(
-                        //         ProductOptionBottomSheetWidget(
-                        //             product: product,
-                        //             onOptionSelected: onOptionSelected),
-                        //       );
-                        //     },
-                        //     child: const Text(
-                        //       "Select Specs",
-                        //       // style: TextStyle(
-                        //       //   fontSize: 18,
-                        //       //   //color: Colors.black54,
-                        //       // ),
-                        //     ),
-                        //   ),
-                        // ),
-                        // const SizedBox(
-                        //   height: 4,
-                        // ),
-                        // Obx(
-                        //   () {
-                        //     return Visibility(
-                        //       visible: productController.isOptionVisible.value,
-                        //       child: Container(
-                        //         //width: screenWidth * 0.5,
-                        //         padding: const EdgeInsets.all(4),
-                        //         decoration: BoxDecoration(
-                        //           border: Border.all(
-                        //               color: Colors.black45, width: 0.5),
-                        //           borderRadius: BorderRadius.circular(8),
-                        //         ),
-                        //         child: Column(
-                        //           crossAxisAlignment: CrossAxisAlignment.start,
-                        //           children: [
-                        //             Row(
-                        //               mainAxisAlignment:
-                        //                   MainAxisAlignment.spaceBetween,
-                        //               children: [
-                        //                 const Text(
-                        //                   "Option Name: ",
-                        //                   style: TextStyle(
-                        //                     fontSize: 16,
-                        //                   ),
-                        //                 ),
-                        //                 Text(
-                        //                   "${selectedOptionHere != null ? selectedOptionHere!.length : 'hello'}",
-                        //                   style: const TextStyle(
-                        //                     fontSize: 16,
-                        //                   ),
-                        //                 ),
-                        //               ],
-                        //             ),
-                        //             Row(
-                        //               mainAxisAlignment:
-                        //                   MainAxisAlignment.spaceBetween,
-                        //               children: [
-                        //                 const Text(
-                        //                   "Option Price: ",
-                        //                   style: TextStyle(
-                        //                     fontSize: 16,
-                        //                   ),
-                        //                 ),
-                        //                 Text(
-                        //                   "${selectedOptionHere != null ? selectedOptionHere!.price : 100}",
-                        //                   style: const TextStyle(
-                        //                     fontSize: 16,
-                        //                   ),
-                        //                 ),
-                        //               ],
-                        //             ),
-                        //             Row(
-                        //               mainAxisAlignment:
-                        //                   MainAxisAlignment.spaceBetween,
-                        //               children: [
-                        //                 const Text(
-                        //                   "Quantity Selected: ",
-                        //                   style: TextStyle(
-                        //                     fontSize: 16,
-                        //                   ),
-                        //                 ),
-                        //                 Text(
-                        //                   "${productController.quantity}",
-                        //                   style: const TextStyle(
-                        //                     fontSize: 16,
-                        //                   ),
-                        //                 ),
-                        //               ],
-                        //             ),
-                        //           ],
-                        //         ),
-                        //       ),
-                        //     );
-                        //   },
-                        // ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Quantity",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Lato',
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 6,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                InkWell(
-                                  radius: 17,
-                                  onTap: () async {
-                                    productController.decreaseQuantity();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(0.5),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: const Color(0xFF673AB7)
-                                          .withValues(alpha: 0.10),
-                                    ),
-                                    child: const Icon(
-                                      Icons.remove,
-                                      size: 20,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                GetX<ProductController>(builder: (context) {
-                                  return Text(
-                                    "${productController.quantity}",
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontFamily: 'Lato',
-                                      fontWeight: FontWeight.w600,
-                                      //backgroundColor: Colors.blue,
-                                    ),
-                                    textAlign: TextAlign.start,
-                                  );
-                                }),
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                InkWell(
-                                  radius: 50,
-                                  onTap: () async {
-                                    productController.increaseQuantity();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(0.5),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: const Color(0xFF673AB7)
-                                          .withValues(alpha: 0.10),
-                                    ),
-                                    child: const Icon(
-                                      Icons.add,
-                                      size: 20,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            ),
-                            Text(
-                              "${product!.quantity}pcs left in stock",
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'Lato',
-                              ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                         const SizedBox(
                           height: 6,
@@ -1870,79 +1344,7 @@ class _ProductPageState extends State<ProductPage> {
                           ),
                         ),
                         onPressed: () {
-                          if (userController.userState.value == null) {
-                            Get.to(() => BlankPage(
-                                  textStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                  ),
-                                  buttonStyle: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF673AB7),
-                                    shape: RoundedRectangleBorder(
-                                      // side: const BorderSide(
-                                      //   width: 1.2,
-                                      //   color: Colors.black,
-                                      // ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  pageIcon: const Icon(
-                                    Icons.person_off_outlined,
-                                    size: 48,
-                                  ),
-                                  text: "Your are not Logged In",
-                                  interactionText: "Sign In or Register",
-                                  interactionIcon: const Icon(
-                                    Icons.person_2_outlined,
-                                    size: 24,
-                                    color: Colors.white,
-                                  ),
-                                  interactionFunction: () =>
-                                      Get.to(() => const SignIn()),
-                                ));
-                          } else if (product!.hasOptions == false) {
-                            if (userController.userState.value!.uid ==
-                                product!.vendorId) {
-                              productController.showMyToast(
-                                  "Cannot add your own product to cart");
-                            } else {
-                              cartController.addToCart(
-                                CartItem(
-                                  price: product!.price! *
-                                      (productController.quantity.value),
-                                  quantity: productController.quantity.value,
-                                  productID: product!.productID,
-                                ),
-                              );
-                            }
-                          } else {
-                            if (selectedOptionHere == null) {
-                              productController.showMyToast(
-                                  "Please Select a product Option First");
-                            } else if (userController.userState.value!.uid ==
-                                product!.vendorId) {
-                              productController.showMyToast(
-                                  "Cannot add your own product to cart");
-                            } else {
-                              cartController.addToCart(
-                                CartItem(
-                                  price: (selectedOptionHere?.price!)! *
-                                      (productController.quantity.value),
-                                  quantity: productController.quantity.value,
-                                  productID: product!.productID,
-                                  optionName:
-                                      "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
-                                ),
-                              );
-                            }
-                          }
-                          // checkOutController.checkoutList.add(
-                          //   CheckOutTickBoxModel(
-                          //       productID: product.productID,
-                          //       price: product.price!,
-                          //       quantity: productController.quantity.value,
-                          //       user: userController.userState.value),
-                          // );
+                          handleAddToCart();
                         },
                         child: const Text(
                           "Add to Cart",
@@ -1977,14 +1379,7 @@ class _ProductPageState extends State<ProductPage> {
                           ),
                         ),
                         onPressed: () {
-                          if (isUserLoggedIn &&
-                              userController.userState.value!.uid ==
-                                  product!.vendorId) {
-                            productController.showMyToast(
-                                "Cannot place order for your own products");
-                          } else {
-                            showPaymentDialog();
-                          }
+                          handlePayment(isUserLoggedIn, showPaymentDialog);
                         },
                         child: const Text(
                           "Buy",
@@ -2001,27 +1396,580 @@ class _ProductPageState extends State<ProductPage> {
             ),
           ),
         ),
-        // floatingActionButton: IconButton(
-        //   style: IconButton.styleFrom(
-        //     backgroundColor: Color(0xFF392F5A),
-        //     shape: CircleBorder(
-        //       side: BorderSide(width: 2, color: Colors.white),
-        //     ),
-        //   ),
-        //   onPressed: () => Get.bottomSheet(
-        //     Container(
-        //       color: Colors.white,
-        //       height: screenHeight * .5,
-        //     ),
-        //   ),
-        //   icon: const Icon(
-        //     Icons.filter_alt_rounded,
-        //     color: Colors.white,
-        //   ),
-        // ),
         extendBody: true,
       ),
     );
+  }
+
+  Widget optionsWidget() {
+    return Visibility(
+      visible: product!.hasOptions! == true,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: const Color(0xFFF5F5F5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Options",
+              style: TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(
+              height: 2,
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ToggleButtons(
+                borderWidth: 1.5,
+                isSelected: optionToggleSelection!,
+                selectedBorderColor: Colors.black,
+                fillColor: Colors.white,
+                onPressed: (index) {
+                  for (int i = 0; i < optionToggleSelection!.length; i++) {
+                    setState(() {
+                      optionToggleSelection![i] = i == index;
+                    });
+                  }
+                  selectedOptionHere = product!.options![index];
+                },
+                children: List.generate(
+                  optionToggleSelection?.length ?? 1,
+                  (index) => TogglesProductPage(
+                    length: product!.options?[index].length ?? "",
+                    color: product!.options?[index].color ?? "",
+                    price: product!.options?[index].price ?? 0,
+                    stockAvailable:
+                        product!.options?[index].stockAvailable ?? 0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void handlePayment(
+      bool isUserLoggedIn, Future<dynamic> Function() showPaymentDialog) {
+    if (!isUserLoggedIn) {
+      productController.showMyToast("Kindly login to buy items");
+    } else {
+      if (productController.stockRemaining.value == 0) {
+        productController.showMyToast("Out of Stock");
+      } else {
+        if (isUserLoggedIn &&
+            userController.userState.value!.uid == product!.vendorId) {
+          productController
+              .showMyToast("Cannot place order for your own products");
+        } else {
+          if (product!.hasOptions! && selectedOptionHere == null) {
+            productController
+                .showMyToast("Please Select a product Option First");
+          } else if (selectedOptionHere != null &&
+              selectedOptionHere!.stockAvailable == 0) {
+            productController
+                .showMyToast("Option out of stock, Select Another");
+          } else {
+            showPaymentDialog();
+          }
+        }
+      }
+    }
+  }
+
+  void handleAddToCart() {
+    if (userController.userState.value == null) {
+      Get.to(() => BlankPage(
+            textStyle: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+            ),
+            buttonStyle: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF673AB7),
+              shape: RoundedRectangleBorder(
+                // side: const BorderSide(
+                //   width: 1.2,
+                //   color: Colors.black,
+                // ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            pageIcon: const Icon(
+              Icons.person_off_outlined,
+              size: 48,
+            ),
+            text: "Your are not Logged In",
+            interactionText: "Sign In or Register",
+            interactionIcon: const Icon(
+              Icons.person_2_outlined,
+              size: 24,
+              color: Colors.white,
+            ),
+            interactionFunction: () => Get.to(() => const SignIn()),
+          ));
+    } else {
+      if (productController.stockRemaining.value == 0) {
+        productController.showMyToast("Out of Stock");
+      } else {
+        if (product!.hasOptions == false) {
+          if (userController.userState.value!.uid == product!.vendorId) {
+            productController
+                .showMyToast("Cannot add your own product to cart");
+          } else {
+            cartController.addToCart(
+              CartItem(
+                price: product!.price! * (productController.quantity.value),
+                quantity: productController.quantity.value,
+                productID: product!.productID,
+              ),
+            );
+          }
+        } else {
+          if (selectedOptionHere == null) {
+            productController
+                .showMyToast("Please Select a product Option First");
+          } else if (selectedOptionHere != null &&
+              selectedOptionHere!.stockAvailable == 0) {
+            productController
+                .showMyToast("Option out of stock, Select Another");
+          } else if (userController.userState.value!.uid == product!.vendorId) {
+            productController
+                .showMyToast("Cannot add your own product to cart");
+          } else {
+            cartController.addToCart(
+              CartItem(
+                price: (selectedOptionHere?.price!)! *
+                    (productController.quantity.value),
+                quantity: productController.quantity.value,
+                productID: product!.productID,
+                optionName:
+                    "${selectedOptionHere!.length}\n${selectedOptionHere!.color}",
+              ),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  Widget buildImageSection(
+    String productID,
+    Product product,
+    bool isUserLoggedIn,
+    num pictureHeight,
+    CarouselSliderController carouselController,
+  ) {
+    if (product.image == null || product.image!.isEmpty) {
+      return Stack(
+        children: [
+          CachedNetworkImage(
+            fit: BoxFit.fill,
+            imageBuilder: (context, imageProvider) => Container(
+              width: double.infinity,
+              height: pictureHeight.toDouble(),
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            imageUrl:
+                'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+            errorWidget: ((context, url, error) =>
+                const Text("Failed to Load Image")),
+            placeholder: ((context, url) => const Center(
+                  child: CircularProgressIndicator(),
+                )),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 10,
+            child: Container(
+              width: 40,
+              height: 32,
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  width: 0.8,
+                  color: const Color(0xFF673AB7),
+                ),
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: GetX<WishListController>(
+                  builder: (controller) {
+                    RxBool isLiked = false.obs;
+                    isLiked.value = controller.isProductInWishlist(
+                        productID, isUserLoggedIn);
+
+                    return GestureDetector(
+                      onDoubleTap: () async {
+                        //to add a product to wishlist
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to add to wishlist");
+                        } else {
+                          if (userController.userState.value!.uid ==
+                              product.vendorId) {
+                            wishListController.showMyToast(
+                                "Cannot add your own product to wishlist");
+                          } else {
+                            if (isLiked.value) {
+                              userController
+                                  .showMyToast("Already in your wishlists");
+                            } else {
+                              WishlistItem wishlistItem =
+                                  WishlistItem(wishListItemID: productID);
+                              await controller.addToWishlist(wishlistItem);
+                              controller.isProductInWishlist(
+                                productID,
+                                isUserLoggedIn,
+                              );
+                            }
+                          }
+                        }
+                      },
+                      onTap: () async {
+                        //if product is added, remove from wishlist, if not instruct to double tap
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to remove from wishlist");
+                        } else {
+                          if (isLiked.value) {
+                            await wishListController
+                                .removeFromWishlistWithProductID(productID);
+                            wishListController.isProductInWishlist(
+                                productID, isUserLoggedIn);
+                          } else {
+                            userController
+                                .showMyToast("Double tap to add to wishlist");
+                          }
+                        }
+                      },
+                      child: isUserLoggedIn && isLiked.value
+                          ? Icon(
+                              Icons.favorite,
+                              color: AppColors.main,
+                              size: 22,
+                            )
+                          : Icon(
+                              Icons.favorite_border_rounded,
+                              color: AppColors.main,
+                              size: 22,
+                            ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (product.image!.length == 1) {
+      return Stack(
+        children: [
+          CachedNetworkImage(
+            fit: BoxFit.fill,
+            imageBuilder: (context, imageProvider) => Container(
+              width: double.infinity,
+              height: pictureHeight.toDouble(),
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            imageUrl: product.image!.first,
+            errorWidget: ((context, url, error) =>
+                const Text("Failed to Load Image")),
+            placeholder: ((context, url) => const Center(
+                  child: CircularProgressIndicator(),
+                )),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Container(
+              width: 40,
+              height: 30,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  "1/${product.image!.length}",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Raleway',
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 10,
+            child: Container(
+              width: 40,
+              height: 32,
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  width: 0.8,
+                  color: const Color(0xFF673AB7),
+                ),
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: GetX<WishListController>(
+                  builder: (controller) {
+                    RxBool isLiked = false.obs;
+                    isLiked.value = controller.isProductInWishlist(
+                        productID, isUserLoggedIn);
+
+                    return GestureDetector(
+                      onDoubleTap: () async {
+                        //to add a product to wishlist
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to add to wishlist");
+                        } else {
+                          if (userController.userState.value!.uid ==
+                              product.vendorId) {
+                            wishListController.showMyToast(
+                                "Cannot add your own product to wishlist");
+                          } else {
+                            if (isLiked.value) {
+                              userController
+                                  .showMyToast("Already in your wishlists");
+                            } else {
+                              WishlistItem wishlistItem =
+                                  WishlistItem(wishListItemID: productID);
+                              await controller.addToWishlist(wishlistItem);
+                              controller.isProductInWishlist(
+                                productID,
+                                isUserLoggedIn,
+                              );
+                            }
+                          }
+                        }
+                      },
+                      onTap: () async {
+                        //if product is added, remove from wishlist, if not instruct to double tap
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to remove from wishlist");
+                        } else {
+                          if (isLiked.value) {
+                            await wishListController
+                                .removeFromWishlistWithProductID(productID);
+                            wishListController.isProductInWishlist(
+                                productID, isUserLoggedIn);
+                          } else {
+                            userController
+                                .showMyToast("Double tap to add to wishlist");
+                          }
+                        }
+                      },
+                      child: isUserLoggedIn && isLiked.value
+                          ? Icon(
+                              Icons.favorite,
+                              color: AppColors.main,
+                              size: 22,
+                            )
+                          : Icon(
+                              Icons.favorite_border_rounded,
+                              color: AppColors.main,
+                              size: 22,
+                            ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Stack(
+        children: [
+          CarouselSlider(
+            items: List.generate(
+              product.image!.length,
+              (index) => Stack(
+                children: [
+                  CachedNetworkImage(
+                    imageBuilder: (context, imageProvider) => Container(
+                      width: double.infinity,
+                      height: pictureHeight.toDouble(),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    fit: BoxFit.fill,
+                    imageUrl: "${product.image![index]}",
+                    errorWidget: ((context, url, error) =>
+                        const Text("Failed to Load Image")),
+                    placeholder: ((context, url) =>
+                        const Center(child: CircularProgressIndicator())),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 40,
+                      height: 30,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "${index + 1}/${product.image!.length}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Raleway',
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            carouselController: carouselController,
+            options: CarouselOptions(
+              enlargeFactor: 0.08,
+              height: pictureHeight.toDouble(),
+              autoPlay: true,
+              pauseAutoPlayOnManualNavigate: true,
+              enlargeCenterPage: true,
+              viewportFraction: 0.95,
+              autoPlayInterval: const Duration(milliseconds: 1900),
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 10,
+            child: Container(
+              width: 40,
+              height: 32,
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  width: 0.8,
+                  color: const Color(0xFF673AB7),
+                ),
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: GetX<WishListController>(
+                  builder: (controller) {
+                    RxBool isLiked = false.obs;
+                    isLiked.value = controller.isProductInWishlist(
+                        productID, isUserLoggedIn);
+
+                    return GestureDetector(
+                      onDoubleTap: () async {
+                        //to add a product to wishlist
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to add to wishlist");
+                        } else {
+                          if (userController.userState.value!.uid ==
+                              product.vendorId) {
+                            wishListController.showMyToast(
+                                "Cannot add your own product to wishlist");
+                          } else {
+                            if (isLiked.value) {
+                              userController
+                                  .showMyToast("Already in your wishlists");
+                            } else {
+                              WishlistItem wishlistItem =
+                                  WishlistItem(wishListItemID: productID);
+                              await controller.addToWishlist(wishlistItem);
+                              controller.isProductInWishlist(
+                                productID,
+                                isUserLoggedIn,
+                              );
+                            }
+                          }
+                        }
+                      },
+                      onTap: () async {
+                        //if product is added, remove from wishlist, if not instruct to double tap
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to remove from wishlist");
+                        } else {
+                          if (isLiked.value) {
+                            await wishListController
+                                .removeFromWishlistWithProductID(productID);
+                            wishListController.isProductInWishlist(
+                                productID, isUserLoggedIn);
+                          } else {
+                            userController
+                                .showMyToast("Double tap to add to wishlist");
+                          }
+                        }
+                      },
+                      child: isUserLoggedIn && isLiked.value
+                          ? Icon(
+                              Icons.favorite,
+                              color: AppColors.main,
+                              size: 22,
+                            )
+                          : Icon(
+                              Icons.favorite_border_rounded,
+                              color: AppColors.main,
+                              size: 22,
+                            ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
   }
 }
 

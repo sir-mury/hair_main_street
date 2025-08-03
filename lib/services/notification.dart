@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/pages/notifcation.dart';
@@ -26,6 +27,7 @@ var androidChannel = const AndroidNotificationChannel(
   importance: Importance.high,
 );
 
+@pragma('vm:entry-point')
 Future handleBackgroundNotification(RemoteMessage message) async {
   final notification = message.notification;
   if (notification != null) {
@@ -74,12 +76,18 @@ class NotificationService {
       FirebaseFirestore.instance.collection('chat');
 
   Future<String?> getDeviceToken() async {
-    var token = await fCM.getToken();
-    return token;
+    try {
+      var token = await fCM.getToken();
+      return token;
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return null;
   }
 
   Future<String?> getAPNSToken() async {
     String? token = await fCM.getAPNSToken();
+    debugPrint("token: $token");
     return token;
   }
 
@@ -184,7 +192,7 @@ class NotificationService {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       navigateToNotifications();
       // Handle notification when the app is in the background
-      logger.i("Background Notification: $message");
+      logger.i("Background Notification: ${message.data.toString()}");
     });
 
     // Retrieve an initial notification when the app is in the terminated state
@@ -205,7 +213,12 @@ class NotificationService {
   Future<void> init() async {
     try {
       // Request permission for notifications (iOS only)
-      final settings = await fCM.requestPermission();
+      final settings = await fCM.requestPermission(
+        alert: true,
+        sound: true,
+        badge: true,
+      );
+
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
         logger.i("Permission Denied");
         return;
@@ -222,8 +235,10 @@ class NotificationService {
         requestBadgePermission: true,
         requestSoundPermission: true,
       );
+
       var initializationSettings = InitializationSettings(
           android: androidInitialize, iOS: iosInitialize);
+
       await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: (details) => Get.to(

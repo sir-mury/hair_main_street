@@ -63,8 +63,7 @@ class _ClientShopPageState extends State<ClientShopPage>
             }
 
             vendorController.getProductsByAge(vendorController.productList);
-            double storeRating =
-                vendorController.calculateOverallAverageReviewValue();
+            double storeRating = 0.0;
 
             return Scaffold(
               backgroundColor: Colors.white,

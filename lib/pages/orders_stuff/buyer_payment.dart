@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
@@ -209,7 +211,9 @@ class _BuyerPaymentPageState extends State<BuyerPaymentPage> {
                           TextInputWidget(
                             labelText: "Initial Installment Amount(NGN)",
                             hintText: "1000",
-                            textInputType: TextInputType.number,
+                            textInputType: Platform.isIOS
+                                ? TextInputType.numberWithOptions()
+                                : TextInputType.number,
                             controller: amountController,
                             validator: (val) {
                               if (val!.isEmpty) {

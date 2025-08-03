@@ -16,10 +16,23 @@ class ProfileController extends GetxController {
   RxBool isDeliveryAddressAdded = false.obs;
   RxBool isLoading = false.obs;
 
+  @override
+  void onInit() {
+    ever(deliveryAddress, (newValue) {
+      if (newValue.isNotEmpty) {
+        isDeliveryAddressAdded.value = true;
+      } else {
+        isDeliveryAddressAdded.value = false;
+      }
+    });
+    super.onInit();
+  }
+
   void addAddressToAdresses() {
     deliveryAddress.add(selectedAddress.value);
+    deliveryAddress.refresh();
     selectedAddress.value = null;
-    debugPrint("delivery address: $deliveryAddress");
+    // debugPrint("delivery address: ${deliveryAddress.first}");
     Get.close(1);
     mySnackBar(
       color: Colors.green[200],
@@ -27,6 +40,30 @@ class ProfileController extends GetxController {
       title: "Success",
       textColor: AppColors.shade9,
     );
+  }
+
+  void editAtDeliveryAddress() {
+    int index = deliveryAddress.indexOf(selectedAddress.value);
+    if (index != -1) {
+      deliveryAddress[index] = selectedAddress.value;
+      deliveryAddress.refresh();
+      selectedAddress.value = null;
+      // debugPrint("Edited delivery address: ${deliveryAddress[index]}");
+      Get.close(1);
+      mySnackBar(
+        color: Colors.green[200],
+        message: "Delivery Address Edited",
+        title: "Success",
+        textColor: AppColors.shade9,
+      );
+    } else {
+      mySnackBar(
+        color: Colors.red[400],
+        message: "Failed to edit Delivery Address",
+        title: "Error",
+        textColor: AppColors.offWhite,
+      );
+    }
   }
 
   Future<void> completeProfile() async {

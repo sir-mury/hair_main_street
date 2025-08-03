@@ -53,3 +53,27 @@ class MessagePageData {
 
   MessagePageData({this.id, this.imageUrl, this.name});
 }
+
+class VerificationItem {
+  String productID;
+  bool isVerified;
+
+  VerificationItem({
+    required this.productID,
+    this.isVerified = false,
+  });
+
+  Map<String, dynamic> toData() {
+    return {
+      'productID': productID,
+      'isVerified': isVerified,
+    };
+  }
+
+  factory VerificationItem.fromData(Map<String, dynamic> data) {
+    return VerificationItem(
+      productID: data['productID'] ?? '',
+      isVerified: data['isVerified'] ?? false,
+    );
+  }
+}

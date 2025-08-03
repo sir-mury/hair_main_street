@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/admin_controller.dart';
+import 'package:hair_main_street/controllers/cart_controller.dart';
 import 'package:hair_main_street/models/product_model.dart';
 import 'package:hair_main_street/models/review.dart';
 import 'package:hair_main_street/models/vendors_model.dart';
 import 'package:hair_main_street/services/database.dart';
+import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:http/http.dart' as http;
 
 class ProductController extends GetxController {
@@ -25,6 +27,7 @@ class ProductController extends GetxController {
   // VendorController vendorController = Get.find<VendorController>();
   RxList<File> imageList = RxList<File>([]);
   RxList<String> categories = [""].obs;
+  RxInt stockRemaining = 0.obs;
   var downloadUrls = [].obs;
   var isLoading = false.obs;
   var isProductadded = false.obs;
@@ -37,9 +40,12 @@ class ProductController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    Get.put(CartController());
+
     var productList = fetchProducts();
     productList.listen((elements) {
       products.assignAll(elements);
+      // cartController.refresh();
       filterTheproductsList(elements);
     });
     vendorsList.bindStream(getVendors());
@@ -180,8 +186,13 @@ class ProductController extends GetxController {
     }
   }
 
-  increaseQuantity() {
-    quantity.value++;
+  increaseQuantity({required Product product, ProductOption? selectedOption}) {
+    int stockAvailable = determineQuantity(product, selectedOption) ?? 0;
+    if (stockAvailable > quantity.value) {
+      quantity.value++;
+    } else {
+      showMyToast("Cannot be more than stock available");
+    }
     update();
   }
 
@@ -192,6 +203,41 @@ class ProductController extends GetxController {
       quantity.value--;
     }
     update();
+  }
+
+  //determineStock
+  int? determineQuantity(Product? product, ProductOption? selectedOption) {
+    // Default fallback
+    if (product == null) return 0;
+
+    // Handle products with options
+    if (product.hasOptions == true && product.options != null) {
+      try {
+        return product.options!
+            .firstWhere((option) => option == selectedOption)
+            .stockAvailable;
+      } catch (e) {
+        debugPrint("No matching option found: $e");
+        return 0;
+      }
+    } else {
+      // Handle simple products (no options)
+      return product.quantity!;
+    }
+  }
+
+  //determine if product exist
+  determineIfProductExist(Product product) {
+    stockRemaining.value = 0;
+    if (product.hasOptions! && product.options != null) {
+      int? stockRemainingLoop = 0;
+      for (var option in product.options!) {
+        stockRemainingLoop = stockRemainingLoop! + option.stockAvailable!;
+      }
+      stockRemaining.value = stockRemainingLoop!;
+    } else {
+      stockRemaining.value = product.quantity ?? 0;
+    }
   }
 
   //fetch products
@@ -274,8 +320,7 @@ class ProductController extends GetxController {
       toastLength: Toast.LENGTH_SHORT, // 3 seconds by default, adjust if needed
       gravity: ToastGravity.CENTER, // Position at the bottom of the screen
       //timeInSec: 0.3, // Display for 0.3 seconds (300 milliseconds)
-      backgroundColor:
-          const Color(0xFFf5f5f5), // Optional: Set background color
+      backgroundColor: AppColors.shade2, // Optional: Set background color
       textColor: Colors.black, // Optional: Set text color
       fontSize: 14.0, // Optional: Set font size
     );

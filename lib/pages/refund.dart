@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -626,7 +628,9 @@ class _RefundPageState extends State<RefundPage> {
                       maxLines: 1,
                       fontSize: 15,
                       labelColor: const Color(0xFF673AB7),
-                      textInputType: TextInputType.number,
+                      textInputType: Platform.isIOS
+                          ? TextInputType.numberWithOptions()
+                          : TextInputType.number,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (value) {
                         if (value!.isEmpty) {

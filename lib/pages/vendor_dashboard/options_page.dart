@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/models/product_model.dart';
@@ -220,7 +222,12 @@ class _ProductOptionsPageState extends State<ProductOptionsPage> {
                                 SizedBox(
                                   width: double.maxFinite,
                                   child: TextInputWidget(
-                                    textInputType: TextInputType.number,
+                                    textInputType: Platform.isIOS
+                                        ? TextInputType.numberWithOptions(
+                                            signed: true,
+                                            decimal: true,
+                                          )
+                                        : TextInputType.number,
                                     controller: priceControllers[index],
                                     initialValue:
                                         options[index].price?.toString() ?? "0",
@@ -250,7 +257,12 @@ class _ProductOptionsPageState extends State<ProductOptionsPage> {
                                             .stockAvailable
                                             ?.toString() ??
                                         "0",
-                                    textInputType: TextInputType.number,
+                                    textInputType: Platform.isIOS
+                                        ? TextInputType.numberWithOptions(
+                                            signed: true,
+                                            decimal: true,
+                                          )
+                                        : TextInputType.number,
                                     fontSize: 14,
                                     labelText: "Stock Available",
                                     hintText: "Enter stock available",

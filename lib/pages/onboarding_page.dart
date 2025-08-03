@@ -384,8 +384,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       padding: const EdgeInsets.all(4),
                     ),
                     onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      prefs.setBool("showHome", true);
+                      final prefs = SharedPreferencesAsync();
+                      await prefs.setBool("showHome", true);
                       Get.off(() => const HomePage());
                     },
                     child: const Text(

@@ -1,17 +1,12 @@
 //import 'package:dot_navigation_bar/dot_navigation_bar.dart';
-
-import 'dart:async';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hair_main_street/controllers/cart_controller.dart';
 import 'package:hair_main_street/controllers/connectivity_controller.dart';
 import 'package:hair_main_street/controllers/notification_controller.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
 import 'package:hair_main_street/controllers/paystack_controller.dart';
 import 'package:hair_main_street/controllers/product_controller.dart';
-import 'package:hair_main_street/controllers/refund_cancellation_Controller.dart';
+import 'package:hair_main_street/controllers/refund_cancellation_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/controllers/vendor_controller.dart';
 import 'package:hair_main_street/pages/cart.dart';
@@ -50,7 +45,6 @@ class _HomePageState extends State<HomePage> {
   ];
   //final _selectedTab = 0;
 
-  CartController cartController = Get.put(CartController());
   CheckOutController checkOutController = Get.put(CheckOutController());
   NotificationController notificationController =
       Get.put(NotificationController());
@@ -62,7 +56,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     Get.put(VendorController());
     Get.put(RefundCancellationController());
-    Get.put(WishListController());
     Get.put(PaystackController());
   }
 
@@ -117,8 +110,10 @@ class _HomePageState extends State<HomePage> {
                     destinations: [
                       GestureDetector(
                         onDoubleTap: () async {
-                          final prefs = await SharedPreferences.getInstance();
-                          prefs.setBool("showHome", false);
+                          final prefs = SharedPreferencesAsync();
+                          // prefs.setBool("showHome", false);
+                          debugPrint(
+                              "showHome: ${await prefs.getBool("showHome")}");
                         },
                         child: const Padding(
                           padding: EdgeInsets.symmetric(vertical: 8),

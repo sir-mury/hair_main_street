@@ -410,327 +410,333 @@ class MenuPageSubstitute extends StatelessWidget {
     num screenWidth = MediaQuery.of(context).size.width;
 
     return Obx(
-      () => userController.authStreamDone.isFalse ||
-              userController.userState.value == null
-          ? BlankPage(
-              textStyle: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+      () {
+        if (userController.authStreamDone.isFalse) {
+          return Center(
+            child: LoadingWidget(),
+          );
+        } else if (userController.userState.value == null) {
+          return BlankPage(
+            textStyle: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+            ),
+            buttonStyle: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF673AB7),
+              shape: RoundedRectangleBorder(
+                // side: const BorderSide(
+                //   width: 1.2,
+                //   color: Colors.black,
+                // ),
+                borderRadius: BorderRadius.circular(10),
               ),
-              buttonStyle: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF673AB7),
-                shape: RoundedRectangleBorder(
-                  // side: const BorderSide(
-                  //   width: 1.2,
-                  //   color: Colors.black,
-                  // ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              pageIcon: const Icon(
-                Icons.person_off_outlined,
-                size: 48,
-              ),
-              text: "Your are not Logged In",
-              interactionText: "Sign In or Register",
-              interactionIcon: const Icon(
-                Icons.person_2_outlined,
-                size: 24,
-                color: Colors.white,
-              ),
-              interactionFunction: () => Get.to(() => const SignIn()),
-            )
-          : Builder(builder: (context) {
-              userController.profileComplete();
-              return Scaffold(
-                backgroundColor: Colors.white,
-                extendBodyBehindAppBar: false,
-                body: SafeArea(
-                  child: Container(
-                    color: Colors.white,
-                    //decoration: BoxDecoration(gradient: myGradient),
-                    child: ListView(
-                      padding:
-                          EdgeInsets.fromLTRB(12, screenHeight * 0.02, 12, 0),
-                      children: [
-                        userController.isProfileComplete.value
-                            ? const SizedBox.shrink()
-                            : Container(
-                                margin: const EdgeInsets.fromLTRB(0, 0, 0, 2),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                height: 30,
-                                alignment: Alignment.centerLeft,
-                                decoration: BoxDecoration(
-                                  border:
-                                      Border.all(color: Colors.red, width: 0.5),
-                                ),
-                                child: Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                      "assets/Icons/notice.svg",
-                                      height: 14,
-                                      width: 14,
-                                      colorFilter: ColorFilter.mode(
-                                        Colors.red,
-                                        BlendMode.srcIn,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    const Text(
-                                      "Profile Incomplete: Kindly complete your profile",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontFamily: "Raleway",
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+            ),
+            pageIcon: const Icon(
+              Icons.person_off_outlined,
+              size: 48,
+            ),
+            text: "Your are not Logged In",
+            interactionText: "Sign In or Register",
+            interactionIcon: const Icon(
+              Icons.person_2_outlined,
+              size: 24,
+              color: Colors.white,
+            ),
+            interactionFunction: () => Get.to(() => const SignIn()),
+          );
+        } else {
+          return Builder(builder: (context) {
+            userController.profileComplete();
+            return Scaffold(
+              backgroundColor: Colors.white,
+              extendBodyBehindAppBar: false,
+              body: SafeArea(
+                child: Container(
+                  color: Colors.white,
+                  //decoration: BoxDecoration(gradient: myGradient),
+                  child: ListView(
+                    padding:
+                        EdgeInsets.fromLTRB(12, screenHeight * 0.02, 12, 0),
+                    children: [
+                      userController.isProfileComplete.value
+                          ? const SizedBox.shrink()
+                          : Container(
+                              margin: const EdgeInsets.fromLTRB(0, 0, 0, 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              // height: 30,
+                              alignment: Alignment.centerLeft,
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.red, width: 0.5),
                               ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                          child: GestureDetector(
-                            onTap: () => Get.to(() => ProfilePage()),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GetBuilder<UserController>(
-                                  builder: (_) {
-                                    return userController.userState.value!
-                                                .profilePhoto ==
-                                            null
-                                        ? CircleAvatar(
-                                            radius: 40,
-                                            backgroundColor: Colors.black12,
-                                            child: SvgPicture.asset(
-                                              "assets/Icons/user.svg",
-                                              height: 35,
-                                              width: 35,
-                                              colorFilter: ColorFilter.mode(
-                                                Colors.black,
-                                                BlendMode.srcIn,
-                                              ),
-                                            ),
-                                          )
-                                        : CircleAvatar(
-                                            radius: 40,
-                                            backgroundImage: NetworkImage(
-                                              userController.userState.value!
-                                                  .profilePhoto!,
-                                            ),
-                                          );
-                                  },
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    userController.userState.value!.fullname !=
-                                                null ||
-                                            userController.userState.value!
-                                                    .fullname! !=
-                                                ""
-                                        ? userController
-                                            .userState.value!.fullname!
-                                        : "Set your Full Name",
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black,
-                                      fontFamily: 'Lato',
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/Icons/notice.svg",
+                                    height: 14,
+                                    width: 14,
+                                    colorFilter: ColorFilter.mode(
+                                      Colors.red,
+                                      BlendMode.srcIn,
                                     ),
                                   ),
-                                ),
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: IconButton(
-                                    // style: IconButton.styleFrom(
-                                    //   backgroundColor: Colors.blueGrey,
-                                    // ),
-                                    padding: const EdgeInsets.all(0),
-                                    onPressed: () =>
-                                        Get.to(() => NotificationsPage()),
-                                    icon: const Iconify(
-                                      Ion.md_notifications_outline,
-                                      color: Colors.black,
-                                      size: 30,
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  const Text(
+                                    "Profile Incomplete: Kindly complete your profile",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontFamily: "Raleway",
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                        Divider(
-                          height: 8,
-                          thickness: 1.5,
-                          color: Colors.black.withValues(alpha: 0.10),
-                        ),
-                        MenuButton(
-                          text: "Profile",
-                          onPressed: () => Get.to(() => ProfilePage()),
-                        ),
-                        Divider(
-                          height: 8,
-                          thickness: 1.5,
-                          color: Colors.black.withValues(alpha: 0.10),
-                        ),
-                        MenuButton(
-                          text: "Wish List",
-                          onPressed: () => Get.to(() => const WishListPage(),
-                              transition: Transition.fadeIn),
-                        ),
-                        Divider(
-                          height: 8,
-                          thickness: 1.5,
-                          color: Colors.black.withValues(alpha: 0.10),
-                        ),
-                        MenuButton(
-                          text: "Messages",
-                          onPressed: () => Get.to(() => const ChatPage(),
-                              transition: Transition.fadeIn),
-                        ),
-                        // Divider(
-                        //   height: 8,
-                        //   thickness: 1.5,
-                        //   color: Colors.black.withValues(alpha: 0.10),
-                        // ),
-                        if (userController.userState.value!.isVendor! == false)
-                          Column(
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                        child: GestureDetector(
+                          onTap: () => Get.to(() => ProfilePage()),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Divider(
-                                height: 8,
-                                thickness: 1.5,
-                                color: Colors.black.withValues(alpha: 0.10),
-                              ),
-                              MenuButton(
-                                text: "Become a Vendor",
-                                onPressed: () {
-                                  Get.to(
-                                    () => adminController
-                                            .adminSettings.value!.allowVendors!
-                                        ? const BecomeAVendorPage()
-                                        : const MakeshiftBecomeVendorPage(),
-                                  );
+                              GetBuilder<UserController>(
+                                builder: (_) {
+                                  return userController
+                                              .userState.value!.profilePhoto ==
+                                          null
+                                      ? CircleAvatar(
+                                          radius: 40,
+                                          backgroundColor: Colors.black12,
+                                          child: SvgPicture.asset(
+                                            "assets/Icons/user.svg",
+                                            height: 35,
+                                            width: 35,
+                                            colorFilter: ColorFilter.mode(
+                                              Colors.black,
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                        )
+                                      : CircleAvatar(
+                                          radius: 40,
+                                          backgroundImage: NetworkImage(
+                                            userController
+                                                .userState.value!.profilePhoto!,
+                                          ),
+                                        );
                                 },
                               ),
-                            ],
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        if (userController.userState.value!.isVendor! == true)
-                          Column(
-                            children: [
-                              Divider(
-                                height: 8,
-                                thickness: 1.5,
-                                color: Colors.black.withValues(alpha: 0.10),
+                              const SizedBox(
+                                width: 10,
                               ),
-                              MenuButton(
-                                text: "Vendor Dashboard",
-                                onPressed: () =>
-                                    Get.to(() => const VendorPage()),
-                              ),
-                            ],
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        Divider(
-                          height: 8,
-                          thickness: 1.5,
-                          color: Colors.black.withValues(alpha: 0.10),
-                        ),
-                        MenuButton(
-                          text: "My Orders",
-                          onPressed: () => Get.to(() => const OrdersPage(),
-                              transition: Transition.fadeIn),
-                        ),
-                        Divider(
-                          height: 8,
-                          thickness: 1.5,
-                          color: Colors.black.withValues(alpha: 0.10),
-                        ),
-                        MenuButton(
-                          text: "Settings",
-                          onPressed: () => Get.to(() => const SettingsPage(),
-                              transition: Transition.fadeIn),
-                        ),
-                        Divider(
-                          height: 8,
-                          thickness: 1.5,
-                          color: Colors.black.withValues(alpha: 0.10),
-                        ),
-                        SizedBox(
-                          height: 48,
-                          width: double.infinity,
-                          child: InkWell(
-                            onTap: () async {
-                              userController.isLoading.value = true;
-                              await userController.signOut();
-                              if (userController.isLoading.isTrue) {
-                                Get.dialog(
-                                  const LoadingWidget(),
-                                  barrierDismissible: false,
-                                );
-                              } else {
-                                checkOutController.checkoutList.clear();
-                                checkOutController.itemCheckboxState.clear();
-                                checkOutController
-                                    .isMasterCheckboxChecked.value = false;
-                                checkOutController.deletableCartItems.clear();
-                                if (userController.userState.value!.isVendor ==
-                                    true) {
-                                  var topics = [
-                                    "vendor_${userController.userState.value!.uid!}",
-                                    "buyer_${userController.userState.value!.uid!}",
-                                  ];
-                                  notificationController
-                                      .unsubscribeFromTopics(topics);
-                                } else {
-                                  var topics = [
-                                    "buyer_${userController.userState.value!.uid!}",
-                                  ];
-                                  notificationController
-                                      .unsubscribeFromTopics(topics);
-                                }
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const Iconify(
-                                  MaterialSymbols.logout,
-                                  size: 20,
-                                  color: Color(0xFFEA4335),
-                                ),
-                                SizedBox(
-                                  width: screenWidth * 0.02,
-                                ),
-                                const Text(
-                                  "Sign Out",
-                                  style: TextStyle(
-                                    color: Color(0xFFEA4335),
+                              Expanded(
+                                child: Text(
+                                  userController.userState.value!.fullname !=
+                                              null ||
+                                          userController
+                                                  .userState.value!.fullname! !=
+                                              ""
+                                      ? userController
+                                          .userState.value!.fullname!
+                                      : "Set your Full Name",
+                                  style: const TextStyle(
                                     fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Raleway',
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                    fontFamily: 'Lato',
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: IconButton(
+                                  // style: IconButton.styleFrom(
+                                  //   backgroundColor: Colors.blueGrey,
+                                  // ),
+                                  padding: const EdgeInsets.all(0),
+                                  onPressed: () =>
+                                      Get.to(() => NotificationsPage()),
+                                  icon: const Iconify(
+                                    Ion.md_notifications_outline,
+                                    color: Colors.black,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      Divider(
+                        height: 8,
+                        thickness: 1.5,
+                        color: Colors.black.withValues(alpha: 0.10),
+                      ),
+                      MenuButton(
+                        text: "Profile",
+                        onPressed: () => Get.to(() => ProfilePage()),
+                      ),
+                      Divider(
+                        height: 8,
+                        thickness: 1.5,
+                        color: Colors.black.withValues(alpha: 0.10),
+                      ),
+                      MenuButton(
+                        text: "Wish List",
+                        onPressed: () => Get.to(() => const WishListPage(),
+                            transition: Transition.fadeIn),
+                      ),
+                      Divider(
+                        height: 8,
+                        thickness: 1.5,
+                        color: Colors.black.withValues(alpha: 0.10),
+                      ),
+                      MenuButton(
+                        text: "Messages",
+                        onPressed: () => Get.to(() => const ChatPage(),
+                            transition: Transition.fadeIn),
+                      ),
+                      // Divider(
+                      //   height: 8,
+                      //   thickness: 1.5,
+                      //   color: Colors.black.withValues(alpha: 0.10),
+                      // ),
+                      if (userController.userState.value!.isVendor! == false)
+                        Column(
+                          children: [
+                            Divider(
+                              height: 8,
+                              thickness: 1.5,
+                              color: Colors.black.withValues(alpha: 0.10),
+                            ),
+                            MenuButton(
+                              text: "Become a Vendor",
+                              onPressed: () {
+                                Get.to(
+                                  () => adminController
+                                          .adminSettings.value!.allowVendors!
+                                      ? const BecomeAVendorPage()
+                                      : const MakeshiftBecomeVendorPage(),
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      if (userController.userState.value!.isVendor! == true)
+                        Column(
+                          children: [
+                            Divider(
+                              height: 8,
+                              thickness: 1.5,
+                              color: Colors.black.withValues(alpha: 0.10),
+                            ),
+                            MenuButton(
+                              text: "Vendor Dashboard",
+                              onPressed: () => Get.to(() => const VendorPage()),
+                            ),
+                          ],
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      Divider(
+                        height: 8,
+                        thickness: 1.5,
+                        color: Colors.black.withValues(alpha: 0.10),
+                      ),
+                      MenuButton(
+                        text: "My Orders",
+                        onPressed: () => Get.to(() => const OrdersPage(),
+                            transition: Transition.fadeIn),
+                      ),
+                      Divider(
+                        height: 8,
+                        thickness: 1.5,
+                        color: Colors.black.withValues(alpha: 0.10),
+                      ),
+                      MenuButton(
+                        text: "Settings",
+                        onPressed: () => Get.to(() => const SettingsPage(),
+                            transition: Transition.fadeIn),
+                      ),
+                      Divider(
+                        height: 8,
+                        thickness: 1.5,
+                        color: Colors.black.withValues(alpha: 0.10),
+                      ),
+                      SizedBox(
+                        height: 48,
+                        width: double.infinity,
+                        child: InkWell(
+                          onTap: () async {
+                            userController.isLoading.value = true;
+                            if (userController.isLoading.isTrue) {
+                              Get.dialog(
+                                const LoadingWidget(),
+                                barrierDismissible: false,
+                              );
+                            }
+
+                            checkOutController.checkoutList.clear();
+                            checkOutController.itemCheckboxState.clear();
+                            checkOutController.isMasterCheckboxChecked.value =
+                                false;
+                            checkOutController.deletableCartItems.clear();
+                            if (userController.userState.value!.isVendor ==
+                                true) {
+                              var topics = [
+                                "vendor_${userController.userState.value!.uid!}",
+                                "buyer_${userController.userState.value!.uid!}",
+                              ];
+                              notificationController
+                                  .unsubscribeFromTopics(topics);
+                            } else {
+                              var topics = [
+                                "buyer_${userController.userState.value!.uid!}",
+                              ];
+                              notificationController
+                                  .unsubscribeFromTopics(topics);
+                            }
+                            await userController.signOut();
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Iconify(
+                                MaterialSymbols.logout,
+                                size: 20,
+                                color: Color(0xFFEA4335),
+                              ),
+                              SizedBox(
+                                width: screenWidth * 0.02,
+                              ),
+                              const Text(
+                                "Sign Out",
+                                style: TextStyle(
+                                  color: Color(0xFFEA4335),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Raleway',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            }),
+              ),
+            );
+          });
+        }
+      },
     );
   }
 }

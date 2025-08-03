@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -497,7 +499,12 @@ class _EditProductPageState extends State<EditProductPage> {
                           controller: productPrice,
                           initialValue: product!.price.toString(),
                           hintText: "Enter Price",
-                          textInputType: TextInputType.number,
+                          textInputType: Platform.isIOS
+                              ? TextInputType.numberWithOptions(
+                                  signed: true,
+                                  decimal: true,
+                                )
+                              : TextInputType.number,
                           validator: (val) {
                             if (val!.isEmpty) {
                               return "Cannot be empty, set a price";
@@ -683,7 +690,12 @@ class _EditProductPageState extends State<EditProductPage> {
                         ),
                         TextInputWidgetWithoutLabel(
                           controller: quantity,
-                          textInputType: TextInputType.number,
+                          textInputType: Platform.isIOS
+                              ? TextInputType.numberWithOptions(
+                                  signed: true,
+                                  decimal: true,
+                                )
+                              : TextInputType.number,
                           initialValue: product!.quantity.toString(),
                           //maxLines: 5,
                           hintText: "Stock Quantity",

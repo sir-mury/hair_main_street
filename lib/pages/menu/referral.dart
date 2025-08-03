@@ -13,6 +13,7 @@ class ReferralPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     UserController userController = Get.find<UserController>();
+    SharePlus share = SharePlus.instance;
     ReferralController referralController = Get.find<ReferralController>();
     var myReferrals = referralController.myReferrals;
     var currentUser = userController.userState.value;
@@ -204,8 +205,12 @@ class ReferralPage extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              Share.share(message,
-                                  subject: "Hair Main Street Referral Invite");
+                              share.share(
+                                ShareParams(
+                                  text: message,
+                                  title: "Hair Main Street Referral Invite",
+                                ),
+                              );
                             },
                             label: const Text(
                               "Share",

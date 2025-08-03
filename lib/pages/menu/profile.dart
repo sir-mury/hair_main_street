@@ -59,8 +59,8 @@ class _ProfilePageState extends State<ProfilePage> {
     NotificationController notificationController =
         Get.find<NotificationController>();
     MyUser user = userController.userState.value!;
-    TextEditingController? oldPasswordController,
-        newPasswordController = TextEditingController();
+    TextEditingController oldPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
     // num screenWidth = MediaQuery.of(context).size.width;
     // num screenHeight = MediaQuery.of(context).size.height;
     //debugPrint(userController.userState.value!.profilePhoto!);
@@ -665,166 +665,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   backgroundColor: Colors.transparent,
                 ),
                 onPressed: () {
-                  Get.bottomSheet(
-                    elevation: 0,
-                    Form(
-                      key: formKey,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
-                          ),
-                        ),
-                        height: 300,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        child: Center(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                GetX<UserController>(builder: (controller) {
-                                  return TextInputWidget(
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    obscureText: userController.isObscure.value,
-                                    labelText: "Old Password",
-                                    fontSize: 15,
-                                    controller: oldPasswordController,
-                                    visibilityIcon: IconButton(
-                                      onPressed: () => userController.toggle(),
-                                      icon: userController.isObscure.value
-                                          ? const Icon(
-                                              Icons.visibility_off_rounded,
-                                              size: 20,
-                                            )
-                                          : const Icon(
-                                              Icons.visibility_rounded,
-                                              size: 20,
-                                            ),
-                                    ),
-                                    validator: (val) {
-                                      if (val!.isEmpty) {
-                                        return 'Cannot be Empty';
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (val) {
-                                      oldPassword = val!;
-                                    },
-                                  );
-                                }),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                GetX<UserController>(builder: (controller) {
-                                  return TextInputWidget(
-                                    obscureText:
-                                        userController.isObscure1.value,
-                                    labelText: "New Password",
-                                    controller: newPasswordController,
-                                    fontSize: 15,
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    visibilityIcon: IconButton(
-                                      onPressed: () => userController.toggle1(),
-                                      icon: userController.isObscure1.value
-                                          ? const Icon(
-                                              Icons.visibility_off_rounded,
-                                              size: 20,
-                                            )
-                                          : const Icon(
-                                              Icons.visibility_rounded,
-                                              size: 20,
-                                            ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Password cannot be empty';
-                                      }
-
-                                      // Check if password length is greater than 6
-                                      if (!isLength(value, 6)) {
-                                        return 'Password must be at least 6 characters long';
-                                      }
-
-                                      // Check if password contains at least one uppercase letter
-                                      if (hasUppercaseLetter(value) == false) {
-                                        return 'Password must contain at least one uppercase letter';
-                                      }
-
-                                      // Check if password contains at least one lowercase letter
-                                      if (!hasLowercaseLetter(value)) {
-                                        return 'Password must contain at least one lowercase letter';
-                                      }
-
-                                      // Check if password contains at least one digit
-                                      if (!hasNumber(value)) {
-                                        return 'Password must contain at least one digit';
-                                      }
-
-                                      // Check if password contains at least one special character
-                                      if (!hasSpecialCharacters(value)) {
-                                        return 'Password must contain at least one special character\n!@#\$%^&*(),.?\\":{}|<>';
-                                      }
-
-                                      return null;
-                                    },
-                                    onChanged: (val) {
-                                      newPassword = val;
-                                    },
-                                  );
-                                }),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: TextButton(
-                                    style: TextButton.styleFrom(
-                                      backgroundColor: const Color(0xFF673AB7),
-                                      padding: const EdgeInsets.all(8),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          12,
-                                        ),
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      var validated =
-                                          formKey.currentState!.validate();
-                                      if (validated) {
-                                        userController.isLoading.value = true;
-                                        if (userController.isLoading.isTrue) {
-                                          Get.dialog(const LoadingWidget());
-                                        }
-                                        userController.changePassword(
-                                            oldPassword!, newPassword!);
-                                        userController.isObscure.value = true;
-                                        userController.isObscure1.value = true;
-                                      }
-                                    },
-                                    child: const Text(
-                                      "Confirm Change",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontFamily: 'Lato',
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
+                  if (userController.fromProvider.isTrue) {
+                    String message =
+                        "Sorry, you can only change password if signed in with email & password";
+                    userController.showMyToast(message);
+                  } else {
+                    showChangePasswordBottomSheet(
+                      userController: userController,
+                      oldPasswordController: oldPasswordController,
+                      newPasswordController: newPasswordController,
+                      oldPassword: oldPassword,
+                      newPassword: newPassword,
+                    );
+                  }
                 },
                 label: const Text(
                   "Change Password",
@@ -1072,6 +925,185 @@ class _ProfilePageState extends State<ProfilePage> {
       //     ),
       //   ),
       // ),
+    );
+  }
+
+  showChangePasswordBottomSheet({
+    required UserController userController,
+    required TextEditingController oldPasswordController,
+    required TextEditingController newPasswordController,
+    required String? oldPassword,
+    required String? newPassword,
+  }) {
+    return Get.bottomSheet(
+      elevation: 0,
+      Form(
+        key: formKey,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+            ),
+          ),
+          height: Get.height * 0.4,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    icon: Icon(
+                      Icons.cancel_outlined,
+                      size: 30,
+                      color: Colors.red[300],
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                GetX<UserController>(builder: (controller) {
+                  return TextInputWidget(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    obscureText: userController.isObscure.value,
+                    labelText: "Old Password",
+                    fontSize: 15,
+                    controller: oldPasswordController,
+                    visibilityIcon: IconButton(
+                      onPressed: () => userController.toggle(),
+                      icon: userController.isObscure.value
+                          ? const Icon(
+                              Icons.visibility_off_rounded,
+                              size: 20,
+                            )
+                          : const Icon(
+                              Icons.visibility_rounded,
+                              size: 20,
+                            ),
+                    ),
+                    validator: (val) {
+                      if (val!.isEmpty) {
+                        return 'Cannot be Empty';
+                      }
+                      return null;
+                    },
+                    onChanged: (val) {
+                      oldPassword = val!;
+                    },
+                  );
+                }),
+                const SizedBox(
+                  height: 20,
+                ),
+                GetX<UserController>(builder: (controller) {
+                  return TextInputWidget(
+                    obscureText: userController.isObscure1.value,
+                    labelText: "New Password",
+                    controller: newPasswordController,
+                    fontSize: 15,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    visibilityIcon: IconButton(
+                      onPressed: () => userController.toggle1(),
+                      icon: userController.isObscure1.value
+                          ? const Icon(
+                              Icons.visibility_off_rounded,
+                              size: 20,
+                            )
+                          : const Icon(
+                              Icons.visibility_rounded,
+                              size: 20,
+                            ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Password cannot be empty';
+                      }
+
+                      // Check if password length is greater than 6
+                      if (!isLength(value, 6)) {
+                        return 'Password must be at least 6 characters long';
+                      }
+
+                      // Check if password contains at least one uppercase letter
+                      if (hasUppercaseLetter(value) == false) {
+                        return 'Password must contain at least one uppercase letter';
+                      }
+
+                      // Check if password contains at least one lowercase letter
+                      if (!hasLowercaseLetter(value)) {
+                        return 'Password must contain at least one lowercase letter';
+                      }
+
+                      // Check if password contains at least one digit
+                      if (!hasNumber(value)) {
+                        return 'Password must contain at least one digit';
+                      }
+
+                      // Check if password contains at least one special character
+                      if (!hasSpecialCharacters(value)) {
+                        return 'Password must contain at least one special character\n!@#\$%^&*(),.?\\":{}|<>';
+                      }
+
+                      return null;
+                    },
+                    onChanged: (val) {
+                      newPassword = val;
+                    },
+                  );
+                }),
+                const SizedBox(
+                  height: 20,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  height: kToolbarHeight * 0.8,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF673AB7),
+                      padding: const EdgeInsets.all(8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          12,
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      var validated = formKey.currentState!.validate();
+                      if (validated) {
+                        userController.isLoading.value = true;
+                        if (userController.isLoading.isTrue) {
+                          Get.dialog(const LoadingWidget());
+                        }
+                        userController.changePassword(
+                            oldPassword!, newPassword!);
+                        userController.isObscure.value = true;
+                        userController.isObscure1.value = true;
+                      }
+                    },
+                    child: const Text(
+                      "Confirm Change",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

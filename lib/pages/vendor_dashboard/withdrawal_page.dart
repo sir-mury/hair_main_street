@@ -33,7 +33,6 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
 
   @override
   Widget build(BuildContext context) {
-    String? withdrawalAmount;
     String? bankName;
     String? accountNumber;
     String? accountName;
@@ -156,7 +155,6 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                   onChanged: (val) {
                     setState(() {
                       withdrawalAmountController!.text = val!;
-                      withdrawalAmount = val;
                     });
                   },
                 ),

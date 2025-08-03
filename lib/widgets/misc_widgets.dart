@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:credit_card_type_detector/credit_card_type_detector.dart';
 import 'package:credit_card_type_detector/models.dart';
@@ -126,7 +128,12 @@ class ChangeAddressWidget extends StatelessWidget {
                         //         .vendor.value!.contactInfo!["street address"] ??
                         //     "",
                         hintText: "Enter Zip Code",
-                        textInputType: TextInputType.number,
+                        textInputType: Platform.isIOS
+                            ? TextInputType.numberWithOptions(
+                                signed: true,
+                                decimal: true,
+                              )
+                            : TextInputType.number,
                         validator: (val) {
                           if (val!.isEmpty) {
                             return "Cannot be Empty";
@@ -148,7 +155,12 @@ class ChangeAddressWidget extends StatelessWidget {
                         //         .vendor.value!.contactInfo!["street address"] ??
                         //     "",
                         hintText: "Enter Zip Code",
-                        textInputType: TextInputType.number,
+                        textInputType: Platform.isIOS
+                            ? TextInputType.numberWithOptions(
+                                signed: true,
+                                decimal: true,
+                              )
+                            : TextInputType.number,
                         validator: (val) {
                           if (val!.isEmpty) {
                             return "Cannot be Empty";
@@ -170,7 +182,12 @@ class ChangeAddressWidget extends StatelessWidget {
                         //         .vendor.value!.contactInfo!["street address"] ??
                         //     "",
                         hintText: "Enter Zip Code",
-                        textInputType: TextInputType.number,
+                        textInputType: Platform.isIOS
+                            ? TextInputType.numberWithOptions(
+                                signed: true,
+                                decimal: true,
+                              )
+                            : TextInputType.number,
                         validator: (val) {
                           if (val!.isEmpty) {
                             return "Cannot be Empty";
@@ -449,7 +466,12 @@ class CardUIWidget extends StatelessWidget {
                     labelText: "Card Number",
                     labelColor: Colors.black26,
                     fontSize: 15,
-                    textInputType: TextInputType.number,
+                    textInputType: Platform.isIOS
+                        ? TextInputType.numberWithOptions(
+                            signed: true,
+                            decimal: true,
+                          )
+                        : TextInputType.number,
                     validator: (val) {
                       if (val!.isEmpty) {
                         return "Please enter your card number";
@@ -471,7 +493,12 @@ class CardUIWidget extends StatelessWidget {
                   children: [
                     CardExpiryDateInputWidget(
                       labelText: "MM/YY",
-                      textInputType: TextInputType.number,
+                      textInputType: Platform.isIOS
+                          ? TextInputType.numberWithOptions(
+                              signed: true,
+                              decimal: true,
+                            )
+                          : TextInputType.number,
                       labelColor: Colors.black26,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (val) {
@@ -493,7 +520,12 @@ class CardUIWidget extends StatelessWidget {
                       width: 16,
                     ),
                     TextInputWidgetWithoutLabelForDialog(
-                      textInputType: TextInputType.number,
+                      textInputType: Platform.isIOS
+                          ? TextInputType.numberWithOptions(
+                              signed: true,
+                              decimal: true,
+                            )
+                          : TextInputType.number,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       hintText: "Cvv/Cvc",
                       // labelColor: Colors.black26,
@@ -766,3 +798,61 @@ class ProfilePicturePage extends StatelessWidget {
     );
   }
 }
+
+
+// LikeButton(
+//                         mainAxisAlignment: MainAxisAlignment.end,
+//                         size: 20,
+//                         bubblesSize: 48,
+//                         isLiked: isLiked,
+//                         onTap: (isTapped) async {
+//                           // Only proceed if the user is logged in
+//                           if (isUserLoggedIn) {
+//                             debugPrint("logged in");
+//                             //isTapped = false;
+//                             // isLiked = false;
+//                             if (userController.userState.value!.uid ==
+//                                 productController
+//                                     .productMap[mapKey]![index]!.vendorId) {
+//                               wishListController.showMyToast(
+//                                   "Cannot add your own product to wishlist");
+//                               return null;
+//                             } else {
+//                               if (isLiked) {
+//                                 await wishListController
+//                                     .removeFromWishlistWithProductID(id!);
+//                               } else {
+//                                 WishlistItem wishlistItem =
+//                                     WishlistItem(wishListItemID: id!);
+//                                 await wishListController
+//                                     .addToWishlist(wishlistItem);
+//                               }
+//                             }
+//                             return isUserLoggedIn ? !isLiked : false;
+//                           } else {
+//                             wishListController.showMyToast(
+//                                 "Login to add product to your wishlist");
+//                             return null;
+//                           }
+//                         },
+//                         likeBuilder: (isLiked) {
+//                           if (isLiked) {
+//                             return const Icon(
+//                               Icons.favorite,
+//                               color: Color(0xFF673AB7),
+//                             );
+//                           } else {
+//                             return const Icon(
+//                               Icons.favorite_outline_rounded,
+//                               color: Color(0xFF673AB7),
+//                             );
+//                           }
+//                         },
+//                         bubblesColor: BubblesColor(
+//                           dotPrimaryColor: const Color(0xFF673AB7),
+//                           dotSecondaryColor:
+//                               const Color(0xFF673AB7).withValues(alpha: 0.70),
+//                           dotThirdColor: Colors.white,
+//                           dotLastColor: Colors.black,
+//                         ),
+//                       ),

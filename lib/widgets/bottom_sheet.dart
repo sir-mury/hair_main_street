@@ -119,9 +119,10 @@ class _ProductOptionBottomSheetWidgetState
                       const Text(
                         "Quantity",
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       const Divider(
@@ -165,7 +166,10 @@ class _ProductOptionBottomSheetWidgetState
                               ),
                               IconButton(
                                 onPressed: () {
-                                  controller.increaseQuantity();
+                                  controller.increaseQuantity(
+                                    product: widget.product!,
+                                    selectedOption: null,
+                                  );
                                   debugPrint(quantity.toString());
                                 },
                                 icon: const Icon(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -223,7 +225,10 @@ class _AccountInformationPageState extends State<AccountInformationPage> {
                             }
                             return null;
                           },
-                          textInputType: TextInputType.number,
+                          textInputType: Platform.isIOS
+                              ? TextInputType.numberWithOptions(
+                                  signed: true, decimal: true)
+                              : TextInputType.number,
                           onChanged: (val) {
                             if (val!.isNotEmpty) {
                               setState(() {

@@ -55,6 +55,17 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    formatAddressText() {
+      return [
+        if (widget.orderDetails?.shippingAddress?.landmark != null)
+          widget.orderDetails?.shippingAddress?.landmark!,
+        widget.orderDetails?.shippingAddress?.streetAddress,
+        widget.orderDetails?.shippingAddress?.lGA,
+        widget.orderDetails?.shippingAddress?.state,
+        if (widget.orderDetails?.shippingAddress?.zipCode != null)
+          widget.orderDetails?.shippingAddress?.zipCode!,
+      ].where((element) => element != null).join(', ');
+    }
     //MyUser? buyerDetails = userController.buyerDetails.value;
 
     DateTime resolveTimestampWithoutAdding(Timestamp timestamp) {
@@ -387,17 +398,15 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text("Delivery Address: "),
-                                buyerDetails.address != null
+                                widget.orderDetails!.shippingAddress != null
                                     ? Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
+                                            Text(formatAddressText()),
                                             Text(
-                                              "${buyerDetails.address!.landmark ?? ""},${buyerDetails.address!.streetAddress},${buyerDetails.address!.lGA},${buyerDetails.address!.state}.${buyerDetails.address!.zipCode ?? ""}",
-                                            ),
-                                            Text(
-                                              "${buyerDetails.address!.contactName ?? ""},${buyerDetails.address!.contactPhoneNumber},",
+                                              "${widget.orderDetails?.shippingAddress?.contactName ?? ""},${widget.orderDetails?.shippingAddress?.contactPhoneNumber},",
                                             ),
                                           ],
                                         ),
@@ -521,6 +530,25 @@ class _VendorOrderDetailsPageState extends State<VendorOrderDetailsPage> {
                               children: [
                                 const Text(
                                   "Total Price: ",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "NGN ${formatCurrency(widget.orderDetails!.totalPrice.toString())}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF673AB7),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Amount Paid: ",
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 Text(

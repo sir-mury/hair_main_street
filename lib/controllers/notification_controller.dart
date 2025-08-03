@@ -6,6 +6,7 @@ import 'package:hair_main_street/services/notification.dart';
 
 class NotificationController extends GetxController {
   var notifications = <Notifications>[].obs;
+  RxBool isLoading = false.obs;
 
   void navigateToNotifications() {
     Get.offAll(() => const HomePage());
@@ -36,8 +37,16 @@ class NotificationController extends GetxController {
     NotificationService().subscribeToTopics(userType, userID);
   }
 
-  getNotifications() {
-    notifications.bindStream(DataBaseService().getNotifications());
+  getNotifications() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    isLoading.value = true;
+    Stream stream = DataBaseService().getNotifications();
+    stream.listen((data) {
+      notifications.value = data;
+      // prefs.setInt("notificationCount", value)
+      isLoading.value = false;
+      // debugPrint("isLoading: ${isLoading.value}");
+    });
   }
 }
 

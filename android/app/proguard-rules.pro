@@ -1,18 +1,3 @@
-# Keep Kotlin Parcelize
--keep class * implements android.os.Parcelable {
-    public static final android.os.Parcelable$Creator *;
-}
--keepnames class * implements android.os.Parcelable {
-    public static final ** CREATOR;
-}
--keepclassmembers class * implements android.os.Parcelable {
-    public static final android.os.Parcelable$Creator *;
-}
-
-# Keep Monnify SDK classes
--keep class com.teamapt.monnify.sdk.** { *; }
--keepclassmembers class com.teamapt.monnify.sdk.** { *; }
-
 # Kotlin serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
@@ -33,19 +18,47 @@
     public <methods>;
 }
 
-# Keep Flutter-specific classes
--keep class io.flutter.plugin.** { *; }
+# Keep Kotlin Parcelize
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+-keepnames class * implements android.os.Parcelable {
+    public static final ** CREATOR;
+}
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
 
-# Firebase
--keep class com.google.firebase.** { *; }
--dontwarn com.google.firebase.**
+# Keep Retrofit core classes
+-keep interface retrofit2.Call
+-keep class retrofit2.** { *; }
+-keep interface retrofit2.** { *; }
+
+# Optional: keep annotations used by Retrofit (e.g. @POST, @GET)
+-keepattributes Signature
+-keepattributes *Annotation*
 
 -keep class com.squareup.retrofit2.** { *; }
 -keep interface com.squareup.retrofit2.** { *; }
-
--keep class io.reactivex.** { *; }
--keep interface io.reactivex.** { *; }
-
--keep class com.teamapt.monnify.sdk.** {
-    public protected private *;
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
 }
+
+-keep class com.paystack.android.core.api.** { *; }
+-keep interface com.paystack.android.core.api.** { *; }
+-keep class com.paystack.android.core.api.models.** {*;}
+-keepattributes Signature
+-keepattributes *Annotation*
+
+-keep class com.google.firebase.** { *; }
+-keep class com.google.firebase.messaging.** { *; }
+-dontwarn com.google.firebase.**
+
+-keepattributes SourceFile,LineNumberTable
+# # ========== DEBUGGING RULES (Remove in production) ==========
+# # Uncomment these for debugging ProGuard issues
+#-printmapping mapping.txt
+#-dontobfuscate
+# -verbose
+# -dontshrink
+# -dontoptimize

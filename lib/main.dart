@@ -15,6 +15,7 @@ import 'package:hair_main_street/controllers/updates_service_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/firebase_options.dart';
 import 'package:hair_main_street/pages/authentication/authentication.dart';
+import 'package:hair_main_street/pages/authentication/create_account.dart';
 import 'package:hair_main_street/pages/authentication/reset_password.dart';
 import 'package:hair_main_street/pages/client_shop_page.dart';
 import 'package:hair_main_street/pages/homepage.dart';
@@ -37,22 +38,22 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await dotenv.load(fileName: ".env");
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
   }
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   Get.put(ConnectivityController());
-  final prefs = await SharedPreferences.getInstance();
-  final showHome = prefs.getBool("showHome") ?? false;
-  prefs.setBool("hasShownUpdateDialog", false);
-  NotificationService().init();
+  final prefs = SharedPreferencesAsync();
+  final showHome = await prefs.getBool("showHome") ?? false;
+  await prefs.setBool("hasShownUpdateDialog", false);
   //await FirebaseMessaging.instance.getInitialMessage();
   Get.put(UserController());
   Get.put(NotificationController());
   Get.put(AdminController());
   Get.put(UpdatesServiceController());
   Get.put<ChatController>(ChatController());
+  NotificationService().init();
   FlutterNativeSplash.remove();
 
   runApp(MyApp(showHome: showHome));
@@ -112,9 +113,11 @@ class _MyAppState extends State<MyApp> {
         if (appLink.path == '/__/auth/action') {
           var result = await AuthService().handlePasswordResetLink(appLink);
           if (result["success"] == true) {
-            Get.off(() => ResetPasswordPage(
-                  code: result["oobCode"],
-                ));
+            Get.off(
+              () => ResetPasswordPage(
+                code: result["oobCode"],
+              ),
+            );
           }
           return;
         }
@@ -206,10 +209,7 @@ class _MyAppState extends State<MyApp> {
         return null;
       },
       getPages: [
-        GetPage(
-            name: '/',
-            page: () =>
-                widget.showHome ? const HomePage() : const OnboardingScreen()),
+        GetPage(name: '/', page: () => const HomePage()),
         GetPage(name: "/orders", page: () => const OrdersPage()),
         GetPage(
             name: '/shops/:id',
@@ -229,7 +229,7 @@ class _MyAppState extends State<MyApp> {
         GetPage(
           name: '/register',
           parameters: {"referralCode": referralCode},
-          page: () => SignInUpPage(
+          page: () => CreateAccountPage(
             referralCode: referralCode,
           ),
         ),

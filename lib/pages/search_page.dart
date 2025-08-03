@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
@@ -155,7 +157,9 @@ class _SearchPageState extends State<SearchPage> {
                           child: TextInputWidgetWithoutLabelForDialog(
                             controller: price1,
                             hintText: "Lower Price Range",
-                            textInputType: TextInputType.number,
+                            textInputType: Platform.isIOS
+                                ? TextInputType.numberWithOptions()
+                                : TextInputType.number,
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
                             validator: (value) {
@@ -183,7 +187,9 @@ class _SearchPageState extends State<SearchPage> {
                           child: TextInputWidgetWithoutLabelForDialog(
                             controller: price2,
                             hintText: "Upper Price Range",
-                            textInputType: TextInputType.number,
+                            textInputType: Platform.isIOS
+                                ? TextInputType.numberWithOptions()
+                                : TextInputType.number,
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
                             validator: (value) {

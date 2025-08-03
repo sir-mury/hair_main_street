@@ -5,6 +5,7 @@ class AdminVariables {
   List<String>? brands;
   num? expiredFee;
   bool? allowVendors;
+  bool? isLive;
   AdminVariablesUpdates? updates;
 
   AdminVariables({
@@ -14,6 +15,7 @@ class AdminVariables {
     this.expiredFee,
     this.installmentDuration,
     this.allowVendors,
+    this.isLive,
     this.updates,
   });
 
@@ -26,6 +28,7 @@ class AdminVariables {
         expiredFee: json["expired fee"],
         installmentDuration: json["installment duration"],
         allowVendors: json["allow vendors"],
+        isLive: json["isLive"],
         updates: json["updates"] != null
             ? AdminVariablesUpdates.fromJson(json["updates"])
             : null,
@@ -36,6 +39,7 @@ class AdminVariables {
         "convenience fee": convinienceFee,
         "brands": brands!.toList(),
         "expired fee": expiredFee,
+        "isLive": isLive,
         "installment duration": installmentDuration,
         "allow vendors": allowVendors,
         "updates": updates?.toJson(),

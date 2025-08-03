@@ -11,6 +11,7 @@ class MyUser {
   bool? isBuyer = true;
   bool? isVendor;
   bool? isAdmin;
+  String? token;
   String? referralCode;
   String? profilePhoto;
   String? referralLink;
@@ -25,6 +26,7 @@ class MyUser {
     this.isAdmin,
     this.isBuyer,
     this.isVendor,
+    this.token,
     this.profilePhoto,
     this.referralCode,
     this.referralLink,
@@ -35,6 +37,7 @@ class MyUser {
         uid: json["uid"],
         fullname: json["fullname"],
         email: json["email"],
+        token: json['token'],
         phoneNumber: json["phonenumber"],
         isAdmin: json["isAdmin"],
         isBuyer: json["isBuyer"] ?? true, // Default to true if not provided
@@ -44,9 +47,9 @@ class MyUser {
             json["address"] != null ? Address.fromJson(json["address"]) : null,
         referralCode: json["referral code"],
         referralLink: json["referral link"],
-        createdAt: json["created at"] != null
-            ? Timestamp.fromMillisecondsSinceEpoch(json["created at"])
-            : null,
+        createdAt: json["created at"] ??
+            Timestamp.fromMillisecondsSinceEpoch(
+                DateTime.now().millisecondsSinceEpoch),
       );
 
   Map<String, dynamic> toData() {
@@ -57,6 +60,7 @@ class MyUser {
       "phonenumber": phoneNumber,
       "isAdmin": isAdmin,
       "isBuyer": isBuyer,
+      "token": token,
       "isVendor": isVendor,
       "profile photo": profilePhoto,
       // "address": address?.toJson(), // Assuming Address has a toJson() method

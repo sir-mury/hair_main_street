@@ -1,8 +1,8 @@
 plugins {
-    id "com.android.application"
-    id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services"
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'dev.flutter.flutter-gradle-plugin'
+    id 'com.google.gms.google-services'
 }
 
 def localProperties = new Properties()
@@ -26,11 +26,11 @@ if (flutterVersionName == null) {
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
-    namespace "app.secureglobal.hairmainstreet"
+    namespace 'app.secureglobal.hairmainstreet'
     compileSdk = 35
     ndkVersion '28.0.12433566 rc1'
 
@@ -52,27 +52,27 @@ android {
     defaultConfig {
         multiDexEnabled true
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "app.secureglobal.hairmainstreet"
+        applicationId 'app.secureglobal.hairmainstreet'
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 23
-        targetSdk = 33
+        targetSdk = 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
     signingConfigs {
         release {
-            keyAlias 'upload'
-            keyPassword System.getenv('KEY_PASSWORD') ?: keyPassword
-            storeFile file('release-key.jks')
-            storePassword System.getenv('STORE_PASSWORD') ?: storePassword
+            keyAlias keystoreProperties['keyAlias'] ?: 'upload'
+            keyPassword keystoreProperties['keyPassword'] ?: 'defaultPassword'
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword'] ?: 'defaultPassword'
         }
     }
 
     buildTypes {
-        debug{
-            // ...
+        debug {
+        // ...
         }
         release {
             // TODO: Add your own signing config for the release build.
@@ -96,7 +96,10 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.room:room-ktx:2.6.1'
     // implementation "com.monnify.android-sdk:monnify-android-sdk:1.1.7"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10"
-    implementation "org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.10"
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.2'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10'
+    implementation 'org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.10'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+
 }

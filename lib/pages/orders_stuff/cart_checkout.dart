@@ -1,5 +1,7 @@
 // import 'dart:io';
 
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -857,8 +859,10 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                                               },
                                               autovalidateMode: AutovalidateMode
                                                   .onUserInteraction,
-                                              keyboardType:
-                                                  TextInputType.number,
+                                              keyboardType: Platform.isIOS
+                                                  ? TextInputType
+                                                      .numberWithOptions()
+                                                  : TextInputType.number,
                                               onChanged: (value) {
                                                 if (value.isEmpty) {
                                                 } else {

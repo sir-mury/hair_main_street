@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:hair_main_street/controllers/cart_controller.dart';
 import 'package:hair_main_street/controllers/notification_controller.dart';
 import 'package:hair_main_street/controllers/referral_controller.dart';
 import 'package:hair_main_street/models/admin_variable_model.dart';
@@ -25,6 +26,7 @@ class UserController extends GetxController {
   var isObscure1 = true.obs;
   var isImageSelected = false.obs;
   var selectedImage = "".obs;
+  RxBool fromProvider = false.obs;
   RxBool isVendor = false.obs;
   RxBool isProfileComplete = false.obs;
   Rx<MyUser?> buyerDetails = Rx<MyUser?>(null);
@@ -40,17 +42,20 @@ class UserController extends GetxController {
   void onInit() {
     ReferralController referralController =
         Get.put<ReferralController>(ReferralController());
-    // debugPrint(userState.value!.email);
+
+    WishListController wishListController = Get.put(WishListController());
     determineAuthState();
     // userState.listen(getRoleDynamically);
 
     ever(userState, (MyUser? newUser) {
       if (newUser != null) {
+        wishListController.fetchWishList();
         referralController.getReferrals();
         isVendor.bindStream(determineIfVendor());
         getRoleDynamically;
       }
     });
+    // debugPrint(userState.value!.email);
     super.onInit();
   }
 
@@ -279,10 +284,16 @@ class UserController extends GetxController {
     Stream<MyUser?> stream = AuthService().authState;
     stream.listen(
       (data) {
-        userState.value = data;
-        userState.value == null
-            ? authStreamDone.value = false
-            : authStreamDone.value = true;
+        if (data == null || data.runtimeType == MyUser) {
+          authStreamDone.value = true;
+          if (data == null) {
+            userState.value = null;
+          } else {
+            userState.value = data;
+          }
+        } else {
+          authStreamDone.value = false;
+        }
       },
     );
     // ignore: unnecessary_brace_in_string_interps
@@ -294,6 +305,9 @@ class UserController extends GetxController {
       var response =
           await AuthService().createUserWithEmailandPassword(email, password);
       if (response is MyUser) {
+        if (response.token == null) {
+          showMyToast("Notifications are temporarily down...");
+        }
         userState.value = response;
         isLoading.value = false;
         Get.snackbar(
@@ -329,45 +343,9 @@ class UserController extends GetxController {
           ),
         );
       }
-      if (response is MyUser) {
-        userState.value = response;
-        isLoading.value = false;
-        Get.snackbar(
-          "Success",
-          "User Created and Signed In",
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 1, milliseconds: 800),
-          forwardAnimationCurve: Curves.decelerate,
-          reverseAnimationCurve: Curves.easeOut,
-          backgroundColor: Colors.green[200],
-          margin: EdgeInsets.only(
-            left: 12,
-            right: 12,
-            bottom: screenHeight * 0.08,
-          ),
-        );
-        Get.offAll(() => const HomePage());
-        return "success";
-      } else {
-        isLoading.value = false;
-        Get.snackbar(
-          "Error",
-          response.code.toString().split("_").join(" ").titleCase,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 1, milliseconds: 800),
-          forwardAnimationCurve: Curves.decelerate,
-          reverseAnimationCurve: Curves.easeOut,
-          backgroundColor: Colors.red[200],
-          colorText: Colors.black,
-          margin: EdgeInsets.only(
-            left: 12,
-            right: 12,
-            bottom: screenHeight * 0.08,
-          ),
-        );
-      }
     } catch (e) {
       isLoading.value = false;
+      if (Get.isDialogOpen!) Get.back();
       debugPrint(e.toString());
     }
   }
@@ -378,6 +356,10 @@ class UserController extends GetxController {
       var response =
           await AuthService().signInWithEmailandPassword(email, password);
       if (response is MyUser) {
+        fromProvider.value = false;
+        if (response.token == null) {
+          showMyToast("Notifications are temporarily down...");
+        }
         userState.value = response;
         isLoading.value = false;
         Get.snackbar(
@@ -405,7 +387,7 @@ class UserController extends GetxController {
         Get.find<BottomNavController>().changeTabIndex(0);
       } else {
         isLoading.value = false;
-        Get.close(1);
+        if (Get.isDialogOpen!) Get.back();
         Get.snackbar(
           "Error",
           response.code.toString().split("_").join(" ").titleCase,
@@ -425,6 +407,7 @@ class UserController extends GetxController {
       }
     } catch (e) {
       isLoading.value = false;
+      if (Get.isDialogOpen!) Get.back();
       debugPrint("hello:${e.toString()}");
     }
   }
@@ -434,6 +417,7 @@ class UserController extends GetxController {
     var result = await AuthService().signOut();
     // debugPrint("result: $result");
     if (result == 'success') {
+      fromProvider.value = false;
       isLoading.value = false;
       Get.snackbar(
         "Success",
@@ -449,7 +433,7 @@ class UserController extends GetxController {
           bottom: screenHeight * 0.08,
         ),
       );
-      Get.offAll(() => const HomePage());
+      Get.close(1);
       Get.find<BottomNavController>().changeTabIndex(0);
     }
   }
@@ -457,6 +441,7 @@ class UserController extends GetxController {
   //delete account
   deleteAccount() async {
     await AuthService().deleteAccount();
+    fromProvider.value = false;
     Get.snackbar(
       "Success",
       "User Signed Out",
@@ -553,6 +538,10 @@ class UserController extends GetxController {
   Future signInWithGoogle() async {
     var response = await AuthService().signInWithGoogle();
     if (response is MyUser) {
+      fromProvider.value = true;
+      if (response.token == null) {
+        showMyToast("Notifications are temporarily down...");
+      }
       userState.value = response;
       isLoading.value = false;
       Get.snackbar(
@@ -576,7 +565,7 @@ class UserController extends GetxController {
       Get.find<BottomNavController>().changeTabIndex(0);
     } else if (response is FirebaseAuthException) {
       isLoading.value = false;
-      Get.close(1);
+      if (Get.isDialogOpen!) Get.back();
       Get.snackbar(
         "Error",
         response.code.toString().split("_").join(" ").titleCase,
@@ -604,6 +593,10 @@ class UserController extends GetxController {
   Future signInWithApple() async {
     var response = await AuthService().signInWithApple();
     if (response is MyUser) {
+      fromProvider.value = true;
+      if (response.token == null) {
+        showMyToast("Notifications are temporarily down...");
+      }
       userState.value = response;
       isLoading.value = false;
       Get.snackbar(
@@ -627,7 +620,7 @@ class UserController extends GetxController {
       Get.find<BottomNavController>().changeTabIndex(0);
     } else if (response is FirebaseAuthException) {
       isLoading.value = false;
-      Get.close(1);
+      if (Get.isDialogOpen!) Get.back();
       Get.snackbar(
         "Error",
         response.code.toString().split("_").join(" ").titleCase,
@@ -774,7 +767,7 @@ class UserController extends GetxController {
 
   sendResetPasswordEmail(String email) async {
     debugPrint("email: $email");
-    var result = await AuthService().experimentalPasswordResetSending(email);
+    var result = await AuthService().resetPasswordEmail(email);
     if (result == 'success') {
       isLoading.value = false;
       Get.close(2);
@@ -821,7 +814,6 @@ class UserController extends GetxController {
     var result = await AuthService().resetPasswordProper(newPassword, code);
     if (result == 'success') {
       isLoading.value = false;
-      Get.close(2);
       Get.snackbar(
         "Success",
         "Password Reset Successful",
@@ -836,6 +828,8 @@ class UserController extends GetxController {
           bottom: screenHeight * 0.08,
         ),
       );
+      Get.isDialogOpen! ? Get.back() : null;
+      Get.offAllNamed("/");
       return 'success';
     } else if (result.runtimeType == FirebaseAuthException) {
       isLoading.value = false;

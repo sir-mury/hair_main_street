@@ -600,6 +600,30 @@ exports.processExpiredOrder = onDocumentUpdated(
       const adminBody = `<p style="font-size: 18px">An order with ID : ${orderId} from the vendor ${vendorData['shop name']} has expired</p>`
       const adminSubject = `Order Expired`
 
+      //also return the stock back to the product
+      try {
+        await db.runTransaction(async transaction => {
+          const orderItemDoc = await db
+            .collection('orders')
+            .doc(orderId)
+            .collection('order items')
+            .doc(orderId)
+            .get()
+          const orderItemData = orderItemDoc.data()
+          const productRef = db
+            .collection('products')
+            .doc(orderItemData['productID'])
+          const snapshot = transaction.get(productRef)
+          const quantityOrdered = Number(orderItemData['quantity'])
+          const previousQuantity = (await snapshot).data().quantity
+          const newQuantity = previousQuantity + quantityOrdered
+          transaction.update(productRef, { quantity: newQuantity })
+        })
+        logger.info('Stock quantity updated successfully')
+      } catch (error) {
+        logger.error(`Stock update failed ${error}`)
+      }
+
       await Promise.all([
         notifyUser({
           userID: buyerId,

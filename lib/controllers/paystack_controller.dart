@@ -9,6 +9,7 @@ class PaystackController extends GetxController {
   RxString accessCode = ''.obs;
   final paystack = Paystack();
   RxString responseReference = "".obs;
+  RxBool isLoading = false.obs;
   // This class will handle Paystack payment processing
   // Add methods for initializing payment, handling callbacks, etc.
 
@@ -16,6 +17,7 @@ class PaystackController extends GetxController {
     required String publicKey,
     required bool enableLogging,
   }) async {
+    isLoading.value = true;
     try {
       bool isInitialized = await paystack.initialize(publicKey, enableLogging);
       if (isInitialized) {
@@ -26,10 +28,12 @@ class PaystackController extends GetxController {
     } on PlatformException catch (e) {
       debugPrint(e.toString());
     }
+    isLoading.value = false;
     return null;
   }
 
-  launchSdkUi({required String accessCode}) async {
+  Future<String?> launchSdkUi({required String accessCode}) async {
+    isLoading.value = true;
     try {
       responseReference.value = "";
       var response = await paystack.launch(accessCode);
@@ -41,24 +45,33 @@ class PaystackController extends GetxController {
           message: "Payment Successful",
           title: "Success",
         );
+        return responseReference.value;
       } else if (response.status.toLowerCase() == "cancelled") {
         mySnackBar(
-          color: Colors.red,
+          color: Colors.amber[200],
           title: "Cancelled",
           message: "Payment Cancelled. Please try again.",
-          textColor: Colors.white,
+          textColor: Colors.black,
         );
+        isLoading.value = false;
+        Get.isDialogOpen! ? Get.close(1) : null;
+        return null;
       } else if (response.status.toLowerCase() == "failed") {
         mySnackBar(
-          color: Colors.red,
+          color: Colors.red[400],
           title: "Failed",
           message: "Failed to complete payment. Please try again.",
           textColor: Colors.white,
         );
+        isLoading.value = false;
+        Get.isDialogOpen! ? Get.close(1) : null;
+        return null;
       }
     } on PlatformException catch (e) {
       debugPrint(e.toString());
     }
+    return null;
+    // Get.close(1);
   }
 
   Future<void> initializePayment({
@@ -66,6 +79,7 @@ class PaystackController extends GetxController {
     required String email,
     required String reference,
   }) async {
+    isLoading.value = true;
     //first reset accessCode
     accessCode.value = '';
     var response =
@@ -78,13 +92,14 @@ class PaystackController extends GetxController {
     } else {
       // Handle error
       mySnackBar(
-        color: Colors.red,
+        color: Colors.red[400],
         title: "Error",
         message: "Failed to initialize payment. Please try again.",
         textColor: Colors.white,
       );
       return;
     }
+    isLoading.value = false;
     // Logic to initialize payment with Paystack
   }
 

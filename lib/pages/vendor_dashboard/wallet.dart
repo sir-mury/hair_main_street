@@ -154,7 +154,7 @@ class _WalletPageState extends State<WalletPage> {
                   fontSize: 25,
                   fontWeight: FontWeight.w700,
                   fontFamily: 'Lato',
-                  color: Color(0xFF673AB7),
+                  color: Colors.black,
                 ),
               ),
               centerTitle: true,

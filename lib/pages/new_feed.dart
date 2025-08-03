@@ -3,7 +3,9 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/admin_controller.dart';
+import 'package:hair_main_street/controllers/cart_controller.dart';
 import 'package:hair_main_street/controllers/product_controller.dart';
+import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/extras/delegate.dart';
 import 'package:hair_main_street/pages/notifcation.dart';
 import 'package:hair_main_street/widgets/cards.dart';
@@ -22,6 +24,8 @@ class NewFeedPage extends StatefulWidget {
 class _NewFeedPageState extends State<NewFeedPage>
     with TickerProviderStateMixin {
   ProductController productController = Get.find<ProductController>();
+  UserController userController = Get.find<UserController>();
+  WishListController wishlistController = Get.find<WishListController>();
   TabController? tabController;
 
   @override
@@ -34,6 +38,11 @@ class _NewFeedPageState extends State<NewFeedPage>
   Widget build(BuildContext context) {
     return GetX<AdminController>(
       builder: (adminController) {
+        // RxBool isUserLoggedIn = (userController.userState.value != null).obs;
+
+        // if (isUserLoggedIn.value) {
+        //   wishlistController.fetchWishList();
+        // }
         // Build categories list reactively
         List<String> categories = [
           "All",
@@ -63,14 +72,30 @@ class _NewFeedPageState extends State<NewFeedPage>
               ),
             ),
             actions: [
-              IconButton(
-                padding: const EdgeInsets.all(0),
-                onPressed: () => Get.to(() => NotificationsPage()),
-                icon: const Iconify(
-                  Ion.md_notifications_outline,
-                  color: Colors.black,
-                  size: 24,
-                ),
+              Stack(
+                children: [
+                  IconButton(
+                    padding: const EdgeInsets.all(0),
+                    onPressed: () => Get.to(() => NotificationsPage()),
+                    icon: const Iconify(
+                      Ion.md_notifications_outline,
+                      color: Colors.black,
+                      size: 24,
+                    ),
+                  ),
+                  // Positioned(
+                  //   right: 12,
+                  //   top: 1,
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //       shape: BoxShape.circle,
+                  //       color: Colors.red,
+                  //     ),
+                  //     width: 8,
+                  //     height: 8,
+                  //   ),
+                  // )
+                ],
               ),
             ],
             bottom: PreferredSize(

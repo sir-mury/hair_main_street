@@ -5,10 +5,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_paystack_max/flutter_paystack_max.dart';
+// import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 // import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:get/get.dart';
+import 'package:hair_main_street/controllers/admin_controller.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
+import 'package:hair_main_street/controllers/paystack_controller.dart';
 import 'package:hair_main_street/controllers/product_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/models/aux_models.dart';
@@ -36,8 +38,10 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
   UserController userController = Get.find<UserController>();
   ProductController productController = Get.find<ProductController>();
   CheckOutController checkOutController = Get.find<CheckOutController>();
-  String? secretKey = dotenv.env["PAYSTACK_SECRET_KEY"];
+  PaystackController paystackController = Get.find<PaystackController>();
+  AdminController adminController = Get.find<AdminController>();
   String? publicKey = dotenv.env["PAYSTACK_PUBLIC_KEY"];
+  String? livePublicKey = dotenv.env["PAYSTACK_LIVE_PUBLIC_KEY"];
   String? monnifyAPIKey = dotenv.env["MONNIFY_API_KEY"];
   String? monnifyContractCode = dotenv.env["MONNIFY_CONTRACT_CODE"];
   String? callbackUrl = dotenv.env["CALLBACK_URL"];
@@ -67,6 +71,12 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
     setState(() {
       installmentValue = value;
     });
+  }
+
+  String? determinePublicKey() {
+    return adminController.adminSettings.value!.isLive == true
+        ? livePublicKey
+        : publicKey;
   }
 
   @override
@@ -145,53 +155,17 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
       product = productController.getSingleProduct(item.productID!);
     }
 
-    //error dialog handler
-    void showErrorDialog(String message) {
-      Get.dialog(
-        AlertDialog(
-          contentPadding: const EdgeInsets.all(16),
-          elevation: 0,
-          backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-          content: Text(
-            message,
-            style: const TextStyle(
-              decoration: TextDecoration.none,
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.close(2),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.red.shade300,
-              ),
-              child: const Text(
-                'Close',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-          actionsAlignment: MainAxisAlignment.center,
-        ),
-      );
-    }
-
-    Future<void> handleSinglePaymentSuccess(
-      int? paymentPrice,
-      String? paymentMethod,
-      String? orderQuantity,
-      MyUser? user,
-      String? vendorID,
-      Product? product,
-      int? installmentNumber,
-      String reference,
-    ) async {
+    //create order
+    Future createOrder({
+      required int? paymentPrice,
+      required String? paymentMethod,
+      required String? orderQuantity,
+      required MyUser? user,
+      required String? vendorID,
+      required Product? product,
+      required int? installmentNumber,
+      required String? reference,
+    }) async {
       try {
         int installmentPaid;
         if (installmentNumber != 0) {
@@ -200,8 +174,8 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
           installmentPaid = 0;
         }
 
-        var totalPrice = product!.price!;
-        var productPrice = (product.price!) / int.parse(orderQuantity!);
+        // var totalPrice = product!.price!;
+        double productPrice = (totalPrice) / int.parse(orderQuantity!);
 
         var result = await checkOutController.createOrder(
           deliveryAddress:
@@ -209,7 +183,7 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
           totalPrice: totalPrice,
           orderQuantity: orderQuantity,
           installmentPaid: installmentPaid,
-          productID: product.productID,
+          productID: product!.productID,
           productPrice: productPrice.toString(),
           paymentMethod: paymentMethod,
           paymentPrice: paymentPrice,
@@ -221,7 +195,8 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
         );
 
         if (result == 'success') {
-          checkOutController.isLoading.value = false;
+          paystackController.isLoading.value = false;
+          if (Get.isDialogOpen!) Get.back();
           if (mounted) {
             Get.to(() => const PaymentSuccessfulPage());
           }
@@ -231,148 +206,234 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
       }
     }
 
-// Helper method for error dialogs (if not already defined)
-    void showErrorDialog2(String message) {
-      if (mounted) {
-        showErrorDialog(message);
-      }
-    }
+    //error dialog handler
+    // void showErrorDialog(String message) {
+    //   Get.dialog(
+    //     AlertDialog(
+    //       contentPadding: const EdgeInsets.all(16),
+    //       elevation: 0,
+    //       backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+    //       content: Text(
+    //         message,
+    //         style: const TextStyle(
+    //           decoration: TextDecoration.none,
+    //           color: Colors.black,
+    //           fontSize: 16,
+    //           fontWeight: FontWeight.w700,
+    //         ),
+    //         textAlign: TextAlign.center,
+    //       ),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () => Get.close(2),
+    //           style: TextButton.styleFrom(
+    //             backgroundColor: Colors.red.shade300,
+    //           ),
+    //           child: const Text(
+    //             'Close',
+    //             style: TextStyle(
+    //               fontSize: 16,
+    //               color: Colors.white,
+    //             ),
+    //           ),
+    //         ),
+    //       ],
+    //       actionsAlignment: MainAxisAlignment.center,
+    //     ),
+    //   );
+    // }
 
-    Future<void> processSinglePaymentResponse(
-      PaystackTransactionVerified? response,
-      int? paymentPrice,
-      String? paymentMethod,
-      String? orderQuantity,
-      MyUser? user,
-      String? vendorID,
-      Product? product,
-      int? installmentNumber,
-      String reference,
-    ) async {
-      switch (response?.data.status) {
-        case PaystackTransactionStatus.success:
-          await handleSinglePaymentSuccess(
-            paymentPrice,
-            paymentMethod,
-            orderQuantity,
-            user,
-            vendorID,
-            product,
-            installmentNumber,
-            reference,
-          );
-          break;
+//     Future<void> handleSinglePaymentSuccess(
+//       int? paymentPrice,
+//       String? paymentMethod,
+//       String? orderQuantity,
+//       MyUser? user,
+//       String? vendorID,
+//       Product? product,
+//       int? installmentNumber,
+//       String reference,
+//     ) async {
+//       try {
+//         int installmentPaid;
+//         if (installmentNumber != 0) {
+//           installmentPaid = 1;
+//         } else {
+//           installmentPaid = 0;
+//         }
 
-        case PaystackTransactionStatus.failed:
-          showErrorDialog2("Payment Failed");
-          break;
-        case PaystackTransactionStatus.abandoned:
-          showErrorDialog2("Payment Abandoned");
-          break;
-        case null:
-          showErrorDialog2("Payment Failed");
-          break;
-        default:
-          showErrorDialog2("Payment Failed");
-          break;
-      }
-    }
+//         var totalPrice = product!.price!;
+//         var productPrice = (product.price!) / int.parse(orderQuantity!);
 
-    initializePaymentPaystack({
-      int? paymentPrice,
-      String? email,
-      String? paymentMethod,
-      String? orderQuantity,
-      MyUser? user,
-      String? vendorID,
-      Product? product,
-      int? installmentNumber,
-    }) async {
-      String reference = _getReference();
-      final request = PaystackTransactionRequest(
-        reference: reference,
-        secretKey: secretKey!,
-        email: email!,
-        amount: (paymentPrice! * 100).toDouble(),
-        currency: PaystackCurrency.ngn,
-        channel: [
-          PaystackPaymentChannel.mobileMoney,
-          PaystackPaymentChannel.card,
-          PaystackPaymentChannel.ussd,
-          PaystackPaymentChannel.bankTransfer,
-          PaystackPaymentChannel.bank,
-          PaystackPaymentChannel.qr,
-          PaystackPaymentChannel.eft,
-        ],
-      );
+//         var result = await checkOutController.createOrder(
+//           deliveryAddress:
+//               userController.selectedAddress.value ?? user!.address!,
+//           totalPrice: totalPrice,
+//           orderQuantity: orderQuantity,
+//           installmentPaid: installmentPaid,
+//           productID: product.productID,
+//           productPrice: productPrice.toString(),
+//           paymentMethod: paymentMethod,
+//           paymentPrice: paymentPrice,
+//           transactionID: reference,
+//           user: user,
+//           vendorID: vendorID,
+//           installmentNumber: installmentNumber,
+//           optionName: widget.products[0].optionName,
+//         );
 
-      final initializedTransaction =
-          await PaymentService.initializeTransaction(request);
+//         if (result == 'success') {
+//           checkOutController.isLoading.value = false;
+//           if (mounted) {
+//             Get.to(() => const PaymentSuccessfulPage());
+//           }
+//         }
+//       } catch (e) {
+//         debugPrint("Payment processing error: $e");
+//       }
+//     }
 
-      if (!initializedTransaction.status) {
-        Get.snackbar(
-          "Error",
-          initializedTransaction.message,
-          backgroundColor: Colors.red.shade200,
-          colorText: Colors.black,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(
-            milliseconds: 400,
-          ),
-        );
-        return;
-      }
+// // Helper method for error dialogs (if not already defined)
+//     void showErrorDialog2(String message) {
+//       if (mounted) {
+//         showErrorDialog(message);
+//       }
+//     }
 
-      // Use a completer to handle the modal and verification separately
-      final Completer<PaystackTransactionVerified?> completer = Completer();
+    // Future<void> processSinglePaymentResponse(
+    //   PaystackTransactionVerified? response,
+    //   int? paymentPrice,
+    //   String? paymentMethod,
+    //   String? orderQuantity,
+    //   MyUser? user,
+    //   String? vendorID,
+    //   Product? product,
+    //   int? installmentNumber,
+    //   String reference,
+    // ) async {
+    //   switch (response?.data.status) {
+    //     case PaystackTransactionStatus.success:
+    //       await handleSinglePaymentSuccess(
+    //         paymentPrice,
+    //         paymentMethod,
+    //         orderQuantity,
+    //         user,
+    //         vendorID,
+    //         product,
+    //         installmentNumber,
+    //         reference,
+    //       );
+    //       break;
 
-      // Show modal in a separate function that doesn't cross async gaps
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) {
-          completer.complete(null);
-          return;
-        }
+    //     case PaystackTransactionStatus.failed:
+    //       showErrorDialog2("Payment Failed");
+    //       break;
+    //     case PaystackTransactionStatus.abandoned:
+    //       showErrorDialog2("Payment Abandoned");
+    //       break;
+    //     case null:
+    //       showErrorDialog2("Payment Failed");
+    //       break;
+    //     default:
+    //       showErrorDialog2("Payment Failed");
+    //       break;
+    //   }
+    // }
 
-        try {
-          await PaymentService.showPaymentModal(
-            context,
-            transaction: initializedTransaction,
-            callbackUrl: callbackUrl!,
-          );
+    // initializePaymentPaystack({
+    //   int? paymentPrice,
+    //   String? email,
+    //   String? paymentMethod,
+    //   String? orderQuantity,
+    //   MyUser? user,
+    //   String? vendorID,
+    //   Product? product,
+    //   int? installmentNumber,
+    // }) async {
+    //   String reference = _getReference();
+    //   final request = PaystackTransactionRequest(
+    //     reference: reference,
+    //     secretKey: secretKey!,
+    //     email: email!,
+    //     amount: (paymentPrice! * 100).toDouble(),
+    //     currency: PaystackCurrency.ngn,
+    //     channel: [
+    //       PaystackPaymentChannel.mobileMoney,
+    //       PaystackPaymentChannel.card,
+    //       PaystackPaymentChannel.ussd,
+    //       PaystackPaymentChannel.bankTransfer,
+    //       PaystackPaymentChannel.bank,
+    //       PaystackPaymentChannel.qr,
+    //       PaystackPaymentChannel.eft,
+    //     ],
+    //   );
 
-          if (!mounted) {
-            completer.complete(null);
-            return;
-          }
+    //   final initializedTransaction =
+    //       await PaymentService.initializeTransaction(request);
 
-          final verificationResponse = await PaymentService.verifyTransaction(
-            paystackSecretKey: secretKey!,
-            initializedTransaction.data?.reference ?? request.reference,
-          );
+    //   if (!initializedTransaction.status) {
+    //     Get.snackbar(
+    //       "Error",
+    //       initializedTransaction.message,
+    //       backgroundColor: Colors.red.shade200,
+    //       colorText: Colors.black,
+    //       snackPosition: SnackPosition.BOTTOM,
+    //       duration: const Duration(
+    //         milliseconds: 400,
+    //       ),
+    //     );
+    //     return;
+    //   }
 
-          completer.complete(verificationResponse);
-        } catch (e) {
-          completer.complete(null);
-        }
-      });
+    //   // Use a completer to handle the modal and verification separately
+    //   final Completer<PaystackTransactionVerified?> completer = Completer();
 
-      final response = await completer.future;
+    //   // Show modal in a separate function that doesn't cross async gaps
+    //   WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //     if (!mounted) {
+    //       completer.complete(null);
+    //       return;
+    //     }
 
-      if (!mounted) return;
+    //     try {
+    //       await PaymentService.showPaymentModal(
+    //         context,
+    //         transaction: initializedTransaction,
+    //         callbackUrl: callbackUrl!,
+    //       );
 
-      // Process the response
-      await processSinglePaymentResponse(
-        response,
-        paymentPrice,
-        paymentMethod,
-        orderQuantity,
-        user,
-        vendorID,
-        product,
-        installmentNumber,
-        reference,
-      );
-    }
+    //       if (!mounted) {
+    //         completer.complete(null);
+    //         return;
+    //       }
+
+    //       final verificationResponse = await PaymentService.verifyTransaction(
+    //         paystackSecretKey: secretKey!,
+    //         initializedTransaction.data?.reference ?? request.reference,
+    //       );
+
+    //       completer.complete(verificationResponse);
+    //     } catch (e) {
+    //       completer.complete(null);
+    //     }
+    //   });
+
+    //   final response = await completer.future;
+
+    //   if (!mounted) return;
+
+    //   // Process the response
+    //   await processSinglePaymentResponse(
+    //     response,
+    //     paymentPrice,
+    //     paymentMethod,
+    //     orderQuantity,
+    //     user,
+    //     vendorID,
+    //     product,
+    //     installmentNumber,
+    //     reference,
+    //   );
+    // }
 
     // initiateMonnifyPayment({
     //   int? paymentPrice,
@@ -1132,43 +1193,44 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                             //border: Border.all(color: Colors.grey),
                           ),
                           child: DropdownButtonFormField<String>(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              value: installmentValue,
-                              dropdownColor: Colors.white,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              hint: const Text(
-                                "Select",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Lato',
-                                  color: Colors.black,
-                                ),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            value: installmentValue,
+                            dropdownColor: Colors.white,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            hint: const Text(
+                              "Select",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Lato',
+                                color: Colors.black,
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please select an option';
-                                }
-                                return null;
-                              },
-                              items: List.generate(2, (index) {
-                                int newIndex = index + 2;
-                                return DropdownMenuItem(
-                                  value: newIndex.toString(),
-                                  child: Text(
-                                    "$newIndex",
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black,
-                                      fontFamily: 'Lato',
-                                    ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select an option';
+                              }
+                              return null;
+                            },
+                            items: List.generate(2, (index) {
+                              int newIndex = index + 2;
+                              return DropdownMenuItem(
+                                value: newIndex.toString(),
+                                child: Text(
+                                  "$newIndex",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                    fontFamily: 'Lato',
                                   ),
-                                );
-                              }),
-                              onChanged: updateInstallmentValue),
+                                ),
+                              );
+                            }),
+                            onChanged: (value) =>
+                                updateInstallmentValue(value!),
+                          ),
                         ),
                         const SizedBox(
                           height: 8,
@@ -1180,8 +1242,11 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                               const Color(0xFF673AB7).withValues(alpha: 0.75),
                           labelText: "Initial Installment Amount (NGN)",
                           hintText: "NGN 0.0",
-                          textInputType: TextInputType.number,
-                          onChanged: updateTotalPayableAmount,
+                          textInputType: Platform.isIOS
+                              ? TextInputType.numberWithOptions(
+                                  signed: true, decimal: true)
+                              : TextInputType.number,
+                          onChanged: (value) => updateTotalPayableAmount(value),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           validator: (val) {
                             if (val!.isEmpty) {
@@ -1279,8 +1344,8 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                             userController.showMyToast(
                                 "Please Enter Your Delivery Address");
                           } else {
-                            checkOutController.isLoading.value = true;
-                            if (checkOutController.isLoading.isTrue) {
+                            paystackController.isLoading.value = true;
+                            if (paystackController.isLoading.isTrue) {
                               Get.dialog(
                                 const Center(child: LoadingWidget()),
                               );
@@ -1306,17 +1371,64 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                               //         email: userController
                               //             .userState.value!.email!,
                               //       )
-                              await initializePaymentPaystack(
-                                orderQuantity:
-                                    widget.products.first.quantity.toString(),
-                                product: product,
-                                vendorID: product!.vendorId,
-                                paymentMethod: "installment",
-                                user: userController.userState.value,
-                                paymentPrice: totalPayableAmount.toInt(),
-                                installmentNumber: installmentNumber,
-                                email: userController.userState.value!.email!,
-                              );
+                              // await initializePaymentPaystack(
+                              //   orderQuantity:
+                              //       widget.products.first.quantity.toString(),
+                              //   product: product,
+                              //   vendorID: product!.vendorId,
+                              //   paymentMethod: "installment",
+                              //   user: userController.userState.value,
+                              //   paymentPrice: totalPayableAmount.toInt(),
+                              //   installmentNumber: installmentNumber,
+                              //   email: userController.userState.value!.email!,
+                              // );
+                              var sdkStatus =
+                                  await paystackController.initializeSDK(
+                                      publicKey:
+                                          determinePublicKey() ?? publicKey!,
+                                      enableLogging: true);
+
+                              if (sdkStatus != null &&
+                                  sdkStatus.contains("Initialized Sdk")) {
+                                await paystackController.initializePayment(
+                                  amount: totalPayableAmount,
+                                  email: userController.userState.value!.email!,
+                                  reference: _getReference(),
+                                );
+                                if (paystackController
+                                    .accessCode.value.isNotEmpty) {
+                                  var result =
+                                      await paystackController.launchSdkUi(
+                                          accessCode: paystackController
+                                              .accessCode.value);
+                                  if (result != null) {
+                                    String reference = paystackController
+                                        .responseReference.value;
+                                    await createOrder(
+                                      reference: reference,
+                                      orderQuantity: widget
+                                          .products.first.quantity
+                                          .toString(),
+                                      product: product,
+                                      vendorID: product!.vendorId,
+                                      paymentMethod: "installment",
+                                      user: userController.userState.value,
+                                      paymentPrice: totalPayableAmount.toInt(),
+                                      installmentNumber: installmentNumber,
+                                    );
+                                  }
+                                }
+                              } else {
+                                Get.close(1);
+                                paystackController.isLoading.value =
+                                    false; // Stop loading indicator
+                                paystackController.mySnackBar(
+                                  title: "Error",
+                                  message: "Failed to initialize SDK",
+                                  color: Colors.red[400],
+                                  textColor: Colors.white,
+                                );
+                              }
 
                               // Show loading indicator
                             } catch (e) {

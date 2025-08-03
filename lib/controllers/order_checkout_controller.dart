@@ -13,7 +13,7 @@ import 'package:hair_main_street/services/database.dart';
 class CheckOutController extends GetxController {
   CartController cartController = Get.find<CartController>();
   Rx<CheckoutItem> checkOutItem = CheckoutItem().obs;
-  Rx<DatabaseOrderResponse> singleOrder = DatabaseOrderResponse().obs;
+  Rx<DatabaseOrderResponse?> singleOrder = Rx<DatabaseOrderResponse?>(null);
   //var checkoutList = <CheckOutTickBoxModel>[].obs;
   RxList<DatabaseOrderResponse> buyerOrderList =
       RxList<DatabaseOrderResponse>([]);
@@ -36,6 +36,7 @@ class CheckOutController extends GetxController {
   final Map<String, RxBool> itemCheckboxState = {};
   RxList<String> deletableCartItems = <String>[].obs;
   bool isMasterToggle = false;
+  RxString initialValue = "this week".obs;
 
   // List to store selected items
   RxList<CheckOutTickBoxModel> checkoutList = <CheckOutTickBoxModel>[].obs;
@@ -57,6 +58,12 @@ class CheckOutController extends GetxController {
   void onInit() {
     super.onInit();
     initCartItemsListener();
+  }
+
+  void initializeCheckboxState(String cartItemId) {
+    if (!itemCheckboxState.containsKey(cartItemId)) {
+      itemCheckboxState[cartItemId] = false.obs;
+    }
   }
 
   void initCartItemsListener() {
@@ -138,6 +145,12 @@ class CheckOutController extends GetxController {
             order.orderStatus != null && order.orderStatus == "expired")
         .toList();
 
+    //
+    vendorOrdersMap["Delivered"] = vendorOrders
+        .where((order) =>
+            order.orderStatus != null && order.orderStatus == "delivered")
+        .toList();
+
     // Filter the cancelled orders
     vendorOrdersMap["Cancelled"] = vendorOrders
         .where((order) =>
@@ -179,14 +192,14 @@ class CheckOutController extends GetxController {
   }
 
   //get total sales
-  Map<String, num> getTotalSales() {
+  RxMap<String, num> getTotalSales() {
     DateTime now = DateTime.now();
-    Map<String, num> completedOrdersMap = {
+    RxMap<String, num> completedOrdersMap = {
       "this week": 0,
       "last week": 0,
       "this month": 0,
       "older": 0,
-    };
+    }.obs;
 
     List<DatabaseOrderResponse>? completedOrders = vendorOrdersMap["Completed"];
 
@@ -334,8 +347,9 @@ class CheckOutController extends GetxController {
         ),
       );
       itemCheckboxState.clear();
-      checkoutList.clear();
       totalPriceAndQuantity.clear();
+      cartController.fetchCart();
+      checkoutList.clear();
       return "success";
     } else {
       isLoading.value = false;
@@ -593,8 +607,10 @@ class CheckOutController extends GetxController {
   }
 
   //get single order irrespective of user
-  Future getSingleOrder(String orderID) async {
-    return await DataBaseService().getSingleOrder(orderID);
+  Future<void> getSingleOrder(String orderID) async {
+    isLoading.value = true;
+    singleOrder.value = await DataBaseService().getSingleOrder(orderID);
+    isLoading.value = false;
   }
 
   //update order

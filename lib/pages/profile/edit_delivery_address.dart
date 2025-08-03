@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
@@ -29,13 +31,6 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
   TextEditingController zipcodeController = TextEditingController();
   Address? address;
   bool defaultAddress = false;
-  String? contactName,
-      contactPhoneNumber,
-      streetAddress,
-      lGA,
-      state,
-      landmark,
-      zipcode;
 
   @override
   void initState() {
@@ -46,8 +41,6 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
 
   @override
   Widget build(BuildContext context) {
-    state = address!.state;
-    lGA = address!.lGA;
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -87,11 +80,11 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                     label: "Region/State",
                     items: countryAndStatesAndLocalGovernment.statesList,
                     hintText: "Choose Region/State",
-                    selectedValue: state,
+                    selectedValue: address!.state ?? "State",
                     onChanged: (val) {
                       setState(() {
-                        state = val;
-                        lGA = null;
+                        address!.state = val;
+                        address!.lGA = null;
                       });
                     },
                   ),
@@ -138,7 +131,10 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   labelText: "Please enter a contact number",
                   initialValue: address!.contactPhoneNumber ?? "",
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  textInputType: TextInputType.number,
+                  textInputType: Platform.isIOS
+                      ? TextInputType.numberWithOptions(
+                          signed: true, decimal: true)
+                      : TextInputType.number,
                   validator: (val) {
                     if (val!.isEmpty) {
                       return "Cannot be Empty";
@@ -196,12 +192,12 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   //label: "Region/State",
                   hintText: "LGA",
                   items: countryAndStatesAndLocalGovernment
-                          .stateAndLocalGovernments[state] ??
+                          .stateAndLocalGovernments[address!.state] ??
                       [],
-                  selectedValue: lGA ?? "LGA",
+                  selectedValue: address!.lGA ?? "LGA",
                   onChanged: (val) {
                     setState(() {
-                      lGA = val;
+                      address!.lGA = val;
                     });
                   },
                 ),
@@ -226,7 +222,7 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                     setState(() {
                       // landmarkController.text = val!;
                       // landmark = landmarkController.text;
-                      landmark = val!;
+                      address!.landmark = val!;
                     });
                     return null;
                   },
@@ -309,15 +305,6 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                 if (userController.isLoading.value) {
                   Get.dialog(const LoadingWidget());
                 }
-                // Address address = Address(
-                //   landmark: landmark,
-                //   streetAddress: streetAddress,
-                //   lGA: lGA,
-                //   state: state,
-                //   contactName: contactName,
-                //   contactPhoneNumber: contactPhoneNumber,
-                //   zipCode: zipcode,
-                // );
                 var value = await userController.editDeliveryAddress(
                   userController.userState.value!.uid!,
                   address!,

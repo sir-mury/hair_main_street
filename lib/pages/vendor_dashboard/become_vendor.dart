@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -229,7 +231,12 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       labelColor:
                           const Color(0xFF673AB7).withValues(alpha: 0.50),
                       maxLines: 1,
-                      textInputType: TextInputType.number,
+                      textInputType: Platform.isIOS
+                          ? TextInputType.numberWithOptions(
+                              signed: true,
+                              decimal: true,
+                            )
+                          : TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Enter your business phone number";
@@ -476,7 +483,12 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       fontSize: 15,
                       labelColor:
                           const Color(0xFF673AB7).withValues(alpha: 0.50),
-                      textInputType: TextInputType.number,
+                      textInputType: Platform.isIOS
+                          ? TextInputType.numberWithOptions(
+                              signed: true,
+                              decimal: true,
+                            )
+                          : TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Enter your account number";

@@ -4,8 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_paystack_max/flutter_paystack_max.dart';
+// import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:get/get.dart';
+import 'package:hair_main_street/controllers/admin_controller.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
 import 'package:hair_main_street/controllers/paystack_controller.dart';
 import 'package:hair_main_street/controllers/product_controller.dart';
@@ -18,7 +19,7 @@ import 'package:hair_main_street/pages/profile/add_delivery_address.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:paystack_flutter_sdk/paystack_flutter_sdk.dart';
+// import 'package:paystack_flutter_sdk/paystack_flutter_sdk.dart';
 // import 'package:monnify_payment_sdk/monnify_payment_sdk.dart';
 
 class OnceCheckoutPage extends StatefulWidget {
@@ -30,15 +31,15 @@ class OnceCheckoutPage extends StatefulWidget {
 }
 
 class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
-  late BuildContext _paymentContext;
   UserController userController = Get.find<UserController>();
   ProductController productController = Get.find<ProductController>();
   CheckOutController checkOutController = Get.find<CheckOutController>();
   PaystackController paystackController = Get.find<PaystackController>();
-  String? secretKey = dotenv.env["PAYSTACK_SECRET_KEY"];
+  AdminController adminController = Get.find<AdminController>();
   String? publicKey = dotenv.env["PAYSTACK_PUBLIC_KEY"];
-  String? monnifyAPIKey = dotenv.env["MONNIFY_API_KEY"];
-  String? monnifyContractCode = dotenv.env["MONNIFY_CONTRACT_CODE"];
+  String? livePublicKey = dotenv.env["PAYSTACK_LIVE_PUBLIC_KEY"];
+  // String? monnifyAPIKey = dotenv.env["MONNIFY_API_KEY"];
+  // String? monnifyContractCode = dotenv.env["MONNIFY_CONTRACT_CODE"];
   String? callbackUrl = dotenv.env["CALLBACK_URL"];
   // final plugin = PaystackPlugin();
   // late Monnify? monnify;
@@ -52,6 +53,12 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
     for (var product in widget.products) {
       totalPrice += product.price!;
     }
+  }
+
+  String? determinePublicKey() {
+    return adminController.adminSettings.value!.isLive == true
+        ? livePublicKey
+        : publicKey;
   }
 
   // initializeMonnify() async {
@@ -98,7 +105,6 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    _paymentContext = context;
     Product? product;
     for (var item in widget.products) {
       product = productController.getSingleProduct(item.productID!);
@@ -127,151 +133,193 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
       return formattedResult;
     }
 
-    //error dialog handler
-    void showErrorDialog(String message) {
-      Get.dialog(
-        AlertDialog(
-          contentPadding: const EdgeInsets.all(16),
-          elevation: 0,
-          backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-          content: Text(
-            message,
-            style: const TextStyle(
-              decoration: TextDecoration.none,
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.close(2),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.red.shade300,
-              ),
-              child: const Text(
-                'Close',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-          actionsAlignment: MainAxisAlignment.center,
-        ),
-      );
-    }
+    // //error dialog handler
+    // void showErrorDialog(String message) {
+    //   Get.dialog(
+    //     AlertDialog(
+    //       contentPadding: const EdgeInsets.all(16),
+    //       elevation: 0,
+    //       backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+    //       content: Text(
+    //         message,
+    //         style: const TextStyle(
+    //           decoration: TextDecoration.none,
+    //           color: Colors.black,
+    //           fontSize: 16,
+    //           fontWeight: FontWeight.w700,
+    //         ),
+    //         textAlign: TextAlign.center,
+    //       ),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () => Get.close(2),
+    //           style: TextButton.styleFrom(
+    //             backgroundColor: Colors.red.shade300,
+    //           ),
+    //           child: const Text(
+    //             'Close',
+    //             style: TextStyle(
+    //               fontSize: 16,
+    //               color: Colors.white,
+    //             ),
+    //           ),
+    //         ),
+    //       ],
+    //       actionsAlignment: MainAxisAlignment.center,
+    //     ),
+    //   );
+    // }
 
-    //payment for paystack
-    initializePaymentPaystack({
-      int? paymentPrice,
-      String? email,
-      String? paymentMethod,
-      String? orderQuantity,
-      MyUser? user,
-      String? vendorID,
-      Product? product,
-      int? installmentNumber,
+    createOrder({
+      required int? paymentPrice,
+      required String? email,
+      required String? paymentMethod,
+      required String? orderQuantity,
+      required MyUser? user,
+      required String? vendorID,
+      required Product? product,
+      required int? installmentNumber,
+      required String? reference,
     }) async {
-      String reference = _getReference();
-      final request = PaystackTransactionRequest(
-        reference: reference,
-        secretKey: secretKey!,
-        email: email!,
-        amount: (paymentPrice! * 100).toDouble(),
-        currency: PaystackCurrency.ngn,
-        channel: [
-          PaystackPaymentChannel.mobileMoney,
-          PaystackPaymentChannel.card,
-          PaystackPaymentChannel.ussd,
-          PaystackPaymentChannel.bankTransfer,
-          PaystackPaymentChannel.bank,
-          PaystackPaymentChannel.qr,
-          PaystackPaymentChannel.eft,
-        ],
-      );
-
-      final initializedTransaction =
-          await PaymentService.initializeTransaction(request);
-
-      if (!initializedTransaction.status) {
-        Get.snackbar(
-          "Error",
-          initializedTransaction.message,
-          backgroundColor: Colors.red.shade200,
-          colorText: Colors.black,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(
-            milliseconds: 400,
-          ),
-        );
-        return;
+      int installmentPaid;
+      if (installmentNumber != 0) {
+        installmentPaid = 1;
+      } else {
+        installmentPaid = 0;
       }
-
-      if (!mounted) return null;
-      final response = await PaymentService.showPaymentModal(
-        _paymentContext,
-        transaction: initializedTransaction,
-        callbackUrl: callbackUrl!,
-      ).then((_) async {
-        if (!mounted) return null;
-        return await PaymentService.verifyTransaction(
-          paystackSecretKey: secretKey!,
-          initializedTransaction.data?.reference ?? request.reference,
+      var productPrice = (totalPrice) / int.parse(orderQuantity!);
+      var result = await checkOutController.createOrder(
+        deliveryAddress: userController.selectedAddress.value ?? user!.address!,
+        totalPrice: totalPrice,
+        orderQuantity: orderQuantity,
+        installmentPaid: installmentPaid,
+        productID: product!.productID,
+        productPrice: productPrice.toString(),
+        paymentMethod: paymentMethod,
+        paymentPrice: paymentPrice,
+        transactionID: reference,
+        user: user,
+        vendorID: vendorID,
+        installmentNumber: installmentNumber,
+        optionName: widget.products[0].optionName,
+      );
+      if (result == 'success') {
+        paystackController.isLoading.value = false;
+        if (Get.isDialogOpen!) Get.back();
+        Get.to(
+          () => const PaymentSuccessfulPage(),
         );
-      });
-
-      //print(response);
-      switch (response?.data.status) {
-        case PaystackTransactionStatus.success:
-          int installmentPaid;
-          if (installmentNumber != 0) {
-            installmentPaid = 1;
-          } else {
-            installmentPaid = 0;
-          }
-          var totalPrice = product!.price!;
-          var productPrice = (product.price!) / int.parse(orderQuantity!);
-          var result = await checkOutController.createOrder(
-            deliveryAddress:
-                userController.selectedAddress.value ?? user!.address!,
-            totalPrice: totalPrice,
-            orderQuantity: orderQuantity,
-            installmentPaid: installmentPaid,
-            productID: product.productID,
-            productPrice: productPrice.toString(),
-            paymentMethod: paymentMethod,
-            paymentPrice: paymentPrice,
-            transactionID: reference,
-            user: user,
-            vendorID: vendorID,
-            installmentNumber: installmentNumber,
-            optionName: widget.products[0].optionName,
-          );
-          if (result == 'success') {
-            checkOutController.isLoading.value = false;
-            Get.to(
-              () => const PaymentSuccessfulPage(),
-            );
-          }
-          break;
-
-        case PaystackTransactionStatus.failed:
-          showErrorDialog("Payment Failed");
-          break;
-        case PaystackTransactionStatus.abandoned:
-          showErrorDialog("Payment Abandoned");
-          break;
-        case null:
-          showErrorDialog("Payment Failed");
-          break;
-        default:
-          showErrorDialog("Payment Failed");
-          break;
       }
     }
+
+    // //payment for paystack
+    // initializePaymentPaystack({
+    //   int? paymentPrice,
+    //   String? email,
+    //   String? paymentMethod,
+    //   String? orderQuantity,
+    //   MyUser? user,
+    //   String? vendorID,
+    //   Product? product,
+    //   int? installmentNumber,
+    // }) async {
+    //   String reference = _getReference();
+    //   final request = PaystackTransactionRequest(
+    //     reference: reference,
+    //     secretKey: secretKey!,
+    //     email: email!,
+    //     amount: (paymentPrice! * 100).toDouble(),
+    //     currency: PaystackCurrency.ngn,
+    //     channel: [
+    //       PaystackPaymentChannel.mobileMoney,
+    //       PaystackPaymentChannel.card,
+    //       PaystackPaymentChannel.ussd,
+    //       PaystackPaymentChannel.bankTransfer,
+    //       PaystackPaymentChannel.bank,
+    //       PaystackPaymentChannel.qr,
+    //       PaystackPaymentChannel.eft,
+    //     ],
+    //   );
+
+    //   final initializedTransaction =
+    //       await PaymentService.initializeTransaction(request);
+
+    //   if (!initializedTransaction.status) {
+    //     Get.snackbar(
+    //       "Error",
+    //       initializedTransaction.message,
+    //       backgroundColor: Colors.red.shade200,
+    //       colorText: Colors.black,
+    //       snackPosition: SnackPosition.BOTTOM,
+    //       duration: Duration(
+    //         milliseconds: 400,
+    //       ),
+    //     );
+    //     return;
+    //   }
+
+    //   if (!mounted) return null;
+    //   final response = await PaymentService.showPaymentModal(
+    //     _paymentContext,
+    //     transaction: initializedTransaction,
+    //     callbackUrl: callbackUrl!,
+    //   ).then((_) async {
+    //     if (!mounted) return null;
+    //     return await PaymentService.verifyTransaction(
+    //       paystackSecretKey: secretKey!,
+    //       initializedTransaction.data?.reference ?? request.reference,
+    //     );
+    //   });
+
+    //   //print(response);
+    //   switch (response?.data.status) {
+    //     case PaystackTransactionStatus.success:
+    //       int installmentPaid;
+    //       if (installmentNumber != 0) {
+    //         installmentPaid = 1;
+    //       } else {
+    //         installmentPaid = 0;
+    //       }
+    //       var totalPrice = product!.price!;
+    //       var productPrice = (product.price!) / int.parse(orderQuantity!);
+    //       var result = await checkOutController.createOrder(
+    //         deliveryAddress:
+    //             userController.selectedAddress.value ?? user!.address!,
+    //         totalPrice: totalPrice,
+    //         orderQuantity: orderQuantity,
+    //         installmentPaid: installmentPaid,
+    //         productID: product.productID,
+    //         productPrice: productPrice.toString(),
+    //         paymentMethod: paymentMethod,
+    //         paymentPrice: paymentPrice,
+    //         transactionID: reference,
+    //         user: user,
+    //         vendorID: vendorID,
+    //         installmentNumber: installmentNumber,
+    //         optionName: widget.products[0].optionName,
+    //       );
+    //       if (result == 'success') {
+    //         checkOutController.isLoading.value = false;
+    //         Get.to(
+    //           () => const PaymentSuccessfulPage(),
+    //         );
+    //       }
+    //       break;
+
+    //     case PaystackTransactionStatus.failed:
+    //       showErrorDialog("Payment Failed");
+    //       break;
+    //     case PaystackTransactionStatus.abandoned:
+    //       showErrorDialog("Payment Abandoned");
+    //       break;
+    //     case null:
+    //       showErrorDialog("Payment Failed");
+    //       break;
+    //     default:
+    //       showErrorDialog("Payment Failed");
+    //       break;
+    //   }
+    // }
 
     // //initiate payment with monnify
     // initiatePaymentMonnify({
@@ -877,8 +925,8 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                       userController
                           .showMyToast("Please Enter Your Delivery Address");
                     } else {
-                      checkOutController.isLoading.value = true;
-                      if (checkOutController.isLoading.isTrue) {
+                      paystackController.isLoading.value = true;
+                      if (paystackController.isLoading.isTrue) {
                         Get.dialog(
                           const Center(child: LoadingWidget()),
                         );
@@ -920,7 +968,9 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                       // );
 
                       var sdkStatus = await paystackController.initializeSDK(
-                          publicKey: publicKey!, enableLogging: true);
+                        publicKey: determinePublicKey() ?? publicKey!,
+                        enableLogging: true,
+                      );
 
                       if (sdkStatus != null &&
                           sdkStatus.contains("Initialized Sdk")) {
@@ -930,10 +980,29 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                           reference: _getReference(),
                         );
                         if (paystackController.accessCode.value.isNotEmpty) {
-                          paystackController.launchSdkUi(
+                          var result = await paystackController.launchSdkUi(
                               accessCode: paystackController.accessCode.value);
+                          if (result != null) {
+                            String reference =
+                                paystackController.responseReference.value;
+                            await createOrder(
+                              reference: reference,
+                              product: product,
+                              vendorID: product!.vendorId,
+                              user: userController.userState.value!,
+                              paymentMethod: "once",
+                              paymentPrice:
+                                  widget.products.first.price!.toInt(),
+                              installmentNumber: 0,
+                              email: userController.userState.value!.email!,
+                              orderQuantity:
+                                  widget.products.first.quantity.toString(),
+                            );
+                          }
                         }
                       } else {
+                        Get.close(1);
+                        paystackController.isLoading.value = false;
                         paystackController.mySnackBar(
                           title: "Error",
                           message: "Failed to initialize SDK",

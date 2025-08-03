@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:credit_card_type_detector/credit_card_type_detector.dart';
 import 'package:credit_card_type_detector/models.dart';
 import 'package:flutter/material.dart';
@@ -237,7 +239,12 @@ class _CardUIPageState extends State<CardUIPage> {
               fontSize: 16,
               hintText: "",
               labelText: "Card Number",
-              textInputType: TextInputType.number,
+              textInputType: Platform.isIOS
+                  ? TextInputType.numberWithOptions(
+                      signed: true,
+                      decimal: true,
+                    )
+                  : TextInputType.number,
               labelColor: Colors.black,
               assetImage: assetImage,
               validator: (value) {
@@ -267,7 +274,12 @@ class _CardUIPageState extends State<CardUIPage> {
               controller: expiryDateController,
               labelText: "Expiry Date",
               hintText: "00/00",
-              textInputType: TextInputType.number,
+              textInputType: Platform.isIOS
+                  ? TextInputType.numberWithOptions(
+                      signed: true,
+                      decimal: true,
+                    )
+                  : TextInputType.number,
               labelColor: Colors.black,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -294,7 +306,12 @@ class _CardUIPageState extends State<CardUIPage> {
               fontSize: 16,
               hintText: "",
               labelColor: Colors.black,
-              textInputType: TextInputType.number,
+              textInputType: Platform.isIOS
+                  ? TextInputType.numberWithOptions(
+                      signed: true,
+                      decimal: true,
+                    )
+                  : TextInputType.number,
               onChanged: (value) {
                 if (value!.isNotEmpty) {
                   setState(() {

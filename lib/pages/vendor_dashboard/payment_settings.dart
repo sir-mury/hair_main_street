@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
@@ -79,7 +81,12 @@ class _PaymentSettingsPageState extends State<PaymentSettingsPage> {
               //mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 TextInputWidget(
-                  textInputType: TextInputType.number,
+                  textInputType: Platform.isIOS
+                      ? TextInputType.numberWithOptions(
+                          signed: true,
+                          decimal: true,
+                        )
+                      : TextInputType.number,
                   controller: installmentController,
                   labelText: "No of Installments:",
                   hintText: "Enter a number between 1 to 10",

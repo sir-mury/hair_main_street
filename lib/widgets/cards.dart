@@ -117,11 +117,9 @@ class ProductCard extends StatelessWidget {
     ProductController productController = Get.find<ProductController>();
     UserController userController = Get.find<UserController>();
     WishListController wishListController = Get.find<WishListController>();
-    num screenHeight = MediaQuery.of(context).size.height;
+    // num screenHeight = MediaQuery.of(context).size.height;
     // num screenWidth = MediaQuery.of(context).size.width;
     //debugPrint(id);
-
-    bool isUserLoggedIn = userController.userState.value != null;
 
     String formatCurrency(String numberString) {
       final number =
@@ -146,171 +144,174 @@ class ProductCard extends StatelessWidget {
       return formattedResult;
     }
 
-    return FutureBuilder(
-      future: DataBaseService().isProductInWishlist(id!),
-      builder: (context, snapshot) {
-        bool isLiked = false;
-        if (snapshot.hasData) {
-          isLiked = snapshot.data!;
-        }
-        return GetX<WishListController>(
-          builder: (controller) {
-            return InkWell(
-              onTap: () {
-                Get.to(
-                    () => ProductPage(
-                          id: id,
-                          //index: index,
-                        ),
-                    transition: Transition.fadeIn);
-              },
-              splashColor: Colors.black,
-              child: Card(
-                elevation: 1,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(20),
-                  ),
-                  // side: BorderSide(
-                  //   color: Colors.white,
-                  //   width: 0.5,
-                  // ),
-                ),
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        topRight: Radius.circular(8),
-                      ),
-                      child: CachedNetworkImage(
-                        fit: BoxFit.fill,
-                        imageUrl: productController.productMap[mapKey]![index]
-                                    ?.image?.isNotEmpty ==
-                                true
-                            ? productController
-                                .productMap[mapKey]![index]!.image!.first
-                            : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
-                        errorWidget: ((context, url, error) => const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text("Failed to Load Image"),
-                            )),
-                        imageBuilder: (context, imageProvider) => Container(
-                          //width: double.infinity,
-                          height: 154,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        placeholder: ((context, url) => const SizedBox(
-                              width: double.infinity,
-                              height: 154,
-                              child: Center(child: CircularProgressIndicator()),
-                            )),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    SizedBox(
-                      height: screenHeight * 0.055,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1),
-                        child: Text(
-                          ReCase("${productController.productMap[mapKey]![index]!.name}")
-                              .titleCase,
-                          style: const TextStyle(
-                            fontFamily: 'Raleway',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Text(
-                        "NGN ${formatCurrency(productController.productMap[mapKey]![index]!.price.toString())}",
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 2, 10, 10),
-                      child: LikeButton(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        size: 20,
-                        bubblesSize: 48,
-                        isLiked: isLiked,
-                        onTap: (isTapped) async {
-                          // Only proceed if the user is logged in
-                          if (isUserLoggedIn) {
-                            debugPrint("logged in");
-                            //isTapped = false;
-                            // isLiked = false;
-                            if (userController.userState.value!.uid ==
-                                productController
-                                    .productMap[mapKey]![index]!.vendorId) {
-                              wishListController.showMyToast(
-                                  "Cannot add your own product to wishlist");
-                              return null;
-                            } else {
-                              if (isLiked) {
-                                await wishListController
-                                    .removeFromWishlistWithProductID(id!);
-                              } else {
-                                WishlistItem wishlistItem =
-                                    WishlistItem(wishListItemID: id!);
-                                await wishListController
-                                    .addToWishlist(wishlistItem);
-                              }
-                            }
-                            return isUserLoggedIn ? !isLiked : false;
-                          } else {
-                            wishListController.showMyToast(
-                                "Login to add product to your wishlist");
-                            return null;
-                          }
-                        },
-                        likeBuilder: (isLiked) {
-                          if (isLiked) {
-                            return const Icon(
-                              Icons.favorite,
-                              color: Color(0xFF673AB7),
-                            );
-                          } else {
-                            return const Icon(
-                              Icons.favorite_outline_rounded,
-                              color: Color(0xFF673AB7),
-                            );
-                          }
-                        },
-                        bubblesColor: BubblesColor(
-                          dotPrimaryColor: const Color(0xFF673AB7),
-                          dotSecondaryColor:
-                              const Color(0xFF673AB7).withValues(alpha: 0.70),
-                          dotThirdColor: Colors.white,
-                          dotLastColor: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+    return GetX<WishListController>(
+      builder: (controller) {
+        bool isUserLoggedIn = userController.userState.value != null;
+
+        RxBool isLiked = false.obs;
+
+        isLiked.value = controller.isProductInWishlist(id!, isUserLoggedIn);
+
+        return InkWell(
+          onTap: () {
+            Get.to(
+              () => ProductPage(
+                id: id,
+                //index: index,
               ),
+              transition: Transition.fadeIn,
             );
           },
+          splashColor: Colors.black,
+          child: Card(
+            elevation: 1,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(20),
+              ),
+              // side: BorderSide(
+              //   color: Colors.white,
+              //   width: 0.5,
+              // ),
+            ),
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                  ),
+                  child: CachedNetworkImage(
+                    fit: BoxFit.fill,
+                    imageUrl: productController.productMap[mapKey]![index]
+                                ?.image?.isNotEmpty ==
+                            true
+                        ? productController
+                            .productMap[mapKey]![index]!.image!.first
+                        : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+                    errorWidget: ((context, url, error) => const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text("Failed to Load Image"),
+                        )),
+                    imageBuilder: (context, imageProvider) => Container(
+                      //width: double.infinity,
+                      height: 154,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    placeholder: ((context, url) => const SizedBox(
+                          width: double.infinity,
+                          height: 154,
+                          child: Center(child: CircularProgressIndicator()),
+                        )),
+                  ),
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                SizedBox(
+                  height: 45,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    child: Text(
+                      ReCase("${productController.productMap[mapKey]![index]!.name}")
+                          .titleCase,
+                      style: const TextStyle(
+                        fontFamily: 'Raleway',
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Text(
+                    "NGN ${formatCurrency(productController.productMap[mapKey]![index]!.price.toString())}",
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: AppColors.main,
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+                    child: GestureDetector(
+                      onDoubleTap: () async {
+                        //to add a product to wishlist
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to add to wishlist");
+                        } else {
+                          if (userController.userState.value!.uid ==
+                              productController
+                                  .productMap[mapKey]![index]!.vendorId) {
+                            wishListController.showMyToast(
+                                "Cannot add your own product to wishlist");
+                          } else {
+                            if (isLiked.value) {
+                              userController
+                                  .showMyToast("Already in your wishlists");
+                            } else {
+                              WishlistItem wishlistItem =
+                                  WishlistItem(wishListItemID: id!);
+                              await controller.addToWishlist(wishlistItem);
+                              controller.isProductInWishlist(
+                                id!,
+                                isUserLoggedIn,
+                              );
+                            }
+                          }
+                        }
+                      },
+                      onTap: () async {
+                        //if product is added, remove from wishlist, if not instruct to double tap
+                        //cannot work if user is not logged in
+                        if (!isUserLoggedIn) {
+                          userController
+                              .showMyToast("Log in to remove from wishlist");
+                        } else {
+                          if (isLiked.value) {
+                            await wishListController
+                                .removeFromWishlistWithProductID(id!);
+                            wishListController.isProductInWishlist(
+                                id!, isUserLoggedIn);
+                          } else {
+                            userController
+                                .showMyToast("Double tap to add to wishlist");
+                          }
+                        }
+                      },
+                      child: isUserLoggedIn && isLiked.value
+                          ? Icon(
+                              Icons.favorite,
+                              color: AppColors.main,
+                            )
+                          : Icon(
+                              Icons.favorite_border_rounded,
+                              color: AppColors.main,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -753,7 +754,7 @@ class SearchCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 4, 0, 8),
+                padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
                 child: Text(
                   "NGN ${formatCurrency(productController.filteredSearchProducts[index]!.price.toString())}",
                   style: const TextStyle(
@@ -988,61 +989,27 @@ class CarouselCard extends StatelessWidget {
   }
 }
 
-class CartCard extends StatefulWidget {
+class CartCard extends StatelessWidget {
   final String? id;
   final String? cartId;
   final String? optionName;
   final CartItem? cartItem;
   const CartCard(
       {this.cartId, this.id, this.optionName, this.cartItem, super.key});
-
-  @override
-  State<CartCard> createState() => _CartCardState();
-}
-
-class _CartCardState extends State<CartCard> {
-  //bool isChecked = false;
-  UserController userController = Get.find<UserController>();
-
-  CartController cartController = Get.find<CartController>();
-
-  ProductController productController = Get.find<ProductController>();
-
-  CheckOutController checkOutController = Get.find<CheckOutController>();
-
-  // late bool isChecked;
   @override
   Widget build(BuildContext context) {
-    Product? product = productController.products
-        .firstWhere((element) => element!.productID! == widget.id);
+    UserController userController = Get.find<UserController>();
 
-    // CartItem cartItem = cartController.cartItems.firstWhere((element) {
-    //   if (widget.optionName != null) {
-    //     return element.optionName == widget.optionName &&
-    //         element.productID == widget.id;
-    //   } else {
-    //     return element.optionName == widget.optionName;
-    //   }
-    // });
-    CartItem cartItem = widget.cartItem!;
+    CartController cartController = Get.find<CartController>();
 
-    // SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-    //   if (checkOutController.checkoutList
-    //       .any((element) => element.productID == cartItem.productID)) {
-    //     debugPrint("cartItem price: ${cartItem.price}");
-    //     checkOutController.updateCheckoutList(cartItem);
-    //     checkOutController.getTotalPriceAndTotalQuantity();
-    //     //checkOutController.getTotalPriceAndTotalQuantity();
-    //     WidgetsBinding.instance.addPostFrameCallback((_) {});
-    //   } else {
-    //     debugPrint("Not inside");
-    //   }
-    // });
+    ProductController productController = Get.find<ProductController>();
+
+    CheckOutController checkOutController = Get.find<CheckOutController>();
 
     // Initialize the checkbox state for this item
     if (!checkOutController.itemCheckboxState
-        .containsKey(cartItem.cartItemID)) {
-      checkOutController.itemCheckboxState[cartItem.cartItemID] = false.obs;
+        .containsKey(cartItem!.cartItemID)) {
+      checkOutController.itemCheckboxState[cartItem!.cartItemID] = false.obs;
     }
 
     String formatCurrency(String numberString) {
@@ -1070,101 +1037,94 @@ class _CartCardState extends State<CartCard> {
 
     // num screenHeight = MediaQuery.of(context).size.height;
     // num screenWidth = MediaQuery.of(context).size.width;
+    //cartController.assignCartProduct(id!, productController.products);
+    return GetX<CartController>(builder: (controller) {
+      Product? product;
+      RxInt quantity = 0.obs;
+      RxInt currentPrice = 0.obs;
 
-    return Column(
-      children: [
-        Container(
-          //height: screenHeight * 0.18,
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-          //margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-          decoration: const BoxDecoration(
-            // borderRadius: BorderRadius.all(
-            //   Radius.circular(16),
-            // ),
-            color: Colors.white,
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: Color(0xFF000000),
-            //     blurStyle: BlurStyle.normal,
-            //     offset: Offset.fromDirection(-4.0),
-            //     blurRadius: 4,
-            //   ),
-            // ],
-          ),
-          child: Row(
-            //crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              GetX<CheckOutController>(
-                builder: (_) {
-                  return Checkbox(
-                    shape: const CircleBorder(side: BorderSide()),
-                    value: checkOutController
-                        .itemCheckboxState[cartItem.cartItemID]!.value,
-                    onChanged: (val) {
-                      //debugPrint(object)
-                      checkOutController.toggleCheckbox(
-                        productID: cartItem.productID,
-                        quantity: cartItem.quantity!,
-                        price: cartItem.price!,
-                        user: userController.userState.value,
-                        cartID: widget.cartId!,
-                        value: val!,
-                        optionName: cartItem.optionName,
-                      );
-                      //debugPrint(checkOutController.checkoutList.first.price);
-                      checkOutController.getTotalPriceAndTotalQuantity();
-                      // Optionally, you can notify listeners here if needed
-                      // checkOutController.itemCheckboxState[widget.id!]!.notifyListeners();
-                    },
-                  );
-                },
-              ),
-              const SizedBox(
-                width: 0,
-              ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                // decoration: BoxDecoration(
-                //   color: Colors.black45,
-                // ),
-                // width: screenWidth * 0.32,
-                // height: screenHeight * 0.16,
-                child: CachedNetworkImage(
-                  imageBuilder: (context, imageProvider) => Container(
-                    height: 140,
-                    width: 123,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  fit: BoxFit.fill,
-                  imageUrl: product!.image!.isNotEmpty == true
-                      ? product.image!.first
-                      : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
-                  errorWidget: ((context, url, error) =>
-                      const Text("Failed to Load Image")),
-                  placeholder: ((context, url) => const Center(
-                        child: CircularProgressIndicator(),
-                      )),
+      fetchProduct() {
+        product = productController.products.firstWhere((element) {
+          return element!.productID! == cartItem!.productID;
+        });
+        quantity.value = cartController
+            .determineQuantity(product, optionName)["quantity"]!
+            .toInt();
+        currentPrice.value = cartController
+            .determineQuantity(product, optionName)["currentPrice"]!
+            .toInt();
+      }
+
+      fetchProduct();
+
+      debounce(productController.products, (newProduct) {
+        // debugPrint("debouncing");
+        fetchProduct();
+      }, time: const Duration(seconds: 1));
+      return Column(
+        children: [
+          Container(
+            //height: screenHeight * 0.18,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+            //margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            decoration: const BoxDecoration(
+              // borderRadius: BorderRadius.all(
+              //   Radius.circular(16),
+              // ),
+              color: Colors.white,
+              // boxShadow: [
+              //   BoxShadow(
+              //     color: Color(0xFF000000),
+              //     blurStyle: BlurStyle.normal,
+              //     offset: Offset.fromDirection(-4.0),
+              //     blurRadius: 4,
+              //   ),
+              // ],
+            ),
+            child: Row(
+              //crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                GetX<CheckOutController>(
+                  builder: (_) {
+                    return Checkbox(
+                      shape: const CircleBorder(side: BorderSide()),
+                      value: checkOutController
+                          .itemCheckboxState[cartItem!.cartItemID]!.value,
+                      onChanged: (val) {
+                        //debugPrint(object)
+                        checkOutController.toggleCheckbox(
+                          productID: cartItem!.productID,
+                          quantity: cartItem!.quantity!,
+                          price: cartItem!.price!,
+                          user: userController.userState.value,
+                          cartID: cartId!,
+                          value: val!,
+                          optionName: cartItem!.optionName,
+                        );
+                        //debugPrint(checkOutController.checkoutList.first.price);
+                        checkOutController.getTotalPriceAndTotalQuantity();
+                        // Optionally, you can notify listeners here if needed
+                        // checkOutController.itemCheckboxState[id!]!.notifyListeners();
+                      },
+                    );
+                  },
                 ),
-              ),
-              const SizedBox(
-                width: 12,
-              ),
-              Expanded(
-                child: SizedBox(
-                  height: 140,
+                const SizedBox(
+                  width: 1,
+                ),
+                buildProductImage(product!),
+                const SizedBox(
+                  width: 12,
+                ),
+                Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${product.name}",
+                        "${product!.name}",
                         maxLines: 1,
                         style: const TextStyle(
                           fontSize: 15,
@@ -1177,9 +1137,21 @@ class _CartCardState extends State<CartCard> {
                         height: 6,
                       ),
                       Text(
-                        "NGN${formatCurrency(cartItem.price.toString())}",
+                        "NGN${formatCurrency(cartItem!.price.toString())}",
                         style: const TextStyle(
                           fontSize: 17,
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF673AB7),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        "Current price (each): NGN${formatCurrency(currentPrice.value.toString())}",
+                        style: const TextStyle(
+                          fontSize: 12,
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF673AB7),
@@ -1195,13 +1167,12 @@ class _CartCardState extends State<CartCard> {
                           InkWell(
                             radius: 17,
                             onTap: () async {
-                              if (cartItem.quantity! > 1) {
+                              if (cartItem!.quantity! > 1) {
                                 await cartController.updateCartItem(
-                                  cartItemID: widget.cartId,
+                                  cartItemID: cartId,
                                   newQuantity: -1,
-                                  productID: widget.id,
+                                  productID: id,
                                 );
-                                setState(() {});
                               } else {
                                 cartController
                                     .showMyToast("Cannot be less than 1");
@@ -1225,7 +1196,7 @@ class _CartCardState extends State<CartCard> {
                             width: 12,
                           ),
                           Text(
-                            "${cartItem.quantity}",
+                            "${cartItem!.quantity}",
                             style: const TextStyle(
                               color: Colors.black,
                               fontSize: 17,
@@ -1241,13 +1212,17 @@ class _CartCardState extends State<CartCard> {
                           InkWell(
                             radius: 50,
                             onTap: () async {
-                              await cartController.updateCartItem(
-                                cartItemID: widget.cartId,
-                                newQuantity: 1,
-                                productID: widget.id,
-                              );
-
-                              setState(() {});
+                              if (cartItem!.quantity! >= quantity.value) {
+                                cartController.showMyToast(
+                                    "Cannot add more than available stock");
+                                return;
+                              } else {
+                                await cartController.updateCartItem(
+                                  cartItemID: cartId,
+                                  newQuantity: 1,
+                                  productID: id,
+                                );
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.all(0.5),
@@ -1268,12 +1243,24 @@ class _CartCardState extends State<CartCard> {
                       const SizedBox(
                         height: 6,
                       ),
+                      Text(
+                        "${quantity.value} left",
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.main,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 6,
+                      ),
                       GestureDetector(
                         onTap: () {
                           Get.to(
                             () => ClientShopPage(
                               vendorID: productController
-                                  .clientGetVendorName(product.vendorId)
+                                  .clientGetVendorName(product!.vendorId)
                                   .userID,
                             ),
                           );
@@ -1299,7 +1286,7 @@ class _CartCardState extends State<CartCard> {
                               ),
                               Flexible(
                                 child: Text(
-                                  "${productController.clientGetVendorName(product.vendorId).shopName}",
+                                  "${productController.clientGetVendorName(product!.vendorId).shopName}",
                                   style: const TextStyle(
                                     fontFamily: 'Lato',
                                     fontSize: 15,
@@ -1325,15 +1312,42 @@ class _CartCardState extends State<CartCard> {
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          const Divider(
+            height: 4,
+            thickness: 1,
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget buildProductImage(Product product) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: CachedNetworkImage(
+        imageBuilder: (context, imageProvider) => Container(
+          height: 150,
+          width: 130,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
-        const Divider(
-          height: 4,
-          thickness: 1,
+        fit: BoxFit.cover,
+        imageUrl: product.image?.isNotEmpty == true
+            ? product.image!.first
+            : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+        errorWidget: (context, url, error) =>
+            const Text("Failed to Load Image"),
+        placeholder: (context, url) => const Center(
+          child: CircularProgressIndicator(),
         ),
-      ],
+      ),
     );
   }
 }
@@ -1814,10 +1828,14 @@ class OrderCard extends StatelessWidget {
 
     sortOrderStatusTextColors(String orderStatus) {
       switch (orderStatus.toLowerCase()) {
-        case "created" || "expired" || "confirmed":
+        case "created":
           return AppColors.shade9;
         case "cancelled":
-          return AppColors.offWhite;
+          return Colors.grey[50];
+        case "confirmed":
+          return Colors.grey[50];
+        case "expired":
+          return Colors.grey[50];
         default:
           return AppColors.background;
       }
@@ -1837,7 +1855,7 @@ class OrderCard extends StatelessWidget {
     sortPaymentMethodTextColor(String paymentMethod) {
       switch (paymentMethod.toLowerCase()) {
         case "once":
-          return AppColors.offWhite;
+          return Colors.white;
         case "installment":
           return AppColors.offWhite;
         default:
@@ -2088,29 +2106,38 @@ class OrderCard extends StatelessWidget {
                           const SizedBox(
                             width: 12,
                           ),
-                          TextButton(
-                            onPressed: () async {
-                              checkOutController.isLoading.value = true;
-                              if (checkOutController.isLoading.value) {
-                                Get.dialog(LoadingWidget());
-                              }
-                              await checkOutController
-                                  .deleteOrderBuyer(orderDetails.orderId!);
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Visibility(
+                            visible: orderDetails.orderStatus!.toLowerCase() ==
+                                    "expired" ||
+                                orderDetails.orderStatus!.toLowerCase() ==
+                                    "cancelled" ||
+                                orderDetails.orderStatus!.toLowerCase() ==
+                                    "confirmed",
+                            child: TextButton(
+                              onPressed: () async {
+                                checkOutController.isLoading.value = true;
+                                if (checkOutController.isLoading.value) {
+                                  Get.dialog(LoadingWidget());
+                                }
+                                await checkOutController
+                                    .deleteOrderBuyer(orderDetails.orderId!);
+                              },
+                              style: TextButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                backgroundColor: Colors.red,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              "Delete",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Lato',
+                              child: const Text(
+                                "Delete",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Lato',
+                                ),
                               ),
                             ),
                           ),
@@ -2164,6 +2191,62 @@ class VendorOrderCard extends StatelessWidget {
       final formattedResult = formattedIntPart + decimalPart;
 
       return formattedResult;
+    }
+
+    sortOrderStatusColors(String orderStatus) {
+      switch (orderStatus.toLowerCase()) {
+        case "created":
+          return AppColors.created;
+        case "expired":
+          return AppColors.expired;
+        case "cancelled":
+          return AppColors.cancelled;
+        case "confirmed":
+          return AppColors.confirmed;
+        case 'delivered':
+          return AppColors.delivered;
+        default:
+          return AppColors.background;
+      }
+    }
+
+    sortOrderStatusTextColors(String orderStatus) {
+      switch (orderStatus.toLowerCase()) {
+        case "created":
+          return AppColors.shade9;
+        case "cancelled":
+          return Colors.grey[50];
+        case "confirmed":
+          return Colors.grey[50];
+        case "expired":
+          return Colors.white;
+        case 'delivered':
+          return Colors.white;
+        default:
+          return AppColors.shade9;
+      }
+    }
+
+    sortPaymentMethodColor(String paymentMethod) {
+      switch (paymentMethod.toLowerCase()) {
+        case "once":
+          return AppColors.once;
+        case "installment":
+          return AppColors.installment;
+        default:
+          return AppColors.background;
+      }
+    }
+
+    sortPaymentMethodTextColor(String paymentMethod) {
+      switch (paymentMethod.toLowerCase()) {
+        case "once":
+          return Colors.white;
+        case "installment":
+          return AppColors.offWhite;
+        default:
+          return AppColors.background;
+      }
     }
 
     return GestureDetector(
@@ -2271,13 +2354,24 @@ class VendorOrderCard extends StatelessWidget {
                       const SizedBox(
                         height: 4,
                       ),
-                      Text(
-                        "Payment Method: ${orderDetails.paymentMethod}",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                          fontFamily: 'Lato',
-                          color: Colors.black,
+                      Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: sortPaymentMethodColor(
+                            orderDetails.paymentMethod!,
+                          ),
+                        ),
+                        child: Text(
+                          "Payment Method: ${orderDetails.paymentMethod}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                            fontFamily: 'Lato',
+                            color: sortPaymentMethodTextColor(
+                              orderDetails.paymentMethod!,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -2303,13 +2397,23 @@ class VendorOrderCard extends StatelessWidget {
                       const SizedBox(
                         height: 2,
                       ),
-                      Text(
-                        "${orderDetails.orderStatus}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Raleway',
-                          fontSize: 12,
-                          color: Colors.black.withValues(alpha: 0.85),
+                      Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: sortOrderStatusColors(
+                            orderDetails.orderStatus!,
+                          ),
+                        ),
+                        child: Text(
+                          "${orderDetails.orderStatus}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Raleway',
+                            fontSize: 12,
+                            color: sortOrderStatusTextColors(
+                                orderDetails.orderStatus!),
+                          ),
                         ),
                       ),
                     ],
@@ -2565,6 +2669,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
 
   @override
   Widget build(BuildContext context) {
+    SharePlus share = SharePlus.instance;
     num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
     GlobalKey<FormState>? formKey = GlobalKey();
@@ -2581,7 +2686,6 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
     String? accountName,
         accountNumber,
         street,
-        country = countryAndStatesAndLocalGovernment.countryList[0],
         state = vendor.contactInfo!["state"],
         localGovernment = vendor.contactInfo!["local government"],
         phoneNumber,
@@ -3463,8 +3567,12 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                                     ),
                                   ),
                                   onPressed: () {
-                                    Share.share(message,
-                                        subject: "Hair Main Street Shop Link");
+                                    share.share(
+                                      ShareParams(
+                                        text: message,
+                                        title: "Hair Main Street Shop Link",
+                                      ),
+                                    );
                                   },
                                   label: const Text(
                                     "Share",
@@ -3771,7 +3879,12 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                             padding: const EdgeInsets.all(8.0),
                             child: TextFormField(
                               controller: _controller,
-                              keyboardType: TextInputType.number,
+                              keyboardType: Platform.isIOS
+                                  ? TextInputType.numberWithOptions(
+                                      signed: true,
+                                      decimal: true,
+                                    )
+                                  : TextInputType.number,
                               decoration: const InputDecoration(
                                 labelText: "Enter a number",
                               ),

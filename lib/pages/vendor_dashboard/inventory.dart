@@ -45,6 +45,7 @@ class _InventoryPageState extends State<InventoryPage>
 
   @override
   Widget build(BuildContext context) {
+    SharePlus share = SharePlus.instance;
     String vendorID = vendorController.vendor.value!.userID!;
     // num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
@@ -209,7 +210,12 @@ class _InventoryPageState extends State<InventoryPage>
                         generateProductLink(productID, productName);
                     String message =
                         "Hey, I am shopping on Hair Main Street\nCheck out this cool product with the link below\n$productLink";
-                    Share.share(message, subject: "Product Listing");
+                    share.share(
+                      ShareParams(
+                        text: message,
+                        title: "Product Listing",
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(
@@ -267,12 +273,12 @@ class _InventoryPageState extends State<InventoryPage>
               size: 20, color: Colors.black),
         ),
         title: const Text(
-          'Shop',
+          'Inventory',
           style: TextStyle(
             fontSize: 25,
             fontFamily: 'Lato',
             fontWeight: FontWeight.w700,
-            color: Color(0xFF673AB7),
+            color: Colors.black,
           ),
         ),
         bottom: PreferredSize(

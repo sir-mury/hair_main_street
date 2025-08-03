@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -534,7 +536,9 @@ class _CancellationPageState extends State<CancellationPage> {
                         labelColor: const Color(0xFF673AB7),
                         autofillHints: [AutofillHints.transactionAmount],
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputType: TextInputType.number,
+                        textInputType: Platform.isIOS
+                            ? TextInputType.numberWithOptions()
+                            : TextInputType.number,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return "Enter your account number";

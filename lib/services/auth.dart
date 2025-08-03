@@ -12,6 +12,7 @@ class AuthService {
   final FirebaseFirestore db = FirebaseFirestore.instance;
   CollectionReference userProfileCollection =
       FirebaseFirestore.instance.collection("userProfile");
+  final GoogleSignIn googleSignIn = GoogleSignIn.instance;
 
   Future<MyUser?> convertToMyUserType(User? user) async {
     if (user == null) {
@@ -100,7 +101,6 @@ class AuthService {
       //debugPrint(e.toString());
       return e;
     } catch (e) {
-      //debugPrint(e.toString());
       return e;
     }
   }
@@ -109,7 +109,7 @@ class AuthService {
   Future signOut() async {
     try {
       // Disconnect from Google Sign-In
-      await GoogleSignIn().signOut();
+      await googleSignIn.signOut();
 
       var userID = auth.currentUser?.uid;
       if (userID != null) {
@@ -164,12 +164,12 @@ class AuthService {
 
   final actionCodeSettings = ActionCodeSettings(
     handleCodeInApp: true,
-    url: "https://hairmainstreet.com/reset-password",
-    androidInstallApp: true,
-    linkDomain: "hairmainstreet.com",
+    url: "https://app.hairmainstreet.com/reset-password",
+    androidInstallApp: false,
+    linkDomain: "app.hairmainstreet.com",
     // dynamicLinkDomain: "hairmainstreet.com",
-    iOSBundleId: "com.example.hairMainStreet",
-    androidPackageName: "com.example.hair_main_street",
+    iOSBundleId: "app.secureglobal.hairmainstreet",
+    androidPackageName: "app.secureglobal.hairmainstreet",
   );
 
   //experimental forgotten password
@@ -247,14 +247,35 @@ class AuthService {
 
   Future<Object?> signInWithGoogle() async {
     try {
-      final googleUser = await GoogleSignIn().signIn();
+      GoogleSignInAccount? googleUser;
+      List<String> scopes = [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+      ];
+      await googleSignIn.initialize();
+      try {
+        googleUser = await googleSignIn.authenticate();
+      } on GoogleSignInException catch (e) {
+        debugPrint(e.toString());
+      }
+      GoogleSignInClientAuthorization? authorization =
+          await googleUser!.authorizationClient.authorizeScopes(scopes);
 
-      final authenticatedUser = await googleUser?.authentication;
+      debugPrint("Google User: ${googleUser.email}");
 
-      final userCredentials = GoogleAuthProvider.credential(
-        accessToken: authenticatedUser?.accessToken,
-        idToken: authenticatedUser?.idToken,
-      );
+      googleSignIn.authenticationEvents.listen((event) {
+        if (event.runtimeType == GoogleSignInAuthenticationEventSignIn) {
+          googleUser = (event as GoogleSignInAuthenticationEventSignIn).user;
+          debugPrint("User signed in with Google: ${googleUser?.email}");
+        } else if (event.runtimeType ==
+            GoogleSignInAuthenticationEventSignOut) {
+          googleUser = null;
+          debugPrint("User signed out from Google");
+        }
+      });
+      final userCredentials =
+          GoogleAuthProvider.credential(accessToken: authorization.accessToken);
+
       UserCredential result = await auth.signInWithCredential(userCredentials);
       User? user = result.user;
       String? token = await NotificationService().getDeviceToken();
@@ -297,16 +318,16 @@ class AuthService {
 
   Future linkWithGoogle() async {
     try {
-      final googleUser = await GoogleSignIn().signIn();
+      // final googleUser = await GoogleSignIn().signIn();
 
-      final authenticatedUser = await googleUser?.authentication;
+      // final authenticatedUser = await googleUser?.authentication;
 
-      final userCredentials = GoogleAuthProvider.credential(
-        accessToken: authenticatedUser?.accessToken,
-        idToken: authenticatedUser?.idToken,
-      );
+      // final userCredentials = GoogleAuthProvider.credential(
+      //   accessToken: authenticatedUser?.accessToken,
+      //   idToken: authenticatedUser?.idToken,
+      // );
 
-      await auth.currentUser?.linkWithCredential(userCredentials);
+      // await auth.currentUser?.linkWithCredential(userCredentials);
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case "provider-already-linked":

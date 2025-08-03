@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
@@ -120,7 +122,10 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
                   labelColor: Colors.black.withValues(alpha: 0.55),
                   labelText: "Please enter a contact number",
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  textInputType: TextInputType.number,
+                  textInputType: Platform.isIOS
+                      ? TextInputType.numberWithOptions(
+                          signed: true, decimal: true)
+                      : TextInputType.number,
                   validator: (val) {
                     if (val!.isEmpty) {
                       return "Cannot be Empty";

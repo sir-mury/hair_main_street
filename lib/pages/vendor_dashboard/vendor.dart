@@ -51,7 +51,7 @@ class _VendorPageState extends State<VendorPage> {
 
   @override
   Widget build(BuildContext context) {
-    // print("totalSales: $totalSaleValue");
+    // debugPrint("totalSales: $totalSaleValue");
     //print(vendorController.vendorUID.value);
     List<String> vendorButtonsText = [
       "Shop Setup",
@@ -60,7 +60,6 @@ class _VendorPageState extends State<VendorPage> {
       "Orders",
       "Analytics",
       "Wallet",
-      "Refunds/Cancellation Requests"
     ];
 
     // List<String> totalSalesValues = [
@@ -154,6 +153,10 @@ class _VendorPageState extends State<VendorPage> {
       stream: DataBaseService()
           .getVendorDetails(userID: userController.userState.value!.uid!),
       builder: (context, snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.connectionState == ConnectionState.waiting) {
+          return LoadingWidget();
+        }
         if (snapshot.hasData) {
           return Obx(
             () => vendorController.vendor.value!.secondVerification == false
@@ -186,35 +189,188 @@ class _VendorPageState extends State<VendorPage> {
                       //backgroundColor: Colors.transparent,
                     ),
                     body: GetX<CheckOutController>(builder: (controller) {
+                      totalSaleValue = checkOutController.getTotalSales();
+
                       int productSold = checkOutController.vendorOrderList
                           .where((test) => test.orderStatus == 'confirmed')
                           .length;
 
+                      debugPrint("totalSaleValue: $totalSaleValue");
+
                       int orders = checkOutController.vendorOrderList.length;
                       return controller.vendorOrdersMap["Completed"] == null
                           ? const LoadingWidget()
-                          : Builder(builder: (context) {
-                              totalSaleValue =
-                                  checkOutController.getTotalSales();
-                              return SafeArea(
-                                child: SingleChildScrollView(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                                  //decoration: BoxDecoration(gradient: myGradient),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                          : SafeArea(
+                              child: SingleChildScrollView(
+                                padding:
+                                    const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                                //decoration: BoxDecoration(gradient: myGradient),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Total Sales",
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w400,
+                                                fontFamily: 'Raleway',
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                            Text(
+                                              "NGN${formatCurrency(totalSaleValue[initialValue].toString())}",
+                                              style: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w700,
+                                                fontFamily: 'Lato',
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        PopupMenuButton<String>(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            side: const BorderSide(
+                                              color: Color(0xFF673AB7),
+                                              width: 0.3,
+                                            ),
+                                          ),
+                                          initialValue: initialValue,
+                                          color: Colors.white,
+                                          elevation: 0,
+                                          itemBuilder: (BuildContext context) {
+                                            return <PopupMenuEntry<String>>[
+                                              const PopupMenuItem<String>(
+                                                value: "this week",
+                                                child: Text(
+                                                  'This Week',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontFamily: 'Lato',
+                                                  ),
+                                                ),
+                                              ),
+                                              const PopupMenuItem<String>(
+                                                value: "last week",
+                                                child: Text(
+                                                  'Last Week',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontFamily: 'Lato',
+                                                  ),
+                                                ),
+                                              ),
+                                              const PopupMenuItem<String>(
+                                                value: "this month",
+                                                child: Text(
+                                                  'This Month',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontFamily: 'Lato',
+                                                  ),
+                                                ),
+                                              ),
+                                              const PopupMenuItem<String>(
+                                                value: 'older',
+                                                child: Text(
+                                                  'Older',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontFamily: 'Lato',
+                                                  ),
+                                                ),
+                                              ),
+                                            ];
+                                          },
+                                          onSelected: (String value) {
+                                            setState(() {
+                                              initialValue = value;
+                                            });
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              color: const Color(0xFF673AB7)
+                                                  .withValues(alpha: 0.10),
+                                            ),
+                                            padding: const EdgeInsets.fromLTRB(
+                                                6, 4, 6, 4),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  initialValue.titleCase,
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xFF673AB7),
+                                                    fontFamily: 'Raleway',
+                                                  ),
+                                                ),
+                                                const Icon(
+                                                  Icons.arrow_drop_down,
+                                                  size: 20,
+                                                  color: Color(0xFF673AB7),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * 0.45,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            color: const Color(0xFF673AB7)
+                                                .withValues(alpha: 0.10),
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                          child: Column(
                                             children: [
+                                              Text(
+                                                "$orders",
+                                                style: const TextStyle(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontFamily: 'Lato',
+                                                  color: Colors.black,
+                                                ),
+                                              ),
                                               const Text(
-                                                "Total Sales",
+                                                "Orders",
                                                 style: TextStyle(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w400,
@@ -222,229 +378,68 @@ class _VendorPageState extends State<VendorPage> {
                                                   color: Colors.black,
                                                 ),
                                               ),
-                                              const SizedBox(
-                                                height: 4,
-                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          width: screenWidth * 0.45,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            color: const Color(0xFFE91E63)
+                                                .withValues(alpha: 0.10),
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                          child: Column(
+                                            children: [
                                               Text(
-                                                "NGN${formatCurrency(totalSaleValue[initialValue].toString())}",
+                                                "$productSold",
                                                 style: const TextStyle(
-                                                  fontSize: 20,
+                                                  fontSize: 22,
                                                   fontWeight: FontWeight.w700,
                                                   fontFamily: 'Lato',
                                                   color: Colors.black,
                                                 ),
                                               ),
+                                              const Text(
+                                                "Products sold",
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontFamily: 'Raleway',
+                                                  color: Colors.black,
+                                                ),
+                                              ),
                                             ],
                                           ),
-                                          PopupMenuButton<String>(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              side: const BorderSide(
-                                                color: Color(0xFF673AB7),
-                                                width: 0.3,
-                                              ),
-                                            ),
-                                            initialValue: initialValue,
-                                            color: Colors.white,
-                                            elevation: 0,
-                                            itemBuilder:
-                                                (BuildContext context) {
-                                              return <PopupMenuEntry<String>>[
-                                                const PopupMenuItem<String>(
-                                                  value: "this week",
-                                                  child: Text(
-                                                    'This Week',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      color: Colors.black,
-                                                      fontFamily: 'Lato',
-                                                    ),
-                                                  ),
-                                                ),
-                                                const PopupMenuItem<String>(
-                                                  value: "last week",
-                                                  child: Text(
-                                                    'Last Week',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      color: Colors.black,
-                                                      fontFamily: 'Lato',
-                                                    ),
-                                                  ),
-                                                ),
-                                                const PopupMenuItem<String>(
-                                                  value: "this month",
-                                                  child: Text(
-                                                    'This Month',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      color: Colors.black,
-                                                      fontFamily: 'Lato',
-                                                    ),
-                                                  ),
-                                                ),
-                                                const PopupMenuItem<String>(
-                                                  value: 'older',
-                                                  child: Text(
-                                                    'Older',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      color: Colors.black,
-                                                      fontFamily: 'Lato',
-                                                    ),
-                                                  ),
-                                                ),
-                                              ];
-                                            },
-                                            onSelected: (String value) {
-                                              setState(() {
-                                                initialValue = value;
-                                              });
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                                color: const Color(0xFF673AB7)
-                                                    .withValues(alpha: 0.10),
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                      6, 4, 6, 4),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    initialValue.titleCase,
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Color(0xFF673AB7),
-                                                      fontFamily: 'Raleway',
-                                                    ),
-                                                  ),
-                                                  const Icon(
-                                                    Icons.arrow_drop_down,
-                                                    size: 20,
-                                                    color: Color(0xFF673AB7),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 20,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            width: screenWidth * 0.45,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              color: const Color(0xFF673AB7)
-                                                  .withValues(alpha: 0.10),
-                                            ),
-                                            padding: const EdgeInsets.all(8),
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  "$orders",
-                                                  style: const TextStyle(
-                                                    fontSize: 22,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontFamily: 'Lato',
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                const Text(
-                                                  "Orders",
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w400,
-                                                    fontFamily: 'Raleway',
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            width: screenWidth * 0.45,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              color: const Color(0xFFE91E63)
-                                                  .withValues(alpha: 0.10),
-                                            ),
-                                            padding: const EdgeInsets.all(8),
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  "$productSold",
-                                                  style: const TextStyle(
-                                                    fontSize: 22,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontFamily: 'Lato',
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                const Text(
-                                                  "Products sold",
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w400,
-                                                    fontFamily: 'Raleway',
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 24,
-                                      ),
-                                      MasonryGridView(
-                                        shrinkWrap: true,
-                                        crossAxisSpacing: 16,
-                                        // mainAxisExtent: 40,
-                                        mainAxisSpacing: 16,
-                                        gridDelegate:
-                                            const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
                                         ),
-                                        children: List.generate(
-                                          vendorButtonsText.length,
-                                          (index) => DashboardButton(
-                                            icon: vendorButtonsIcons[index],
-                                            page: vl[index],
-                                            text: vendorButtonsText[index],
-                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 24,
+                                    ),
+                                    MasonryGridView(
+                                      shrinkWrap: true,
+                                      crossAxisSpacing: 16,
+                                      // mainAxisExtent: 40,
+                                      mainAxisSpacing: 16,
+                                      gridDelegate:
+                                          const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                      ),
+                                      children: List.generate(
+                                        vendorButtonsText.length,
+                                        (index) => DashboardButton(
+                                          icon: vendorButtonsIcons[index],
+                                          page: vl[index],
+                                          text: vendorButtonsText[index],
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            });
+                              ),
+                            );
                     }),
                   ),
           );

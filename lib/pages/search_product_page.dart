@@ -252,7 +252,10 @@ class _SearchProductPageState extends State<SearchProductPage> {
                         ),
                         IconButton(
                           onPressed: () {
-                            controller.increaseQuantity();
+                            controller.increaseQuantity(
+                              product: product,
+                              selectedOption: null,
+                            );
                             debugPrint(quantity.toString());
                           },
                           icon: const Icon(
@@ -439,7 +442,7 @@ class _SearchProductPageState extends State<SearchProductPage> {
                               // );
                             },
                             child: const Text(
-                              "Pay Installmentally",
+                              "Pay in Installments",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,

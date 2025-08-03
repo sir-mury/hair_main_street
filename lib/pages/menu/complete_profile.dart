@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -90,80 +92,85 @@ class CompleteProfilePage extends StatelessWidget {
         ],
       ),
       backgroundColor: Colors.white,
-      body: Obx(
-        () => Form(
-          key: formKey,
-          child: ListView(
-            shrinkWrap: true,
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            children: [
-              TextInputWidget(
-                // initialValue: profileController.fullname?.value,
-                labelColor: AppColors.main,
-                labelText: "Full Name",
-                fontSize: 16,
-                controller: fullNameController,
-                hintText: "Enter full name",
-                autofillHints: [AutofillHints.name],
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                textInputType: TextInputType.text,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "Cannot be empty";
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  if (value!.isNotEmpty) {
-                    fullNameController.text = value;
-                    profileController.fullname?.value = fullNameController.text;
-                  }
-                },
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              TextInputWidget(
-                // initialValue: profileController.phoneNumber?.value,
-                labelColor: AppColors.main,
-                labelText: "Phone Number",
-                fontSize: 16,
-                controller: phoneNumberController,
-                hintText: "Enter phone number",
-                autofillHints: [AutofillHints.telephoneNumber],
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                textInputType: TextInputType.phone,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "Cannot be empty";
-                  } else if (!value.isNumericOnly) {
-                    return "Must be digits only";
-                  } else if (value.length > 11 || value.length < 11) {
-                    return "Cannot be more than or less than 11 digits";
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  profileController.phoneNumber?.value = value!;
-                },
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              profileController.deliveryAddress.isNotEmpty
+      body: Form(
+        key: formKey,
+        child: ListView(
+          shrinkWrap: true,
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+          children: [
+            TextInputWidget(
+              // initialValue: profileController.fullname?.value,
+              labelColor: AppColors.main,
+              labelText: "Full Name",
+              fontSize: 16,
+              controller: fullNameController,
+              hintText: "Enter full name",
+              autofillHints: [AutofillHints.name],
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              textInputType: TextInputType.text,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Cannot be empty";
+                }
+                return null;
+              },
+              onChanged: (value) {
+                if (value!.isNotEmpty) {
+                  fullNameController.text = value;
+                  profileController.fullname?.value = fullNameController.text;
+                }
+              },
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            TextInputWidget(
+              // initialValue: profileController.phoneNumber?.value,
+              labelColor: AppColors.main,
+              labelText: "Phone Number",
+              fontSize: 16,
+              controller: phoneNumberController,
+              hintText: "Enter phone number",
+              autofillHints: [AutofillHints.telephoneNumber],
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              textInputType: TextInputType.phone,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Cannot be empty";
+                } else if (!value.isNumericOnly) {
+                  return "Must be digits only";
+                } else if (value.length > 11 || value.length < 11) {
+                  return "Cannot be more than or less than 11 digits";
+                }
+                return null;
+              },
+              onChanged: (value) {
+                profileController.phoneNumber?.value = value!;
+              },
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            Obx(
+              () => profileController.isDeliveryAddressAdded.isTrue
                   ? ListView.builder(
                       shrinkWrap: true,
                       itemBuilder: (context, index) => AddressCard(
                         address: profileController.deliveryAddress[index]!,
-                        onTap: showAddressBottomSheet(
-                          countryAndStatesAndLocalGovernment,
-                          profileController,
-                          contactNameController,
-                          contactPhoneNumberController,
-                          landmarkController,
-                          zipCodeController,
-                          streetAddressController,
-                        ),
+                        onTap: () {
+                          profileController.selectedAddress.value =
+                              profileController.deliveryAddress[index]!;
+                          showAddressBottomSheet(
+                            isEdit: true,
+                            countryAndStatesAndLocalGovernment,
+                            profileController,
+                            contactNameController,
+                            contactPhoneNumberController,
+                            landmarkController,
+                            zipCodeController,
+                            streetAddressController,
+                          );
+                        },
                         onDelete: () {
                           profileController.deliveryAddress.removeAt(index);
                         },
@@ -171,68 +178,68 @@ class CompleteProfilePage extends StatelessWidget {
                       itemCount: profileController.deliveryAddress.length,
                     )
                   : SizedBox.shrink(),
-              const SizedBox(
-                height: 12,
-              ),
-              InkWell(
-                onTap: () async {
-                  profileController.selectedAddress.value = Address();
-                  showAddressBottomSheet(
-                    countryAndStatesAndLocalGovernment,
-                    profileController,
-                    contactNameController,
-                    contactPhoneNumberController,
-                    landmarkController,
-                    zipCodeController,
-                    streetAddressController,
-                  );
-                },
-                // style: TextButton.styleFrom(
-                //   padding: const EdgeInsets.symmetric(vertical: 8),
-                //   backgroundColor: AppColors.shade3,
-                //   shape: RoundedRectangleBorder(
-                //     borderRadius: BorderRadius.circular(10),
-                //   ),
-                // ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.shade2,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.shade1,
-                      width: 0.8,
-                    ),
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            InkWell(
+              onTap: () async {
+                profileController.selectedAddress.value = Address();
+                showAddressBottomSheet(
+                  countryAndStatesAndLocalGovernment,
+                  profileController,
+                  contactNameController,
+                  contactPhoneNumberController,
+                  landmarkController,
+                  zipCodeController,
+                  streetAddressController,
+                );
+              },
+              // style: TextButton.styleFrom(
+              //   padding: const EdgeInsets.symmetric(vertical: 8),
+              //   backgroundColor: AppColors.shade3,
+              //   shape: RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.circular(10),
+              //   ),
+              // ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.shade2,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.shade1,
+                    width: 0.8,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          color: AppColors.main,
-                          size: 25,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        color: AppColors.main,
+                        size: 25,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      const Text(
+                        "Add delivery address",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
                         ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        const Text(
-                          "Add delivery address",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(
-                height: 12,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -242,6 +249,7 @@ class CompleteProfilePage extends StatelessWidget {
         child: TextButton(
           onPressed: () async {
             bool validate = formKey.currentState!.validate();
+
             // print(
             //     "Profile: ${profileController.fullname}, ${profileController.phoneNumber}");
             if (validate && profileController.deliveryAddress.isNotEmpty) {
@@ -282,8 +290,9 @@ class CompleteProfilePage extends StatelessWidget {
     TextEditingController contactPhoneNumberController,
     TextEditingController landmarkController,
     TextEditingController zipCodeController,
-    TextEditingController streetAddressController,
-  ) {
+    TextEditingController streetAddressController, {
+    bool? isEdit = false,
+  }) {
     Get.bottomSheet(
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
@@ -473,7 +482,9 @@ class CompleteProfilePage extends StatelessWidget {
                           controller: zipCodeController,
                           hintText: "Enter zip code",
                           autovalidateMode: AutovalidateMode.onUserInteraction,
-                          textInputType: TextInputType.number,
+                          textInputType: Platform.isIOS
+                              ? TextInputType.numberWithOptions()
+                              : TextInputType.number,
                           validator: (value) {
                             if (value!.isEmpty) {
                               return "Cannot be empty";
@@ -536,7 +547,9 @@ class CompleteProfilePage extends StatelessWidget {
                             profileController
                                 .showMyToast("Kindly complete the form");
                           } else {
-                            profileController.addAddressToAdresses();
+                            isEdit
+                                ? profileController.editAtDeliveryAddress()
+                                : profileController.addAddressToAdresses();
                           }
                         },
                         style: TextButton.styleFrom(
@@ -549,10 +562,10 @@ class CompleteProfilePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          "Add Address",
+                        child: Text(
+                          isEdit! ? "Edit Address" : "Add Address",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                           ),

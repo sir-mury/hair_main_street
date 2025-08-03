@@ -956,8 +956,10 @@ class DataBaseService {
     try {
       var role = await verifyRole();
       if (role!.keys.contains("Buyer")) {
-        Map<String, dynamic> updatedFields = order!.toJson();
-        updatedFields["updatedAt"];
+        Timestamp createdAt = order!.createdAt!;
+        Map<String, dynamic> updatedFields = order.toJson();
+        updatedFields["updated at"] = FieldValue.serverTimestamp();
+        updatedFields["created at"] = createdAt;
         await ordersCollection.doc(order.orderId).set(
               updatedFields,
               SetOptions(
@@ -974,7 +976,7 @@ class DataBaseService {
   }
 
   //get single order
-  Future getSingleOrder(String orderID) async {
+  Future<DatabaseOrderResponse?> getSingleOrder(String orderID) async {
     try {
       var orderResult = await ordersCollection.doc(orderID).get();
       var orderItem = await ordersCollection
@@ -992,6 +994,7 @@ class DataBaseService {
     } catch (e) {
       logger.e(e);
     }
+    return null;
   }
 
   //buyer delete order
@@ -1064,6 +1067,7 @@ class DataBaseService {
           logger.i("targetPath: $targetPath");
           logger.i("image ${image.path}");
           //compress image
+
           final compressedImage = await FlutterImageCompress.compressAndGetFile(
             image.path!,
             targetPath,
@@ -1529,7 +1533,7 @@ class DataBaseService {
   //generate referral link
   String generateReferralLink(String referralCode) {
     // Replace 'your_domain.com' with your actual domain
-    return 'https://hairmainstreet.com/register?referralCode=$referralCode';
+    return 'https://app.hairmainstreet.com/register?referralCode=$referralCode';
   }
 
   //generate shop link
@@ -1539,7 +1543,7 @@ class DataBaseService {
   }) {
     // Replace 'your_domain.com' with your actual domain
     final formattedName = shopName.toLowerCase().replaceAll(' ', '_');
-    return 'https://hairmainstreet.com/shops/$vendorID/$formattedName';
+    return 'https://app.hairmainstreet.com/shops/$vendorID/$formattedName';
   }
 
   //confirm referral code and reward referrer
@@ -2274,7 +2278,7 @@ class DataBaseService {
 
   Future<String?> initiateTransaction(
       num amount, String email, String reference) async {
-    final num resolvedAmount = amount * 100;
+    final num resolvedAmount = amount;
     final String resolvedEmail = email;
     const String callbackUrl = "https://api-hhhpti4wta-uc.a.run.app/";
 

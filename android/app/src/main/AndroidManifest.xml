@@ -43,7 +43,7 @@
                 <data android:scheme="https" />
 
                 <!-- Include one or more domains that should be verified. -->
-                <data android:host="hairmainstreet.com" />
+                <data android:host="app.hairmainstreet.com" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

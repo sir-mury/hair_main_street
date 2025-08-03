@@ -19,10 +19,12 @@ class AppColors {
   static const Color cancel = Color(0xffF44336);
   static const Color done = Color(0xff4CAF50);
   static const Color pending = Color.fromARGB(255, 218, 157, 26);
-  static const Color created = Color(0xFF60A5FA);
-  static const Color confirmed = Color(0xFF34D399);
-  static const Color cancelled = Color(0xFFEF4444);
-  static const Color expired = Color(0xFFFBBF24);
-  static const Color once = Color(0xFF4F46E5);
-  static const Color installment = Color(0xFF0891B2);
+  static Color created = Colors.orange.shade400;
+  static Color confirmed = Colors.blue.shade700;
+  static Color cancelled = Colors.red.shade400;
+  static Color expired = Colors.grey.shade600;
+  static Color once = Colors.blue.shade600;
+  static Color installment = Colors.green.shade600;
+  static Color notDelivered = Colors.orange;
+  static Color delivered = Colors.green.shade700;
 }

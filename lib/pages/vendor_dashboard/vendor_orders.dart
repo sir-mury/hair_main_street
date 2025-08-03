@@ -43,13 +43,14 @@ class _VendorOrdersPageState extends State<VendorOrdersPage>
       "All",
       "Active",
       "Expired",
+      "Delivered",
       "Completed",
       "Cancelled",
     ];
     TabController tabController =
         TabController(length: categories.length, vsync: this);
     //s checkOutController.userUID.value = userController.userState.value!.uid!;
-    debugPrint("debugPrint:${checkOutController.userUID.value}");
+    // debugPrint("debugPrint:${checkOutController.userUID.value}");
     // num screenHeight = MediaQuery.of(context).size.height;
     // num screenWidth = MediaQuery.of(context).size.width;
     checkOutController.getSellerOrders(userController.userState.value!.uid!);
@@ -154,6 +155,7 @@ class _VendorOrdersPageState extends State<VendorOrdersPage>
                           _buildTabContent("All"),
                           _buildTabContent("Active"),
                           _buildTabContent("Expired"),
+                          _buildTabContent("Delivered"),
                           _buildTabContent("Completed"),
                           _buildTabContent("Cancelled"),
                         ],

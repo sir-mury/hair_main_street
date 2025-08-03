@@ -18,14 +18,14 @@ class UpdatesServiceController extends GetxController {
   RxString updateMessage = ''.obs;
   RxString updateUrl = ''.obs;
   RxString updateTitle = ''.obs;
-  late SharedPreferences prefs;
+  late SharedPreferencesAsync prefs;
   Rx<AdminVariablesUpdates?> updates = Rx<AdminVariablesUpdates?>(null);
 
   @override
   void onInit() async {
     updates.value = adminController.adminSettings.value?.updates;
 
-    prefs = await SharedPreferences.getInstance();
+    prefs = SharedPreferencesAsync();
 
     ever(adminController.adminSettings, (settings) {
       if (settings != null) {
@@ -55,7 +55,7 @@ class UpdatesServiceController extends GetxController {
 
     if (isUpdateAvailable.value &&
         isVersionOutdated(currentVersion.value, latestVersion.value) &&
-        prefs.getBool('hasShownUpdateDialog') == false) {
+        await prefs.getBool('hasShownUpdateDialog') == false) {
       showUpdateDialog(isUpdateMandatory.value);
       await prefs.setBool('hasShownUpdateDialog', true);
     }
@@ -75,8 +75,8 @@ class UpdatesServiceController extends GetxController {
   }
 
   calculateNextToShowUpdateDialog() {
-    Future.delayed(Duration(days: 3), () {
-      prefs.setBool("hasShownUpdateDialog", false);
+    Future.delayed(Duration(days: 3), () async {
+      await prefs.setBool("hasShownUpdateDialog", false);
     });
   }
 
