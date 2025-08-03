@@ -15,6 +15,7 @@ import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/pages/orders_stuff/cart_checkout_confimation.dart';
 import 'package:hair_main_street/pages/profile/add_delivery_address.dart';
 import 'package:hair_main_street/services/database.dart';
+import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
@@ -99,35 +100,34 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
     totalPayableAmount = 0.0;
   }
 
+  String formatCurrency(String numberString) {
+    final number =
+        double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
+    final formattedNumber = number.toStringAsFixed(2); // Format with 2 decimals
+
+    // Split the number into integer and decimal parts
+    final parts = formattedNumber.split('.');
+    final intPart = parts[0];
+    final decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
+
+    // Format the integer part with commas for every 3 digits
+    final formattedIntPart = intPart.replaceAllMapped(
+      RegExp(r'\d{1,3}(?=(\d{3})+(?!\d))'),
+      (match) => '${match.group(0)},',
+    );
+
+    // Combine the formatted integer and decimal parts
+    final formattedResult = formattedIntPart + decimalPart;
+
+    return formattedResult;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Product? product;
     // for (var item in widget.products) {
     //   product = productController.getSingleProduct(item.productID!);
     // }
-
-    String formatCurrency(String numberString) {
-      final number =
-          double.tryParse(numberString) ?? 0.0; // Handle non-numeric input
-      final formattedNumber =
-          number.toStringAsFixed(2); // Format with 2 decimals
-
-      // Split the number into integer and decimal parts
-      final parts = formattedNumber.split('.');
-      final intPart = parts[0];
-      final decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
-
-      // Format the integer part with commas for every 3 digits
-      final formattedIntPart = intPart.replaceAllMapped(
-        RegExp(r'\d{1,3}(?=(\d{3})+(?!\d))'),
-        (match) => '${match.group(0)},',
-      );
-
-      // Combine the formatted integer and decimal parts
-      final formattedResult = formattedIntPart + decimalPart;
-
-      return formattedResult;
-    }
 
     //error dialog handler
     // void showErrorDialog(String message) {
@@ -319,576 +319,7 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                           ),
                           SingleChildScrollView(
                             child: Column(
-                              children: List.generate(widget.products.length,
-                                  (index) {
-                                var myControllers = installementControllers;
-                                //totalPrice += widget.products[index].price!;
-                                // print(totalPrice);
-                                // print(widget.products[index].optionName);
-                                var theProduct =
-                                    productController.getSingleProduct(
-                                        widget.products[index].productID!);
-                                if (productStates.isNotEmpty &&
-                                    productStates[index]["paymentMethod"] ==
-                                        "once") {
-                                  productStates[index]
-                                          ["installmentAmountPaid"] =
-                                      (widget.products[index].price!);
-                                }
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 6),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                    horizontal: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      width: 1,
-                                      color: const Color(0xFF673AB7)
-                                          .withValues(alpha: 0.45),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                            child: CachedNetworkImage(
-                                              imageUrl: theProduct
-                                                          ?.image?.isNotEmpty ==
-                                                      true
-                                                  ? theProduct!.image!.first
-                                                  : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
-                                              errorWidget: ((context, url,
-                                                      error) =>
-                                                  const Text(
-                                                      "Failed to Load Image")),
-                                              placeholder: ((context, url) =>
-                                                  const Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      color: Colors.black,
-                                                    ),
-                                                  )),
-                                              imageBuilder:
-                                                  (context, imageProvider) =>
-                                                      Container(
-                                                height: 140,
-                                                width: 130,
-                                                decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    image: imageProvider,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            width: 4,
-                                          ),
-                                          Expanded(
-                                            child: SizedBox(
-                                              height: 150,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    '${theProduct!.name}',
-                                                    maxLines: 1,
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontFamily: 'Lato',
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  Visibility(
-                                                    visible: widget
-                                                                .products[index]
-                                                                .optionName !=
-                                                            null &&
-                                                        widget
-                                                            .products[index]
-                                                            .optionName!
-                                                            .isNotEmpty,
-                                                    child: Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              6),
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(12),
-                                                        border: Border.all(
-                                                          color: Colors.black
-                                                              .withValues(
-                                                                  alpha: 0.5),
-                                                          width: 0.5,
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        '${widget.products[index].optionName}',
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontFamily: 'Lato',
-                                                          color: Colors.black
-                                                              .withValues(
-                                                                  alpha: 0.65),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        'NGN ${formatCurrency(widget.products[index].price.toString())}', // Replace with actual price
-                                                        style: const TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color:
-                                                              Color(0xFF673AB7),
-                                                          fontFamily: 'Lato',
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        'Qty: ${widget.products[index].quantity}pcs',
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontFamily: 'Lato',
-                                                          color: Colors.black
-                                                              .withValues(
-                                                                  alpha: 0.65),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 6,
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      const Text(
-                                                        'Payment Method:',
-                                                        style: TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.black,
-                                                          fontFamily: 'Lato',
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 1,
-                                                        child: PopupMenuButton<
-                                                            String>(
-                                                          shape:
-                                                              RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                            side:
-                                                                const BorderSide(
-                                                              color:
-                                                                  Colors.black,
-                                                              width: 1,
-                                                            ),
-                                                          ),
-                                                          elevation: 0,
-                                                          color: Colors.white,
-                                                          itemBuilder:
-                                                              (BuildContext
-                                                                  context) {
-                                                            return <PopupMenuEntry<
-                                                                String>>[
-                                                              const PopupMenuItem<
-                                                                  String>(
-                                                                value: 'once',
-                                                                child: Text(
-                                                                  'One Time Payment',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Colors
-                                                                        .black,
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    fontFamily:
-                                                                        'Lato',
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              const PopupMenuItem<
-                                                                  String>(
-                                                                value:
-                                                                    'installment',
-                                                                child: Text(
-                                                                  'Installmently',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Colors
-                                                                        .black,
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    fontFamily:
-                                                                        'Lato',
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ];
-                                                          },
-                                                          onSelected:
-                                                              (String value) {
-                                                            setState(() {
-                                                              productStates[
-                                                                          index]
-                                                                      [
-                                                                      "paymentMethod"] =
-                                                                  value;
-                                                            });
-                                                          },
-                                                          child: Container(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .fromLTRB(
-                                                                    6, 2, 6, 2),
-                                                            child: productStates
-                                                                    .isNotEmpty
-                                                                ? Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .spaceBetween,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      Expanded(
-                                                                        child:
-                                                                            Text(
-                                                                          productStates[index]["paymentMethod"]
-                                                                              .toString()
-                                                                              .titleCase,
-                                                                          maxLines:
-                                                                              1,
-                                                                          style:
-                                                                              const TextStyle(
-                                                                            color:
-                                                                                Colors.black,
-                                                                            fontSize:
-                                                                                14,
-                                                                            fontWeight:
-                                                                                FontWeight.w500,
-                                                                            fontFamily:
-                                                                                'Lato',
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      const Icon(
-                                                                        Icons
-                                                                            .arrow_drop_down,
-                                                                        size:
-                                                                            20,
-                                                                      ),
-                                                                    ],
-                                                                  )
-                                                                : const Text(
-                                                                    "hello"),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 8,
-                                                  ),
-                                                  Visibility(
-                                                    visible: productStates
-                                                            .isNotEmpty
-                                                        ? productStates[index][
-                                                                "paymentMethod"] ==
-                                                            "installment"
-                                                        : false,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        const Text(
-                                                          'No of Installments:',
-                                                          style: TextStyle(
-                                                            fontSize: 13,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontFamily: 'Lato',
-                                                            color: Colors.black,
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          flex: 1,
-                                                          child:
-                                                              PopupMenuButton<
-                                                                  String>(
-                                                            shape:
-                                                                RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10),
-                                                              side:
-                                                                  const BorderSide(
-                                                                color: Colors
-                                                                    .black,
-                                                                width: 1,
-                                                              ),
-                                                            ),
-                                                            color: Colors.white,
-                                                            elevation: 0,
-                                                            itemBuilder:
-                                                                (BuildContext
-                                                                    context) {
-                                                              return <PopupMenuEntry<
-                                                                  String>>[
-                                                                const PopupMenuItem<
-                                                                    String>(
-                                                                  value: "2",
-                                                                  child: Text(
-                                                                    '2',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontSize:
-                                                                          14,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w400,
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontFamily:
-                                                                          'Lato',
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                const PopupMenuItem<
-                                                                    String>(
-                                                                  value: '3',
-                                                                  child: Text(
-                                                                    '3',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontSize:
-                                                                          14,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w400,
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontFamily:
-                                                                          'Lato',
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ];
-                                                            },
-                                                            onSelected:
-                                                                (String value) {
-                                                              setState(() {
-                                                                productStates[
-                                                                            index]
-                                                                        [
-                                                                        "numberOfInstallments"] =
-                                                                    int.parse(
-                                                                        value);
-                                                              });
-                                                            },
-                                                            child: Container(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .fromLTRB(
-                                                                      6,
-                                                                      2,
-                                                                      6,
-                                                                      2),
-                                                              child: productStates
-                                                                      .isNotEmpty
-                                                                  ? Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        Text(
-                                                                          productStates[index]["numberOfInstallments"]
-                                                                              .toString()
-                                                                              .titleCase,
-                                                                          style:
-                                                                              const TextStyle(
-                                                                            fontSize:
-                                                                                14,
-                                                                            fontWeight:
-                                                                                FontWeight.w500,
-                                                                            color:
-                                                                                Colors.black,
-                                                                            fontFamily:
-                                                                                'Lato',
-                                                                          ),
-                                                                        ),
-                                                                        const Icon(
-                                                                          Icons
-                                                                              .arrow_drop_down,
-                                                                          size:
-                                                                              20,
-                                                                        ),
-                                                                      ],
-                                                                    )
-                                                                  : const Text(
-                                                                      "hello"),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 6,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          const SizedBox(
-                                            height: 8,
-                                          ),
-                                          Visibility(
-                                            visible: productStates.isNotEmpty
-                                                ? productStates[index]
-                                                        ["paymentMethod"] ==
-                                                    "installment"
-                                                : false,
-                                            child: TextFormField(
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.black,
-                                                fontFamily: 'Lato',
-                                              ),
-                                              controller:
-                                                  myControllers.isNotEmpty
-                                                      ? myControllers[index]
-                                                      : null,
-                                              decoration: InputDecoration(
-                                                errorStyle: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Colors.red[300],
-                                                ),
-                                                labelStyle: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: 'Lato',
-                                                  color: Colors.black
-                                                      .withValues(alpha: 0.35),
-                                                ),
-                                                labelText:
-                                                    'Initial Installment Amount (NGN)',
-                                                border:
-                                                    const OutlineInputBorder(),
-                                              ),
-                                              validator: (value) {
-                                                if (value!.isEmpty) {
-                                                  return "You must specify an initial Amount";
-                                                }
-                                                if (!validator
-                                                    .isNumeric(value)) {
-                                                  return "Must be a Number";
-                                                }
-                                                if (num.parse(value) >
-                                                    widget.products[index]
-                                                        .price!) {
-                                                  return "Amount cannot be more than Price";
-                                                }
-                                                if (productStates[index][
-                                                            "numberOfInstallments"] ==
-                                                        2 &&
-                                                    num.parse(value) <
-                                                        (widget.products[index]
-                                                                .price! *
-                                                            0.5)) {
-                                                  return "Must be at least 50%";
-                                                }
-                                                if (productStates[index][
-                                                            "numberOfInstallments"] ==
-                                                        3 &&
-                                                    num.parse(value) <
-                                                        (widget.products[index]
-                                                                .price! *
-                                                            0.3)) {
-                                                  return "Must be at least 30%";
-                                                } else {
-                                                  return null;
-                                                }
-                                              },
-                                              autovalidateMode: AutovalidateMode
-                                                  .onUserInteraction,
-                                              keyboardType: Platform.isIOS
-                                                  ? TextInputType
-                                                      .numberWithOptions()
-                                                  : TextInputType.number,
-                                              onChanged: (value) {
-                                                if (value.isEmpty) {
-                                                } else {
-                                                  setState(() {
-                                                    myControllers[index].text =
-                                                        value;
-                                                    productStates[index][
-                                                            "installmentAmountPaid"] =
-                                                        num.parse(value);
-                                                  });
-                                                }
-                                                debugPrint(productStates[index]
-                                                    ["installmentAmountPaid"]);
-                                                // Handle initial payment amount input
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 4,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
+                              children: buildOrderSummaryCard(),
                             ),
                           ),
                           const SizedBox(
@@ -997,100 +428,7 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                                                 ),
                                               ),
                                             ]
-                                          : List.generate(
-                                              userController
-                                                  .deliveryAddresses.length,
-                                              (index) {
-                                                Address address = userController
-                                                    .deliveryAddresses[index]!;
-                                                bool isSelected = userController
-                                                        .selectedAddress
-                                                        .value ==
-                                                    address;
-                                                return userController
-                                                            .isLoading.value ==
-                                                        true
-                                                    ? const LoadingWidget()
-                                                    : GestureDetector(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            userController
-                                                                .selectedAddress
-                                                                .value = address;
-                                                          });
-                                                        },
-                                                        child: Container(
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4),
-                                                          height: 130,
-                                                          width: 250,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal: 4,
-                                                                  vertical: 4),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                            border: Border.all(
-                                                              color: isSelected
-                                                                  ? const Color(
-                                                                      0xFF673AB7)
-                                                                  : Colors
-                                                                      .black,
-                                                              width: isSelected
-                                                                  ? 2
-                                                                  : 0.5,
-                                                            ),
-                                                          ),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                "${address.landmark ?? ""},${address.streetAddress},${address.lGA},${address.state}.${address.zipCode ?? ""}",
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontFamily:
-                                                                      'Lato',
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontSize: 15,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 12,
-                                                              ),
-                                                              Text(
-                                                                "${address.contactName ?? ""}, ${address.contactPhoneNumber}",
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontFamily:
-                                                                      'Raleway',
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontSize: 14,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      );
-                                              },
-                                            ),
+                                          : buildAddressCard(),
                                     ),
                                   ),
                                 ),
@@ -1178,6 +516,483 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
     );
   }
 
+  List<Widget> buildOrderSummaryCard() {
+    return List.generate(widget.products.length, (index) {
+      var myControllers = installementControllers;
+      //totalPrice += widget.products[index].price!;
+      // print(totalPrice);
+      // print(widget.products[index].optionName);
+      var theProduct =
+          productController.getSingleProduct(widget.products[index].productID!);
+      if (productStates.isNotEmpty &&
+          productStates[index]["paymentMethod"] == "once") {
+        productStates[index]["installmentAmountPaid"] =
+            (widget.products[index].price!);
+      }
+      return Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(
+          vertical: 4,
+          horizontal: 8,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            width: 1,
+            color: const Color(0xFF673AB7).withValues(alpha: 0.45),
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: CachedNetworkImage(
+                    imageUrl: theProduct?.image?.isNotEmpty == true
+                        ? theProduct!.image!.first
+                        : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+                    errorWidget: ((context, url, error) =>
+                        const Text("Failed to Load Image")),
+                    placeholder: ((context, url) => const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                          ),
+                        )),
+                    imageBuilder: (context, imageProvider) => Container(
+                      height: 140,
+                      width: 130,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  width: 4,
+                ),
+                Expanded(
+                  child: SizedBox(
+                    // height: 150,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${theProduct!.name}',
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Lato',
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Visibility(
+                          visible: widget.products[index].optionName != null &&
+                              widget.products[index].optionName!.isNotEmpty,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              '${widget.products[index].optionName}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Lato',
+                                color: Colors.black.withValues(alpha: 0.65),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'NGN ${formatCurrency(widget.products[index].price.toString())}', // Replace with actual price
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF673AB7),
+                                fontFamily: 'Lato',
+                              ),
+                            ),
+                            Text(
+                              'Qty: ${widget.products[index].quantity}pcs',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Lato',
+                                color: Colors.black.withValues(alpha: 0.65),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 6,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Payment Method:',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                fontFamily: 'Lato',
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: PopupMenuButton<String>(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: const BorderSide(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
+                                ),
+                                elevation: 0,
+                                color: Colors.white,
+                                itemBuilder: (BuildContext context) {
+                                  return <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'once',
+                                      child: Text(
+                                        'One Time Payment',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Lato',
+                                        ),
+                                      ),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'installment',
+                                      child: Text(
+                                        'Pay in Installments',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Lato',
+                                        ),
+                                      ),
+                                    ),
+                                  ];
+                                },
+                                onSelected: (String value) {
+                                  setState(() {
+                                    productStates[index]["paymentMethod"] =
+                                        value;
+                                  });
+                                },
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                  child: productStates.isNotEmpty
+                                      ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                productStates[index]
+                                                        ["paymentMethod"]
+                                                    .toString()
+                                                    .titleCase,
+                                                maxLines: 1,
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: 'Lato',
+                                                ),
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.arrow_drop_down,
+                                              size: 20,
+                                            ),
+                                          ],
+                                        )
+                                      : const Text("hello"),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Visibility(
+                          visible: productStates.isNotEmpty
+                              ? productStates[index]["paymentMethod"] ==
+                                  "installment"
+                              : false,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'No of Installments:',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Lato',
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: PopupMenuButton<String>(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: const BorderSide(
+                                      color: Colors.black,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  color: Colors.white,
+                                  elevation: 0,
+                                  itemBuilder: (BuildContext context) {
+                                    return <PopupMenuEntry<String>>[
+                                      const PopupMenuItem<String>(
+                                        value: "2",
+                                        child: Text(
+                                          '2',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
+                                            fontFamily: 'Lato',
+                                          ),
+                                        ),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: '3',
+                                        child: Text(
+                                          '3',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
+                                            fontFamily: 'Lato',
+                                          ),
+                                        ),
+                                      ),
+                                    ];
+                                  },
+                                  onSelected: (String value) {
+                                    setState(() {
+                                      productStates[index]
+                                              ["numberOfInstallments"] =
+                                          int.parse(value);
+                                    });
+                                  },
+                                  child: Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                    child: productStates.isNotEmpty
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                productStates[index]
+                                                        ["numberOfInstallments"]
+                                                    .toString()
+                                                    .titleCase,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black,
+                                                  fontFamily: 'Lato',
+                                                ),
+                                              ),
+                                              const Icon(
+                                                Icons.arrow_drop_down,
+                                                size: 20,
+                                              ),
+                                            ],
+                                          )
+                                        : const Text("hello"),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                const SizedBox(
+                  height: 8,
+                ),
+                Visibility(
+                  visible: productStates.isNotEmpty
+                      ? productStates[index]["paymentMethod"] == "installment"
+                      : false,
+                  child: TextFormField(
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                      fontFamily: 'Lato',
+                    ),
+                    controller:
+                        myControllers.isNotEmpty ? myControllers[index] : null,
+                    decoration: InputDecoration(
+                      errorStyle: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.red[300],
+                      ),
+                      labelStyle: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Lato',
+                        color: Colors.black.withValues(alpha: 0.35),
+                      ),
+                      labelText: 'Initial Installment Amount (NGN)',
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return "You must specify an initial Amount";
+                      }
+                      if (!validator.isNumeric(value)) {
+                        return "Must be a Number";
+                      }
+                      if (num.parse(value) > widget.products[index].price!) {
+                        return "Amount cannot be more than Price";
+                      }
+                      if (productStates[index]["numberOfInstallments"] == 2 &&
+                          num.parse(value) <
+                              (widget.products[index].price! * 0.5)) {
+                        return "Must be at least 50%";
+                      }
+                      if (productStates[index]["numberOfInstallments"] == 3 &&
+                          num.parse(value) <
+                              (widget.products[index].price! * 0.3)) {
+                        return "Must be at least 30%";
+                      } else {
+                        return null;
+                      }
+                    },
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    keyboardType: Platform.isIOS
+                        ? TextInputType.numberWithOptions()
+                        : TextInputType.number,
+                    onChanged: (value) {
+                      if (value.isEmpty) {
+                      } else {
+                        setState(() {
+                          myControllers[index].text = value;
+                          productStates[index]["installmentAmountPaid"] =
+                              num.parse(value);
+                        });
+                      }
+                      debugPrint(productStates[index]["installmentAmountPaid"]);
+                      // Handle initial payment amount input
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  List<Widget> buildAddressCard() {
+    return List.generate(
+      userController.deliveryAddresses.length,
+      (index) {
+        Address address = userController.deliveryAddresses[index]!;
+        bool isSelected = userController.selectedAddress.value == address;
+        return userController.isLoading.value == true
+            ? const LoadingWidget()
+            : GestureDetector(
+                onTap: () {
+                  setState(() {
+                    userController.selectedAddress.value = address;
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 130,
+                  width: 250,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.shade2.withValues(alpha: 0.5)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected ? AppColors.main : Colors.black,
+                      width: isSelected ? 2 : 0.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${address.landmark ?? ""},${address.streetAddress},${address.lGA},${address.state}.${address.zipCode ?? ""}",
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Text(
+                        "${address.contactName ?? ""}, ${address.contactPhoneNumber}",
+                        style: const TextStyle(
+                          fontFamily: 'Raleway',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+      },
+    );
+  }
   // String _getReference() {
   //   String platform;
   //   if (Platform.isIOS) {

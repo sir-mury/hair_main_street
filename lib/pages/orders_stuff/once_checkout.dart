@@ -17,6 +17,7 @@ import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/pages/orders_stuff/payment_successful_page.dart';
 import 'package:hair_main_street/pages/profile/add_delivery_address.dart';
 import 'package:hair_main_street/services/database.dart';
+import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:material_symbols_icons/symbols.dart';
 // import 'package:paystack_flutter_sdk/paystack_flutter_sdk.dart';
@@ -56,6 +57,8 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
   }
 
   String? determinePublicKey() {
+    debugPrint(
+        "publickey: ${adminController.adminSettings.value!.isLive == true ? livePublicKey : publicKey}");
     return adminController.adminSettings.value!.isLive == true
         ? livePublicKey
         : publicKey;
@@ -742,86 +745,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                                 // }
                                 // print(
                                 //     "selectedAddress: ${userController.selectedAddress.value!}");
-                                return Expanded(
-                                  child: SizedBox(
-                                    height: 130,
-                                    // width: 250,
-                                    child: ListView.builder(
-                                      itemBuilder: (context, index) {
-                                        final address = userController
-                                            .deliveryAddresses[index];
-                                        var isSelected = userController
-                                                .selectedAddress.value ==
-                                            address;
-                                        return GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              userController.selectedAddress
-                                                  .value = address;
-                                            });
-                                          },
-                                          child: Container(
-                                            margin: EdgeInsets.only(
-                                              left: index == 0 ? 4 : 8,
-                                              right: index ==
-                                                      userController
-                                                              .deliveryAddresses
-                                                              .length -
-                                                          1
-                                                  ? 4
-                                                  : 0,
-                                            ),
-                                            width:
-                                                250, // Fixed width for address cards
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              border: Border.all(
-                                                color: isSelected
-                                                    ? const Color(0xFF673AB7)
-                                                    : Colors.black,
-                                                width: isSelected ? 2 : 0.5,
-                                              ),
-                                            ),
-                                            padding: const EdgeInsets.all(12),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "${address!.landmark ?? ""},${address.streetAddress ?? "No Street Address"},${address.lGA ?? "No LGA"},${address.state ?? "No State"}.${address.zipCode ?? ""}",
-                                                  style: const TextStyle(
-                                                    fontFamily: 'Lato',
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 12,
-                                                ),
-                                                Text(
-                                                  "${address.contactName ?? ""},${address.contactPhoneNumber ?? ""}",
-                                                  style: const TextStyle(
-                                                    fontFamily: 'Raleway',
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      itemCount: userController
-                                          .deliveryAddresses.length,
-                                      scrollDirection: Axis.horizontal,
-                                      physics: const BouncingScrollPhysics(),
-                                    ),
-                                  ),
-                                );
+                                return addressCard();
                               }
                             }),
                           ],
@@ -1160,5 +1084,76 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
     String? accessCode =
         await DataBaseService().initiateTransaction(amount, email, reference);
     return accessCode ?? "";
+  }
+
+  Widget addressCard() {
+    return Expanded(
+      child: SizedBox(
+        height: 130,
+        // width: 250,
+        child: ListView.builder(
+          itemBuilder: (context, index) {
+            final address = userController.deliveryAddresses[index];
+            var isSelected = userController.selectedAddress.value == address;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  userController.selectedAddress.value = address;
+                });
+              },
+              child: Container(
+                margin: EdgeInsets.only(
+                  left: index == 0 ? 4 : 8,
+                  right: index == userController.deliveryAddresses.length - 1
+                      ? 4
+                      : 0,
+                ),
+                width: 250, // Fixed width for address cards
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.shade2.withValues(alpha: 0.5)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected ? AppColors.main : Colors.black,
+                    width: isSelected ? 2 : 0.5,
+                  ),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${address!.landmark ?? ""},${address.streetAddress ?? "No Street Address"},${address.lGA ?? "No LGA"},${address.state ?? "No State"}.${address.zipCode ?? ""}",
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    Text(
+                      "${address.contactName ?? ""},${address.contactPhoneNumber ?? ""}",
+                      style: const TextStyle(
+                        fontFamily: 'Raleway',
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+          itemCount: userController.deliveryAddresses.length,
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+        ),
+      ),
+    );
   }
 }
