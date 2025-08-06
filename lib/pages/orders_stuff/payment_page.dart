@@ -586,8 +586,7 @@ class _PaymentPageState extends State<PaymentPage> {
                       hintText:
                           "NGN${formatCurrency(installmentRemaining != 1 ? (amountRemaining / 2).toString() : amountRemaining.toString())}",
                       textInputType: Platform.isIOS
-                          ? TextInputType.numberWithOptions(
-                              signed: true, decimal: true)
+                          ? TextInputType.phone
                           : TextInputType.number,
                       controller: amountPaidController,
                       asCurrency: true,

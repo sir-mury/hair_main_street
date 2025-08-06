@@ -226,8 +226,7 @@ class _AccountInformationPageState extends State<AccountInformationPage> {
                             return null;
                           },
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions(
-                                  signed: true, decimal: true)
+                              ? TextInputType.phone
                               : TextInputType.number,
                           onChanged: (val) {
                             if (val!.isNotEmpty) {

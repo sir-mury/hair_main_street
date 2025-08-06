@@ -422,8 +422,7 @@ class _AddproductPageState extends State<AddproductPage> {
                           controller: productPrice,
                           hintText: "Enter Price",
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions(
-                                  signed: true, decimal: true)
+                              ? TextInputType.phone
                               : TextInputType.number,
                           validator: (val) {
                             if (val!.isEmpty) {
@@ -610,8 +609,7 @@ class _AddproductPageState extends State<AddproductPage> {
                         TextInputWidgetWithoutLabel(
                           controller: quantity,
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions(
-                                  signed: true, decimal: true)
+                              ? TextInputType.phone
                               : TextInputType.number, //maxLines: 5,
                           hintText: "Stock Quantity",
                           autovalidateMode: AutovalidateMode.onUserInteraction,

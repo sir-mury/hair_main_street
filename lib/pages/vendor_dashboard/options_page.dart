@@ -223,10 +223,7 @@ class _ProductOptionsPageState extends State<ProductOptionsPage> {
                                   width: double.maxFinite,
                                   child: TextInputWidget(
                                     textInputType: Platform.isIOS
-                                        ? TextInputType.numberWithOptions(
-                                            signed: true,
-                                            decimal: true,
-                                          )
+                                        ? TextInputType.phone
                                         : TextInputType.number,
                                     controller: priceControllers[index],
                                     initialValue:
@@ -258,10 +255,7 @@ class _ProductOptionsPageState extends State<ProductOptionsPage> {
                                             ?.toString() ??
                                         "0",
                                     textInputType: Platform.isIOS
-                                        ? TextInputType.numberWithOptions(
-                                            signed: true,
-                                            decimal: true,
-                                          )
+                                        ? TextInputType.phone
                                         : TextInputType.number,
                                     fontSize: 14,
                                     labelText: "Stock Available",

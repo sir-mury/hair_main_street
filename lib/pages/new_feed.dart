@@ -8,6 +8,7 @@ import 'package:hair_main_street/controllers/product_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/extras/delegate.dart';
 import 'package:hair_main_street/pages/notifcation.dart';
+import 'package:hair_main_street/utils/screen_sizes.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
@@ -212,7 +213,10 @@ class _NewFeedPageState extends State<NewFeedPage>
                                         // shrinkWrap: false,
                                         children: [
                                           MasonryGridView.count(
-                                              crossAxisCount: 2,
+                                              crossAxisCount:
+                                                  !Responsive.isMobile(context)
+                                                      ? 3
+                                                      : 2,
                                               crossAxisSpacing: 4,
                                               mainAxisSpacing: 8,
                                               physics:

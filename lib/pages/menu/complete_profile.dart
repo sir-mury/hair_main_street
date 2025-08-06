@@ -483,7 +483,7 @@ class CompleteProfilePage extends StatelessWidget {
                           hintText: "Enter zip code",
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions()
+                              ? TextInputType.phone
                               : TextInputType.number,
                           validator: (value) {
                             if (value!.isEmpty) {

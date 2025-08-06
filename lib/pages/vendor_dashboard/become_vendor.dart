@@ -232,10 +232,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                           const Color(0xFF673AB7).withValues(alpha: 0.50),
                       maxLines: 1,
                       textInputType: Platform.isIOS
-                          ? TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: true,
-                            )
+                          ? TextInputType.phone
                           : TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -484,10 +481,7 @@ class _BecomeAVendorPageState extends State<BecomeAVendorPage> {
                       labelColor:
                           const Color(0xFF673AB7).withValues(alpha: 0.50),
                       textInputType: Platform.isIOS
-                          ? TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: true,
-                            )
+                          ? TextInputType.phone
                           : TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {

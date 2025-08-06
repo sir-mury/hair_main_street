@@ -123,8 +123,7 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
                   labelText: "Please enter a contact number",
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   textInputType: Platform.isIOS
-                      ? TextInputType.numberWithOptions(
-                          signed: true, decimal: true)
+                      ? TextInputType.phone
                       : TextInputType.number,
                   validator: (val) {
                     if (val!.isEmpty) {

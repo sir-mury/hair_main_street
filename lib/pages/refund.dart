@@ -629,7 +629,7 @@ class _RefundPageState extends State<RefundPage> {
                       fontSize: 15,
                       labelColor: const Color(0xFF673AB7),
                       textInputType: Platform.isIOS
-                          ? TextInputType.numberWithOptions()
+                          ? TextInputType.phone
                           : TextInputType.number,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (value) {

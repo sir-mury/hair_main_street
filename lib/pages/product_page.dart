@@ -23,6 +23,7 @@ import 'package:hair_main_street/pages/orders_stuff/once_checkout.dart';
 import 'package:hair_main_street/pages/review_page.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/utils/app_colors.dart';
+import 'package:hair_main_street/utils/screen_sizes.dart' show Responsive;
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 // import 'package:like_button/like_button.dart';
@@ -489,7 +490,7 @@ class _ProductPageState extends State<ProductPage> {
 
     // num screenHeight = MediaQuery.of(context).size.height;
     num screenWidth = MediaQuery.of(context).size.width;
-    num pictureHeight = 390;
+    num pictureHeight = !Responsive.isMobile(context) ? 700 : 390;
 
     CarouselSliderController carouselController = CarouselSliderController();
     return PopScope(

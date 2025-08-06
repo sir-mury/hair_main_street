@@ -82,10 +82,7 @@ class _PaymentSettingsPageState extends State<PaymentSettingsPage> {
               children: [
                 TextInputWidget(
                   textInputType: Platform.isIOS
-                      ? TextInputType.numberWithOptions(
-                          signed: true,
-                          decimal: true,
-                        )
+                      ? TextInputType.phone
                       : TextInputType.number,
                   controller: installmentController,
                   labelText: "No of Installments:",

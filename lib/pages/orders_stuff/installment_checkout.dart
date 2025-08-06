@@ -1138,8 +1138,7 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                           labelText: "Initial Installment Amount (NGN)",
                           hintText: "NGN 0.0",
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions(
-                                  signed: true, decimal: true)
+                              ? TextInputType.phone
                               : TextInputType.number,
                           onChanged: (value) => updateTotalPayableAmount(value),
                           autovalidateMode: AutovalidateMode.onUserInteraction,

@@ -132,8 +132,7 @@ class _EditDeliveryAddressPageState extends State<EditDeliveryAddressPage> {
                   initialValue: address!.contactPhoneNumber ?? "",
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   textInputType: Platform.isIOS
-                      ? TextInputType.numberWithOptions(
-                          signed: true, decimal: true)
+                      ? TextInputType.phone
                       : TextInputType.number,
                   validator: (val) {
                     if (val!.isEmpty) {
