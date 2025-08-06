@@ -537,7 +537,7 @@ class _CancellationPageState extends State<CancellationPage> {
                         autofillHints: [AutofillHints.transactionAmount],
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         textInputType: Platform.isIOS
-                            ? TextInputType.numberWithOptions()
+                            ? TextInputType.phone
                             : TextInputType.number,
                         validator: (value) {
                           if (value!.isEmpty) {

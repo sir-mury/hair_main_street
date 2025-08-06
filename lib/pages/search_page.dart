@@ -158,7 +158,7 @@ class _SearchPageState extends State<SearchPage> {
                             controller: price1,
                             hintText: "Lower Price Range",
                             textInputType: Platform.isIOS
-                                ? TextInputType.numberWithOptions()
+                                ? TextInputType.phone
                                 : TextInputType.number,
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
@@ -188,7 +188,7 @@ class _SearchPageState extends State<SearchPage> {
                             controller: price2,
                             hintText: "Upper Price Range",
                             textInputType: Platform.isIOS
-                                ? TextInputType.numberWithOptions()
+                                ? TextInputType.phone
                                 : TextInputType.number,
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,

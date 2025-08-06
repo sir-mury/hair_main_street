@@ -28,6 +28,7 @@ import 'package:hair_main_street/pages/review_page.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/order_details.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/utils/app_colors.dart';
+import 'package:hair_main_street/utils/screen_sizes.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
@@ -197,7 +198,7 @@ class ProductCard extends StatelessWidget {
                         )),
                     imageBuilder: (context, imageProvider) => Container(
                       //width: double.infinity,
-                      height: 154,
+                      height: !Responsive.isMobile(context) ? 250 : 154,
                       decoration: BoxDecoration(
                         shape: BoxShape.rectangle,
                         image: DecorationImage(
@@ -721,7 +722,7 @@ class SearchCard extends StatelessWidget {
                       )),
                   imageBuilder: (context, imageProvider) => Container(
                     width: double.infinity,
-                    height: 154,
+                    height: !Responsive.isMobile(context) ? 250 : 154,
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
                       image: DecorationImage(
@@ -863,7 +864,7 @@ class ClientShopCard extends StatelessWidget {
                         )),
                     imageBuilder: (context, imageProvider) => Container(
                       width: double.infinity,
-                      height: 154,
+                      height: !Responsive.isMobile(context) ? 250 : 154,
                       decoration: BoxDecoration(
                         shape: BoxShape.rectangle,
                         image: DecorationImage(
@@ -3880,10 +3881,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                             child: TextFormField(
                               controller: _controller,
                               keyboardType: Platform.isIOS
-                                  ? TextInputType.numberWithOptions(
-                                      signed: true,
-                                      decimal: true,
-                                    )
+                                  ? TextInputType.phone
                                   : TextInputType.number,
                               decoration: const InputDecoration(
                                 labelText: "Enter a number",

@@ -16,7 +16,9 @@ import 'package:hair_main_street/pages/orders_stuff/cart_checkout_confimation.da
 import 'package:hair_main_street/pages/profile/add_delivery_address.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/utils/app_colors.dart';
+import 'package:hair_main_street/utils/screen_sizes.dart';
 import 'package:hair_main_street/widgets/loading.dart';
+import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
 import 'package:string_validator/string_validator.dart' as validator;
@@ -562,8 +564,8 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                           ),
                         )),
                     imageBuilder: (context, imageProvider) => Container(
-                      height: 140,
-                      width: 130,
+                      height: !Responsive.isMobile(context) ? 180 : 140,
+                      width: !Responsive.isMobile(context) ? 200 : 130,
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: imageProvider,
@@ -646,13 +648,15 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Payment Method:',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontFamily: 'Lato',
+                            Expanded(
+                              child: const Text(
+                                'Payment Method:',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                  fontFamily: 'Lato',
+                                ),
                               ),
                             ),
                             Expanded(
@@ -666,7 +670,7 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                                   ),
                                 ),
                                 elevation: 0,
-                                color: Colors.white,
+                                color: AppColors.shade1,
                                 itemBuilder: (BuildContext context) {
                                   return <PopupMenuEntry<String>>[
                                     const PopupMenuItem<String>(
@@ -702,8 +706,12 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                                   });
                                 },
                                 child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: AppColors.shade2,
+                                  ),
                                   padding:
-                                      const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                      const EdgeInsets.fromLTRB(12, 2, 6, 2),
                                   child: productStates.isNotEmpty
                                       ? Row(
                                           mainAxisAlignment:
@@ -749,13 +757,15 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'No of Installments:',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Lato',
-                                  color: Colors.black,
+                              Expanded(
+                                child: const Text(
+                                  'No of Installments:',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Lato',
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                               Expanded(
@@ -768,8 +778,8 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                                       width: 1,
                                     ),
                                   ),
-                                  color: Colors.white,
-                                  elevation: 0,
+                                  color: AppColors.shade1,
+                                  elevation: 5,
                                   itemBuilder: (BuildContext context) {
                                     return <PopupMenuEntry<String>>[
                                       const PopupMenuItem<String>(
@@ -806,8 +816,12 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                                     });
                                   },
                                   child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: AppColors.shade2,
+                                    ),
                                     padding:
-                                        const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                        const EdgeInsets.fromLTRB(12, 2, 6, 2),
                                     child: productStates.isNotEmpty
                                         ? Row(
                                             mainAxisAlignment:
@@ -856,30 +870,13 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                   visible: productStates.isNotEmpty
                       ? productStates[index]["paymentMethod"] == "installment"
                       : false,
-                  child: TextFormField(
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                      fontFamily: 'Lato',
-                    ),
+                  child: TextInputWidget(
+                    fontSize: 16,
+                    labelText: "Initial Payment Amount",
+                    labelColor: AppColors.main,
+                    hintText: "Enter Initial Payment Amount",
                     controller:
                         myControllers.isNotEmpty ? myControllers[index] : null,
-                    decoration: InputDecoration(
-                      errorStyle: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.red[300],
-                      ),
-                      labelStyle: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Lato',
-                        color: Colors.black.withValues(alpha: 0.35),
-                      ),
-                      labelText: 'Initial Installment Amount (NGN)',
-                      border: const OutlineInputBorder(),
-                    ),
                     validator: (value) {
                       if (value!.isEmpty) {
                         return "You must specify an initial Amount";
@@ -904,19 +901,19 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                       }
                     },
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    keyboardType: Platform.isIOS
-                        ? TextInputType.numberWithOptions()
+                    textInputType: Platform.isIOS
+                        ? TextInputType.phone
                         : TextInputType.number,
                     onChanged: (value) {
-                      if (value.isEmpty) {
+                      if (value!.isEmpty) {
                       } else {
-                        setState(() {
+                        if (value.isNumericOnly) {
                           myControllers[index].text = value;
                           productStates[index]["installmentAmountPaid"] =
                               num.parse(value);
-                        });
+                        }
+                        // setState(() {});
                       }
-                      debugPrint(productStates[index]["installmentAmountPaid"]);
                       // Handle initial payment amount input
                     },
                   ),

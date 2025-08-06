@@ -500,10 +500,7 @@ class _EditProductPageState extends State<EditProductPage> {
                           initialValue: product!.price.toString(),
                           hintText: "Enter Price",
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions(
-                                  signed: true,
-                                  decimal: true,
-                                )
+                              ? TextInputType.phone
                               : TextInputType.number,
                           validator: (val) {
                             if (val!.isEmpty) {
@@ -691,10 +688,7 @@ class _EditProductPageState extends State<EditProductPage> {
                         TextInputWidgetWithoutLabel(
                           controller: quantity,
                           textInputType: Platform.isIOS
-                              ? TextInputType.numberWithOptions(
-                                  signed: true,
-                                  decimal: true,
-                                )
+                              ? TextInputType.phone
                               : TextInputType.number,
                           initialValue: product!.quantity.toString(),
                           //maxLines: 5,

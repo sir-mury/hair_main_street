@@ -129,10 +129,7 @@ class ChangeAddressWidget extends StatelessWidget {
                         //     "",
                         hintText: "Enter Zip Code",
                         textInputType: Platform.isIOS
-                            ? TextInputType.numberWithOptions(
-                                signed: true,
-                                decimal: true,
-                              )
+                            ? TextInputType.phone
                             : TextInputType.number,
                         validator: (val) {
                           if (val!.isEmpty) {
@@ -156,10 +153,7 @@ class ChangeAddressWidget extends StatelessWidget {
                         //     "",
                         hintText: "Enter Zip Code",
                         textInputType: Platform.isIOS
-                            ? TextInputType.numberWithOptions(
-                                signed: true,
-                                decimal: true,
-                              )
+                            ? TextInputType.phone
                             : TextInputType.number,
                         validator: (val) {
                           if (val!.isEmpty) {
@@ -183,10 +177,7 @@ class ChangeAddressWidget extends StatelessWidget {
                         //     "",
                         hintText: "Enter Zip Code",
                         textInputType: Platform.isIOS
-                            ? TextInputType.numberWithOptions(
-                                signed: true,
-                                decimal: true,
-                              )
+                            ? TextInputType.phone
                             : TextInputType.number,
                         validator: (val) {
                           if (val!.isEmpty) {
@@ -467,10 +458,7 @@ class CardUIWidget extends StatelessWidget {
                     labelColor: Colors.black26,
                     fontSize: 15,
                     textInputType: Platform.isIOS
-                        ? TextInputType.numberWithOptions(
-                            signed: true,
-                            decimal: true,
-                          )
+                        ? TextInputType.phone
                         : TextInputType.number,
                     validator: (val) {
                       if (val!.isEmpty) {
@@ -494,10 +482,7 @@ class CardUIWidget extends StatelessWidget {
                     CardExpiryDateInputWidget(
                       labelText: "MM/YY",
                       textInputType: Platform.isIOS
-                          ? TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: true,
-                            )
+                          ? TextInputType.phone
                           : TextInputType.number,
                       labelColor: Colors.black26,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -521,10 +506,7 @@ class CardUIWidget extends StatelessWidget {
                     ),
                     TextInputWidgetWithoutLabelForDialog(
                       textInputType: Platform.isIOS
-                          ? TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: true,
-                            )
+                          ? TextInputType.phone
                           : TextInputType.number,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       hintText: "Cvv/Cvc",

@@ -212,7 +212,7 @@ class _BuyerPaymentPageState extends State<BuyerPaymentPage> {
                             labelText: "Initial Installment Amount(NGN)",
                             hintText: "1000",
                             textInputType: Platform.isIOS
-                                ? TextInputType.numberWithOptions()
+                                ? TextInputType.phone
                                 : TextInputType.number,
                             controller: amountController,
                             validator: (val) {

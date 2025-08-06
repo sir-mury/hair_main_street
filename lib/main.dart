@@ -191,6 +191,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      smartManagement: SmartManagement.onlyBuilder,
       initialRoute: "/",
       defaultTransition: Transition.fadeIn,
       unknownRoute: GetPage(name: '/notfound', page: () => const HomePage()),
