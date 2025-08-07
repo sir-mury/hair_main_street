@@ -10,6 +10,7 @@ import 'package:hair_main_street/pages/authentication/sign_in.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:iconify_flutter_plus/icons/ic.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 import 'package:string_validator/string_validator.dart' as validator;
 import 'package:string_validator/string_validator.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
@@ -60,9 +61,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    // dismissKeyBoard() {
-    //   FocusScope.of(context).requestFocus(FocusNode());
-    // }
+    dismissKeyBoard() {
+      bool isKeyboardVisible = KeyboardService.isVisible(context);
+      isKeyboardVisible ? KeyboardService.dismiss() : null;
+    }
 
     var screenWidth = Get.width;
 
@@ -89,6 +91,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 controller: emailController,
                 labelText: "Email",
                 hintText: "Enter email address",
+                textInputType: TextInputType.emailAddress,
                 fontSize: 15,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (val) {
@@ -125,6 +128,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     ),
                     labelText: "Password",
                     hintText: "Enter password",
+                    textInputType: TextInputType.visiblePassword,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -172,6 +176,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   controller: confirmPasswordController,
                   fontSize: 15,
                   obscureText: controller.isObscure1.value,
+                  textInputType: TextInputType.visiblePassword,
                   labelText: "Confirm Password",
                   hintText: "Confirm password",
                   visibilityIcon: IconButton(
@@ -278,6 +283,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     bool validated = formKey.currentState!.validate();
                     if (validated) {
                       formKey.currentState!.save();
+                      dismissKeyBoard();
                       userController.isLoading.value = true;
                       if (userController.isLoading.isTrue) {
                         Get.dialog(const LoadingWidget(),

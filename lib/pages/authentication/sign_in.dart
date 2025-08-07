@@ -11,6 +11,7 @@ import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/ic.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:string_validator/string_validator.dart' as validator;
 
@@ -33,7 +34,8 @@ class _SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     void dismissKeyboard() {
-      FocusScope.of(context).unfocus();
+      bool isKeyboardVisible = KeyboardService.isVisible(context);
+      isKeyboardVisible ? KeyboardService.dismiss() : null;
     }
 
     var screenWidth = Get.width;
@@ -94,6 +96,7 @@ class _SignInState extends State<SignIn> {
                   ),
                   TextInputWidget(
                     controller: emailController,
+                    textInputType: TextInputType.emailAddress,
                     labelText: "Email",
                     hintText: "Enter email address",
                     fontSize: 15,
@@ -135,6 +138,7 @@ class _SignInState extends State<SignIn> {
                         hintText: "Enter password",
                         autofillHints: [AutofillHints.password],
                         autovalidateMode: AutovalidateMode.onUserInteraction,
+                        textInputType: TextInputType.visiblePassword,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Password cannot be empty';

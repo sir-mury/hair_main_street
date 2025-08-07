@@ -19,6 +19,7 @@ import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/utils/screen_sizes.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:recase/recase.dart';
 import 'package:string_validator/string_validator.dart' as validator;
@@ -236,281 +237,286 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
       onPopInvokedWithResult: (didPop, result) {
         userController.selectedAddress.value = null;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () {
-              userController.selectedAddress.value = null;
-              Get.back();
-            },
-            icon: const Icon(Symbols.arrow_back_ios_new_rounded,
-                size: 20, color: Colors.black),
-          ),
-          title: const Text(
-            'Cart Checkout',
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Lato',
-              color: Colors.black,
+      child: KeyboardAutoDismiss(
+        scaffold: Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            leading: IconButton(
+              onPressed: () {
+                userController.selectedAddress.value = null;
+                Get.back();
+              },
+              icon: const Icon(Symbols.arrow_back_ios_new_rounded,
+                  size: 20, color: Colors.black),
             ),
+            title: const Text(
+              'Cart Checkout',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Lato',
+                color: Colors.black,
+              ),
+            ),
+            centerTitle: false,
+            // flexibleSpace: Container(
+            //   decoration: BoxDecoration(gradient: appBarGradient),
+            // ),
+            backgroundColor: Colors.white,
+            scrolledUnderElevation: 0,
           ),
-          centerTitle: false,
-          // flexibleSpace: Container(
-          //   decoration: BoxDecoration(gradient: appBarGradient),
-          // ),
-          backgroundColor: Colors.white,
-          scrolledUnderElevation: 0,
-        ),
-        body: SafeArea(
-          child: StreamBuilder(
-              stream: myStream ?? Stream.empty(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Error loading data',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                        if (kDebugMode) // Only show error details in debug mode
-                          Text(
-                            snapshot.error.toString(),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                      ],
-                    ),
-                  );
-                }
-                if (!snapshot.hasData ||
-                    snapshot.connectionState == ConnectionState.waiting) {
-                  return const LoadingWidget();
-                } else {
-                  if (userController.deliveryAddresses.isNotEmpty &&
-                      userController.selectedAddress.value == null) {
-                    userController.selectedAddress.value =
-                        userController.deliveryAddresses.firstWhereOrNull(
-                                (value) => value!.isDefault == true) ??
-                            userController.deliveryAddresses.firstOrNull;
-                  }
-                  return Form(
-                    key: formKey,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+          body: SafeArea(
+            child: StreamBuilder(
+                stream: myStream ?? Stream.empty(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            "Order Summary",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF673AB7)
-                                  .withValues(alpha: 0.75),
-                              fontFamily: 'Lato',
+                          const Text(
+                            'Error loading data',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          if (kDebugMode) // Only show error details in debug mode
+                            Text(
+                              snapshot.error.toString(),
+                              style: const TextStyle(fontSize: 12),
                             ),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          SingleChildScrollView(
-                            child: Column(
-                              children: buildOrderSummaryCard(),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Text(
-                            "Delivery Address",
-                            style: TextStyle(
+                        ],
+                      ),
+                    );
+                  }
+                  if (!snapshot.hasData ||
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    return const LoadingWidget();
+                  } else {
+                    if (userController.deliveryAddresses.isNotEmpty &&
+                        userController.selectedAddress.value == null) {
+                      userController.selectedAddress.value =
+                          userController.deliveryAddresses.firstWhereOrNull(
+                                  (value) => value!.isDefault == true) ??
+                              userController.deliveryAddresses.firstOrNull;
+                    }
+                    return Form(
+                      key: formKey,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Order Summary",
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500,
                                 color: const Color(0xFF673AB7)
                                     .withValues(alpha: 0.75),
-                                fontFamily: 'Lato'),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  Get.to(() => const AddDeliveryAddressPage());
-                                  // Get.dialog(
-                                  //   ChangeAddressWidget(
-                                  //     text: "Delivery Address",
-                                  //     onFilled: onFilled,
-                                  //   ),
-                                  // );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      width: 1,
-                                      color: const Color(0xFF673AB7)
-                                          .withValues(alpha: 0.65),
+                                fontFamily: 'Lato',
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            SingleChildScrollView(
+                              child: Column(
+                                children: buildOrderSummaryCard(),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              "Delivery Address",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF673AB7)
+                                      .withValues(alpha: 0.75),
+                                  fontFamily: 'Lato'),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    Get.to(
+                                        () => const AddDeliveryAddressPage());
+                                    // Get.dialog(
+                                    //   ChangeAddressWidget(
+                                    //     text: "Delivery Address",
+                                    //     onFilled: onFilled,
+                                    //   ),
+                                    // );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        width: 1,
+                                        color: const Color(0xFF673AB7)
+                                            .withValues(alpha: 0.65),
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  height: 130,
-                                  width: 120,
-                                  child: const Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Icon(
-                                        Icons.add,
-                                        size: 35,
-                                        color: Color(0xFF673AB7),
-                                      ),
-                                      Text(
-                                        "Add new\naddress",
-                                        style: TextStyle(
-                                          fontFamily: 'Lato',
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w400,
+                                    height: 130,
+                                    width: 120,
+                                    child: const Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Icon(
+                                          Icons.add,
+                                          size: 35,
+                                          color: Color(0xFF673AB7),
                                         ),
-                                      ),
-                                    ],
+                                        Text(
+                                          "Add new\naddress",
+                                          style: TextStyle(
+                                            fontFamily: 'Lato',
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(
-                                width: 8,
-                              ),
-                              Obx(
-                                () => Expanded(
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: userController
-                                              .deliveryAddresses.isEmpty
-                                          ? [
-                                              Container(
-                                                margin: const EdgeInsets.only(
-                                                    left: 4),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  border: Border.all(
-                                                    color: Colors.red[300]!,
-                                                    width: 1,
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                Obx(
+                                  () => Expanded(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: userController
+                                                .deliveryAddresses.isEmpty
+                                            ? [
+                                                Container(
+                                                  margin: const EdgeInsets.only(
+                                                      left: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    border: Border.all(
+                                                      color: Colors.red[300]!,
+                                                      width: 1,
+                                                    ),
                                                   ),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                height: 130,
-                                                width: 250,
-                                                child: Center(
-                                                  child: Text(
-                                                    "You need to\nadd a\nDelivery Address",
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontFamily: 'Lato',
-                                                      color: Colors.red[300],
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  height: 130,
+                                                  width: 250,
+                                                  child: Center(
+                                                    child: Text(
+                                                      "You need to\nadd a\nDelivery Address",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontFamily: 'Lato',
+                                                        color: Colors.red[300],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ]
-                                          : buildAddressCard(),
+                                              ]
+                                            : buildAddressCard(),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 14,
-                          ),
-                        ],
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                }),
+          ),
+          bottomNavigationBar: SafeArea(
+            child: BottomAppBar(
+              elevation: 0,
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              height: kToolbarHeight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total: NGN${formatCurrency(totalPrice.toString())}",
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF673AB7),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 2, horizontal: 20),
+                      //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
+                      shape: RoundedRectangleBorder(
+                        // side: const BorderSide(
+                        //   width: 1.2,
+                        //   color: Colors.black,
+                        // ),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  );
-                }
-              }),
-        ),
-        bottomNavigationBar: SafeArea(
-          child: BottomAppBar(
-            elevation: 0,
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            height: kToolbarHeight,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Total: NGN${formatCurrency(totalPrice.toString())}",
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF673AB7),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
-                    //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                    shape: RoundedRectangleBorder(
-                      // side: const BorderSide(
-                      //   width: 1.2,
-                      //   color: Colors.black,
-                      // ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    bool validate = formKey.currentState!.validate();
-                    if (validate) {
-                      if (userController.selectedAddress.value == null) {
-                        userController
-                            .showMyToast("Please Enter Your Delivery Address");
-                      } else {
-                        var value = calculatePayableAmount();
-                        Get.to(
-                          () => CartCheckoutConfirmationPage(
-                            payableAmount: value,
-                            productStates: productStates,
-                            totalPrice: totalPrice,
-                            products: widget.products,
-                            selectedAddress:
-                                userController.selectedAddress.value!,
-                          ),
-                        );
-                        resetPayableAmount();
+                    onPressed: () {
+                      bool validate = formKey.currentState!.validate();
+                      if (validate) {
+                        if (userController.selectedAddress.value == null) {
+                          userController.showMyToast(
+                              "Please Enter Your Delivery Address");
+                        } else {
+                          var value = calculatePayableAmount();
+                          Get.to(
+                            () => CartCheckoutConfirmationPage(
+                              payableAmount: value,
+                              productStates: productStates,
+                              totalPrice: totalPrice,
+                              products: widget.products,
+                              selectedAddress:
+                                  userController.selectedAddress.value!,
+                            ),
+                          );
+                          resetPayableAmount();
+                        }
                       }
-                    }
-                  },
-                  child: const Text(
-                    "Confirm",
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 16,
-                      color: Colors.white,
+                    },
+                    child: const Text(
+                      "Confirm",
+                      style: TextStyle(
+                        fontFamily: 'Lato',
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -901,9 +907,7 @@ class _CartCheckoutPageState extends State<CartCheckoutPage> {
                       }
                     },
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    textInputType: Platform.isIOS
-                        ? TextInputType.phone
-                        : TextInputType.number,
+                    textInputType: TextInputType.number,
                     onChanged: (value) {
                       if (value!.isEmpty) {
                       } else {

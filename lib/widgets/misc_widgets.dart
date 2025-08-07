@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:hair_main_street/extras/country_state.dart';
 import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 
 class ChangeAddressWidget extends StatelessWidget {
   final String? text;
@@ -24,210 +25,217 @@ class ChangeAddressWidget extends StatelessWidget {
     TextEditingController streetAddressController = TextEditingController();
     TextEditingController landmarkController = TextEditingController();
     TextEditingController zipcodeController = TextEditingController();
+    dismissKeyboard() {
+      bool isKeyboardVisible = KeyboardService.isVisible(context);
+      isKeyboardVisible ? KeyboardService.dismiss() : null;
+    }
+
     return StatefulBuilder(
       builder: (context, StateSetter setState) => AlertDialog(
         scrollable: true,
         backgroundColor: Colors.white,
         contentPadding: const EdgeInsets.all(12),
         elevation: 0,
-        content: SizedBox(
-          height: 700,
-          width: double.infinity,
-          child: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "$text",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Lato',
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 4,
-                  ),
-                  Column(
-                    children: [
-                      buildPicker(
-                          "State",
-                          countryAndStatesAndLocalGovernment.statesList,
-                          state, (val) {
-                        setState(() {
-                          state = val;
-                          localGovernment = null;
-                        });
-                      }),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      buildPicker(
-                          "Local Government",
-                          countryAndStatesAndLocalGovernment
-                                  .stateAndLocalGovernments[state] ??
-                              [],
-                          localGovernment ?? "select", (val) {
-                        setState(() {
-                          localGovernment = val;
-                        });
-                      }),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      TextInputWidgetWithoutLabelForDialog(
-                        controller: streetAddressController,
-                        // initialValue: vendorController
-                        //         .vendor.value!.contactInfo!["street address"] ??
-                        //     "",
-                        hintText: "Enter Street Address",
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Cannot be Empty";
-                          }
-                          return null;
-                        },
-                        onChanged: (val) {
-                          streetAddressController.text = val!;
-                          streetAddress = streetAddressController.text;
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      TextInputWidgetWithoutLabelForDialog(
-                        controller: landmarkController,
-                        // initialValue: vendorController
-                        //         .vendor.value!.contactInfo!["street address"] ??
-                        //     "",
-                        hintText: "Enter Landmark",
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Cannot be Empty";
-                          }
-                          return null;
-                        },
-                        onChanged: (val) {
-                          landmarkController.text = val!;
-                          landmark = landmarkController.text;
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      TextInputWidgetWithoutLabelForDialog(
-                        controller: zipcodeController,
-                        // initialValue: vendorController
-                        //         .vendor.value!.contactInfo!["street address"] ??
-                        //     "",
-                        hintText: "Enter Zip Code",
-                        textInputType: Platform.isIOS
-                            ? TextInputType.phone
-                            : TextInputType.number,
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Cannot be Empty";
-                          }
-                          return null;
-                        },
-                        onChanged: (val) {
-                          zipcodeController.text = val!;
-                          zipcode = zipcodeController.text;
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      TextInputWidgetWithoutLabelForDialog(
-                        controller: zipcodeController,
-                        // initialValue: vendorController
-                        //         .vendor.value!.contactInfo!["street address"] ??
-                        //     "",
-                        hintText: "Enter Zip Code",
-                        textInputType: Platform.isIOS
-                            ? TextInputType.phone
-                            : TextInputType.number,
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Cannot be Empty";
-                          }
-                          return null;
-                        },
-                        onChanged: (val) {
-                          zipcodeController.text = val!;
-                          zipcode = zipcodeController.text;
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      TextInputWidgetWithoutLabelForDialog(
-                        controller: zipcodeController,
-                        // initialValue: vendorController
-                        //         .vendor.value!.contactInfo!["street address"] ??
-                        //     "",
-                        hintText: "Enter Zip Code",
-                        textInputType: Platform.isIOS
-                            ? TextInputType.phone
-                            : TextInputType.number,
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Cannot be Empty";
-                          }
-                          return null;
-                        },
-                        onChanged: (val) {
-                          zipcodeController.text = val!;
-                          zipcode = zipcodeController.text;
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.red.shade300,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          10,
-                        ),
-                        side: const BorderSide(
-                          width: 2,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    onPressed: () async {
-                      var validated = formKey.currentState!.validate();
-                      if (validated) {
-                        formKey.currentState!.save();
-                        Address address = Address(
-                          lGA: localGovernment,
-                          zipCode: zipcode,
-                        );
-
-                        onFilled!(address);
-                      }
-                      Get.back();
-                    },
-                    child: const Text(
-                      "Confirm Edit",
-                      style: TextStyle(
+        content: GestureDetector(
+          onTap: () => dismissKeyboard(),
+          child: SizedBox(
+            height: 700,
+            width: double.infinity,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "$text",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'Lato',
                         color: Colors.black,
-                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    Column(
+                      children: [
+                        buildPicker(
+                            "State",
+                            countryAndStatesAndLocalGovernment.statesList,
+                            state, (val) {
+                          setState(() {
+                            state = val;
+                            localGovernment = null;
+                          });
+                        }),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        buildPicker(
+                            "Local Government",
+                            countryAndStatesAndLocalGovernment
+                                    .stateAndLocalGovernments[state] ??
+                                [],
+                            localGovernment ?? "select", (val) {
+                          setState(() {
+                            localGovernment = val;
+                          });
+                        }),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        TextInputWidgetWithoutLabelForDialog(
+                          controller: streetAddressController,
+                          // initialValue: vendorController
+                          //         .vendor.value!.contactInfo!["street address"] ??
+                          //     "",
+                          hintText: "Enter Street Address",
+                          validator: (val) {
+                            if (val!.isEmpty) {
+                              return "Cannot be Empty";
+                            }
+                            return null;
+                          },
+                          onChanged: (val) {
+                            streetAddressController.text = val!;
+                            streetAddress = streetAddressController.text;
+                            return null;
+                          },
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        TextInputWidgetWithoutLabelForDialog(
+                          controller: landmarkController,
+                          // initialValue: vendorController
+                          //         .vendor.value!.contactInfo!["street address"] ??
+                          //     "",
+                          hintText: "Enter Landmark",
+                          validator: (val) {
+                            if (val!.isEmpty) {
+                              return "Cannot be Empty";
+                            }
+                            return null;
+                          },
+                          onChanged: (val) {
+                            landmarkController.text = val!;
+                            landmark = landmarkController.text;
+                            return null;
+                          },
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        TextInputWidgetWithoutLabelForDialog(
+                          controller: zipcodeController,
+                          // initialValue: vendorController
+                          //         .vendor.value!.contactInfo!["street address"] ??
+                          //     "",
+                          hintText: "Enter Zip Code",
+                          textInputType: Platform.isIOS
+                              ? TextInputType.phone
+                              : TextInputType.number,
+                          validator: (val) {
+                            if (val!.isEmpty) {
+                              return "Cannot be Empty";
+                            }
+                            return null;
+                          },
+                          onChanged: (val) {
+                            zipcodeController.text = val!;
+                            zipcode = zipcodeController.text;
+                            return null;
+                          },
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        TextInputWidgetWithoutLabelForDialog(
+                          controller: zipcodeController,
+                          // initialValue: vendorController
+                          //         .vendor.value!.contactInfo!["street address"] ??
+                          //     "",
+                          hintText: "Enter Zip Code",
+                          textInputType: Platform.isIOS
+                              ? TextInputType.phone
+                              : TextInputType.number,
+                          validator: (val) {
+                            if (val!.isEmpty) {
+                              return "Cannot be Empty";
+                            }
+                            return null;
+                          },
+                          onChanged: (val) {
+                            zipcodeController.text = val!;
+                            zipcode = zipcodeController.text;
+                            return null;
+                          },
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        TextInputWidgetWithoutLabelForDialog(
+                          controller: zipcodeController,
+                          // initialValue: vendorController
+                          //         .vendor.value!.contactInfo!["street address"] ??
+                          //     "",
+                          hintText: "Enter Zip Code",
+                          textInputType: TextInputType.number,
+                          validator: (val) {
+                            if (val!.isEmpty) {
+                              return "Cannot be Empty";
+                            }
+                            return null;
+                          },
+                          onChanged: (val) {
+                            zipcodeController.text = val!;
+                            zipcode = zipcodeController.text;
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.red.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            10,
+                          ),
+                          side: const BorderSide(
+                            width: 2,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      onPressed: () async {
+                        var validated = formKey.currentState!.validate();
+                        if (validated) {
+                          formKey.currentState!.save();
+                          dismissKeyboard();
+                          Address address = Address(
+                            lGA: localGovernment,
+                            zipCode: zipcode,
+                          );
+
+                          onFilled!(address);
+                        }
+                        Get.back();
+                      },
+                      child: const Text(
+                        "Confirm Edit",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

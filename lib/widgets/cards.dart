@@ -35,6 +35,7 @@ import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/ic.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 import 'package:like_button/like_button.dart';
 import 'package:share_plus/share_plus.dart';
 import '../pages/menu/order_detail.dart';
@@ -2703,6 +2704,11 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
       maxLines: 3,
       overflow: TextOverflow.clip,
     );
+    void dismissKeyboard() {
+      bool isKeyboardVisible = KeyboardService.isVisible(context);
+      isKeyboardVisible ? KeyboardService.dismiss() : null;
+    }
+
     double determineHeight(String label) {
       double theScreen;
       if (label == 'account info') {
@@ -3387,57 +3393,60 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
       () => ListView(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         children: [
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-            child: Center(
-              child: Stack(
-                //alignment: AlignmentDirectional.bottomEnd,
-                children: [
-                  userController.userState.value == null ||
-                          vendorController.vendor.value!.shopPicture == null
-                      ? CircleAvatar(
-                          radius: 68,
-                          backgroundColor: const Color(0xFFF5f5f5),
-                          child: SvgPicture.asset(
-                            "assets/Icons/user.svg",
-                            colorFilter: ColorFilter.mode(
-                              Colors.black.withValues(alpha: 0.70),
-                              BlendMode.srcIn,
+          GestureDetector(
+            onTap: () => dismissKeyboard(),
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+              child: Center(
+                child: Stack(
+                  //alignment: AlignmentDirectional.bottomEnd,
+                  children: [
+                    userController.userState.value == null ||
+                            vendorController.vendor.value!.shopPicture == null
+                        ? CircleAvatar(
+                            radius: 68,
+                            backgroundColor: const Color(0xFFF5f5f5),
+                            child: SvgPicture.asset(
+                              "assets/Icons/user.svg",
+                              colorFilter: ColorFilter.mode(
+                                Colors.black.withValues(alpha: 0.70),
+                                BlendMode.srcIn,
+                              ),
+                              height: 50,
+                              width: 50,
                             ),
-                            height: 50,
-                            width: 50,
+                          )
+                        : CircleAvatar(
+                            radius: 68,
+                            //backgroundColor: Colors.black,
+                            backgroundImage: NetworkImage(
+                              vendorController.vendor.value!.shopPicture!,
+                              scale: 1,
+                            ),
                           ),
-                        )
-                      : CircleAvatar(
-                          radius: 68,
-                          //backgroundColor: Colors.black,
-                          backgroundImage: NetworkImage(
-                            vendorController.vendor.value!.shopPicture!,
-                            scale: 1,
-                          ),
+                    Positioned(
+                      bottom: -2,
+                      right: 8,
+                      child: IconButton(
+                        style: IconButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(
+                              color: Colors.black,
+                              width: 0.5,
+                            )),
+                        onPressed: () {
+                          showImageUploadDialog();
+                        },
+                        icon: Icon(
+                          Icons.camera_alt_rounded,
+                          size: 28,
+                          color: const Color(0xFF673AB7).withValues(alpha: 0.7),
                         ),
-                  Positioned(
-                    bottom: -2,
-                    right: 8,
-                    child: IconButton(
-                      style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            color: Colors.black,
-                            width: 0.5,
-                          )),
-                      onPressed: () {
-                        showImageUploadDialog();
-                      },
-                      icon: Icon(
-                        Icons.camera_alt_rounded,
-                        size: 28,
-                        color: const Color(0xFF673AB7).withValues(alpha: 0.7),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -3880,9 +3889,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                             padding: const EdgeInsets.all(8.0),
                             child: TextFormField(
                               controller: _controller,
-                              keyboardType: Platform.isIOS
-                                  ? TextInputType.phone
-                                  : TextInputType.number,
+                              keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                 labelText: "Enter a number",
                               ),

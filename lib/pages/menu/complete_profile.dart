@@ -13,6 +13,7 @@ import 'package:hair_main_street/widgets/misc_widgets.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/carbon.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 
 class CompleteProfilePage extends StatelessWidget {
   const CompleteProfilePage({super.key});
@@ -43,239 +44,242 @@ class CompleteProfilePage extends StatelessWidget {
     TextEditingController landmarkController = TextEditingController();
     TextEditingController zipCodeController = TextEditingController();
     TextEditingController streetAddressController = TextEditingController();
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        backgroundColor: Colors.white,
-        leading: InkWell(
-          onTap: () => Get.back(),
-          radius: 12,
-          child: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20,
-            color: Colors.black,
-          ),
-        ),
-        title: const Text(
-          'Complete Profile',
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.w900,
-            color: Colors.black,
-            fontFamily: 'Lato',
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              padding: EdgeInsets.fromLTRB(2, 2, 8, 2),
-              // shape: RoundedRectangleBorder(
-              //   borderRadius: BorderRadius.circular(10),
-              // ),
+    return KeyboardAutoDismiss(
+      scaffold: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: Colors.white,
+          leading: InkWell(
+            onTap: () => Get.back(),
+            radius: 12,
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: Colors.black,
             ),
-            onPressed: () {
-              Get.off(() => const HomePage());
-            },
-            child: Text(
-              "Skip",
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.main,
-                fontWeight: FontWeight.w700,
-                fontFamily: "Raleway",
+          ),
+          title: const Text(
+            'Complete Profile',
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.w900,
+              color: Colors.black,
+              fontFamily: 'Lato',
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: EdgeInsets.fromLTRB(2, 2, 8, 2),
+                // shape: RoundedRectangleBorder(
+                //   borderRadius: BorderRadius.circular(10),
+                // ),
               ),
-            ),
-          )
-        ],
-      ),
-      backgroundColor: Colors.white,
-      body: Form(
-        key: formKey,
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-          children: [
-            TextInputWidget(
-              // initialValue: profileController.fullname?.value,
-              labelColor: AppColors.main,
-              labelText: "Full Name",
-              fontSize: 16,
-              controller: fullNameController,
-              hintText: "Enter full name",
-              autofillHints: [AutofillHints.name],
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              textInputType: TextInputType.text,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Cannot be empty";
-                }
-                return null;
+              onPressed: () {
+                Get.off(() => const HomePage());
               },
-              onChanged: (value) {
-                if (value!.isNotEmpty) {
-                  fullNameController.text = value;
-                  profileController.fullname?.value = fullNameController.text;
-                }
-              },
-            ),
-            const SizedBox(
-              height: 12,
-            ),
-            TextInputWidget(
-              // initialValue: profileController.phoneNumber?.value,
-              labelColor: AppColors.main,
-              labelText: "Phone Number",
-              fontSize: 16,
-              controller: phoneNumberController,
-              hintText: "Enter phone number",
-              autofillHints: [AutofillHints.telephoneNumber],
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              textInputType: TextInputType.phone,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Cannot be empty";
-                } else if (!value.isNumericOnly) {
-                  return "Must be digits only";
-                } else if (value.length > 11 || value.length < 11) {
-                  return "Cannot be more than or less than 11 digits";
-                }
-                return null;
-              },
-              onChanged: (value) {
-                profileController.phoneNumber?.value = value!;
-              },
-            ),
-            const SizedBox(
-              height: 12,
-            ),
-            Obx(
-              () => profileController.isDeliveryAddressAdded.isTrue
-                  ? ListView.builder(
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) => AddressCard(
-                        address: profileController.deliveryAddress[index]!,
-                        onTap: () {
-                          profileController.selectedAddress.value =
-                              profileController.deliveryAddress[index]!;
-                          showAddressBottomSheet(
-                            isEdit: true,
-                            countryAndStatesAndLocalGovernment,
-                            profileController,
-                            contactNameController,
-                            contactPhoneNumberController,
-                            landmarkController,
-                            zipCodeController,
-                            streetAddressController,
-                          );
-                        },
-                        onDelete: () {
-                          profileController.deliveryAddress.removeAt(index);
-                        },
-                      ),
-                      itemCount: profileController.deliveryAddress.length,
-                    )
-                  : SizedBox.shrink(),
-            ),
-            const SizedBox(
-              height: 12,
-            ),
-            InkWell(
-              onTap: () async {
-                profileController.selectedAddress.value = Address();
-                showAddressBottomSheet(
-                  countryAndStatesAndLocalGovernment,
-                  profileController,
-                  contactNameController,
-                  contactPhoneNumberController,
-                  landmarkController,
-                  zipCodeController,
-                  streetAddressController,
-                );
-              },
-              // style: TextButton.styleFrom(
-              //   padding: const EdgeInsets.symmetric(vertical: 8),
-              //   backgroundColor: AppColors.shade3,
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10),
-              //   ),
-              // ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.shade2,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.shade1,
-                    width: 0.8,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        color: AppColors.main,
-                        size: 25,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      const Text(
-                        "Add delivery address",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ],
-                  ),
+              child: Text(
+                "Skip",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.main,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "Raleway",
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 12,
-            ),
+            )
           ],
         ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        height: kToolbarHeight * 1.2,
-        elevation: 0,
-        color: Colors.white,
-        child: TextButton(
-          onPressed: () async {
-            bool validate = formKey.currentState!.validate();
-
-            // print(
-            //     "Profile: ${profileController.fullname}, ${profileController.phoneNumber}");
-            if (validate && profileController.deliveryAddress.isNotEmpty) {
-              profileController.isLoading.value = true;
-              if (profileController.isLoading.isTrue) {
-                Get.dialog(LoadingWidget());
-              }
-              await profileController.completeProfile();
-            } else {
-              profileController.showMyToast(
-                  "Kindly complete your profile or skip to continue later");
-            }
-          },
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            backgroundColor: AppColors.main,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+        backgroundColor: Colors.white,
+        body: Form(
+          key: formKey,
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+            children: [
+              TextInputWidget(
+                // initialValue: profileController.fullname?.value,
+                labelColor: AppColors.main,
+                labelText: "Full Name",
+                fontSize: 16,
+                controller: fullNameController,
+                hintText: "Enter full name",
+                autofillHints: [AutofillHints.name],
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                textInputType: TextInputType.text,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Cannot be empty";
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  if (value!.isNotEmpty) {
+                    fullNameController.text = value;
+                    profileController.fullname?.value = fullNameController.text;
+                  }
+                },
+              ),
+              const SizedBox(
+                height: 12,
+              ),
+              TextInputWidget(
+                // initialValue: profileController.phoneNumber?.value,
+                labelColor: AppColors.main,
+                labelText: "Phone Number",
+                fontSize: 16,
+                controller: phoneNumberController,
+                hintText: "Enter phone number",
+                autofillHints: [AutofillHints.telephoneNumber],
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                textInputType: TextInputType.phone,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Cannot be empty";
+                  } else if (!value.isNumericOnly) {
+                    return "Must be digits only";
+                  } else if (value.length > 11 || value.length < 11) {
+                    return "Cannot be more than or less than 11 digits";
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  profileController.phoneNumber?.value = value!;
+                },
+              ),
+              const SizedBox(
+                height: 12,
+              ),
+              Obx(
+                () => profileController.isDeliveryAddressAdded.isTrue
+                    ? ListView.builder(
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) => AddressCard(
+                          address: profileController.deliveryAddress[index]!,
+                          onTap: () {
+                            profileController.selectedAddress.value =
+                                profileController.deliveryAddress[index]!;
+                            showAddressBottomSheet(
+                              isEdit: true,
+                              countryAndStatesAndLocalGovernment,
+                              profileController,
+                              contactNameController,
+                              contactPhoneNumberController,
+                              landmarkController,
+                              zipCodeController,
+                              streetAddressController,
+                              context: context,
+                            );
+                          },
+                          onDelete: () {
+                            profileController.deliveryAddress.removeAt(index);
+                          },
+                        ),
+                        itemCount: profileController.deliveryAddress.length,
+                      )
+                    : SizedBox.shrink(),
+              ),
+              const SizedBox(
+                height: 12,
+              ),
+              InkWell(
+                onTap: () async {
+                  profileController.selectedAddress.value = Address();
+                  showAddressBottomSheet(
+                      countryAndStatesAndLocalGovernment,
+                      profileController,
+                      contactNameController,
+                      contactPhoneNumberController,
+                      landmarkController,
+                      zipCodeController,
+                      streetAddressController,
+                      context: context);
+                },
+                // style: TextButton.styleFrom(
+                //   padding: const EdgeInsets.symmetric(vertical: 8),
+                //   backgroundColor: AppColors.shade3,
+                //   shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(10),
+                //   ),
+                // ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.shade2,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.shade1,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined,
+                          color: AppColors.main,
+                          size: 25,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text(
+                          "Add delivery address",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 12,
+              ),
+            ],
           ),
-          child: const Text(
-            "Complete Profile",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
+        ),
+        bottomNavigationBar: BottomAppBar(
+          height: kToolbarHeight * 1.2,
+          elevation: 0,
+          color: Colors.white,
+          child: TextButton(
+            onPressed: () async {
+              bool validate = formKey.currentState!.validate();
+
+              // print(
+              //     "Profile: ${profileController.fullname}, ${profileController.phoneNumber}");
+              if (validate && profileController.deliveryAddress.isNotEmpty) {
+                profileController.isLoading.value = true;
+                if (profileController.isLoading.isTrue) {
+                  Get.dialog(LoadingWidget());
+                }
+                await profileController.completeProfile();
+              } else {
+                profileController.showMyToast(
+                    "Kindly complete your profile or skip to continue later");
+              }
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              backgroundColor: AppColors.main,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              "Complete Profile",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+              ),
             ),
           ),
         ),
@@ -292,7 +296,16 @@ class CompleteProfilePage extends StatelessWidget {
     TextEditingController zipCodeController,
     TextEditingController streetAddressController, {
     bool? isEdit = false,
+    BuildContext? context,
   }) {
+    void dismissKeyboard() {
+      bool isKeyboardVisible = KeyboardService.isVisible(context!);
+      if (isKeyboardVisible) {
+        KeyboardService.dismiss();
+      }
+      null;
+    }
+
     Get.bottomSheet(
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
@@ -308,273 +321,285 @@ class CompleteProfilePage extends StatelessWidget {
         GlobalKey<FormState> bottomSheetFormKey = GlobalKey();
         return Form(
           key: bottomSheetFormKey,
-          child: Container(
-            height: Get.height * 0.72,
-            padding: EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
-            ),
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    height: 8,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.shade3,
-                      borderRadius: BorderRadius.circular(32),
+          child: GestureDetector(
+            onTap: () {
+              dismissKeyboard();
+            },
+            child: Container(
+              height: Get.height * 0.72,
+              padding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      height: 8,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.shade3,
+                        borderRadius: BorderRadius.circular(32),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        TextInputWidgetWithoutLabelForDialog(
-                          initialValue: profileController
-                              .selectedAddress.value?.contactName,
-                          controller: contactNameController,
-                          hintText: "Enter Contact Name",
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          textInputType: TextInputType.text,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Cannot be empty";
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            if (value!.isNotEmpty) {
-                              profileController
-                                  .selectedAddress.value!.contactName = value;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextInputWidgetWithoutLabelForDialog(
-                          initialValue: profileController
-                              .selectedAddress.value?.contactPhoneNumber,
-                          controller: contactPhoneNumberController,
-                          hintText: "Enter contact phone number",
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          textInputType: TextInputType.phone,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Cannot be empty";
-                            } else if (!value.isNumericOnly) {
-                              return "Must be digits only";
-                            } else if (value.length > 11 || value.length < 11) {
-                              return "Cannot be more than or less than 11 digits";
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            profileController.selectedAddress.value!
-                                .contactPhoneNumber = value;
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        BuildPicker(
-                          labelColor: AppColors.main,
-                          labelFontSize: 16,
-                          hintText: "Select State",
-                          label: "State",
-                          items: countryAndStatesAndLocalGovernment.statesList,
-                          selectedValue:
-                              profileController.selectedAddress.value!.state,
-                          onChanged: (value) {
-                            profileController.selectedAddress.value!.state =
-                                value;
-                            profileController.selectedAddress.value!.lGA = null;
-                            setstate(() {});
-                            debugPrint(
-                                "Value ${profileController.selectedAddress.value!.contactName!}");
-                          },
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        BuildPicker(
-                          labelColor: AppColors.main,
-                          labelFontSize: 16,
-                          hintText: "Select LGA",
-                          label: "LGA",
-                          items: countryAndStatesAndLocalGovernment
-                                      .stateAndLocalGovernments[
-                                  profileController
-                                      .selectedAddress.value!.state] ??
-                              [],
-                          selectedValue:
-                              profileController.selectedAddress.value!.lGA,
-                          onChanged: (value) {
-                            setstate(
-                              () {
-                                profileController.selectedAddress.value!.lGA =
-                                    value;
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextInputWidgetWithoutLabelForDialog(
-                          initialValue: profileController
-                              .selectedAddress.value?.streetAddress,
-                          controller: streetAddressController,
-                          hintText: "Enter Street Address",
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          textInputType: TextInputType.text,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Cannot be empty";
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            if (value!.isNotEmpty) {
-                              profileController
-                                  .selectedAddress.value!.streetAddress = value;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextInputWidgetWithoutLabelForDialog(
-                          initialValue:
-                              profileController.selectedAddress.value?.landmark,
-                          controller: landmarkController,
-                          hintText: "Enter Landmark",
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          textInputType: TextInputType.text,
-                          validator: (value) {
-                            return null;
-                          },
-                          onChanged: (value) {
-                            if (value!.isNotEmpty) {
-                              profileController
-                                  .selectedAddress.value!.landmark = value;
-                            } else {
-                              profileController
-                                  .selectedAddress.value!.landmark = null;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextInputWidgetWithoutLabelForDialog(
-                          initialValue:
-                              profileController.selectedAddress.value?.zipCode,
-                          controller: zipCodeController,
-                          hintText: "Enter zip code",
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          textInputType: Platform.isIOS
-                              ? TextInputType.phone
-                              : TextInputType.number,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Cannot be empty";
-                            } else if (!value.isNumericOnly) {
-                              return "Must be digits only";
-                            } else if (value.length > 6 || value.length < 6) {
-                              return "Cannot be more than or less than 6 digits";
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            if (value!.isNotEmpty) {
-                              profileController.selectedAddress.value!.zipCode =
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          TextInputWidgetWithoutLabelForDialog(
+                            initialValue: profileController
+                                .selectedAddress.value?.contactName,
+                            controller: contactNameController,
+                            hintText: "Enter Contact Name",
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            textInputType: TextInputType.text,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Cannot be empty";
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              if (value!.isNotEmpty) {
+                                profileController
+                                    .selectedAddress.value!.contactName = value;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextInputWidgetWithoutLabelForDialog(
+                            initialValue: profileController
+                                .selectedAddress.value?.contactPhoneNumber,
+                            controller: contactPhoneNumberController,
+                            hintText: "Enter contact phone number",
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            textInputType: TextInputType.phone,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Cannot be empty";
+                              } else if (!value.isNumericOnly) {
+                                return "Must be digits only";
+                              } else if (value.length > 11 ||
+                                  value.length < 11) {
+                                return "Cannot be more than or less than 11 digits";
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              profileController.selectedAddress.value!
+                                  .contactPhoneNumber = value;
+                              return null;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          BuildPicker(
+                            labelColor: AppColors.main,
+                            labelFontSize: 16,
+                            hintText: "Select State",
+                            label: "State",
+                            items:
+                                countryAndStatesAndLocalGovernment.statesList,
+                            selectedValue:
+                                profileController.selectedAddress.value!.state,
+                            onChanged: (value) {
+                              profileController.selectedAddress.value!.state =
                                   value;
-                            }
-                            return null;
+                              profileController.selectedAddress.value!.lGA =
+                                  null;
+                              setstate(() {});
+                              debugPrint(
+                                  "Value ${profileController.selectedAddress.value!.contactName!}");
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          BuildPicker(
+                            labelColor: AppColors.main,
+                            labelFontSize: 16,
+                            hintText: "Select LGA",
+                            label: "LGA",
+                            items: countryAndStatesAndLocalGovernment
+                                        .stateAndLocalGovernments[
+                                    profileController
+                                        .selectedAddress.value!.state] ??
+                                [],
+                            selectedValue:
+                                profileController.selectedAddress.value!.lGA,
+                            onChanged: (value) {
+                              setstate(
+                                () {
+                                  profileController.selectedAddress.value!.lGA =
+                                      value;
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextInputWidgetWithoutLabelForDialog(
+                            initialValue: profileController
+                                .selectedAddress.value?.streetAddress,
+                            controller: streetAddressController,
+                            hintText: "Enter Street Address",
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            textInputType: TextInputType.text,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Cannot be empty";
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              if (value!.isNotEmpty) {
+                                profileController.selectedAddress.value!
+                                    .streetAddress = value;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextInputWidgetWithoutLabelForDialog(
+                            initialValue: profileController
+                                .selectedAddress.value?.landmark,
+                            controller: landmarkController,
+                            hintText: "Enter Landmark",
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            textInputType: TextInputType.text,
+                            validator: (value) {
+                              return null;
+                            },
+                            onChanged: (value) {
+                              if (value!.isNotEmpty) {
+                                profileController
+                                    .selectedAddress.value!.landmark = value;
+                              } else {
+                                profileController
+                                    .selectedAddress.value!.landmark = null;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextInputWidgetWithoutLabelForDialog(
+                            initialValue: profileController
+                                .selectedAddress.value?.zipCode,
+                            controller: zipCodeController,
+                            hintText: "Enter zip code",
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            textInputType: TextInputType.number,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Cannot be empty";
+                              } else if (!value.isNumericOnly) {
+                                return "Must be digits only";
+                              } else if (value.length > 6 || value.length < 6) {
+                                return "Cannot be more than or less than 6 digits";
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              if (value!.isNotEmpty) {
+                                profileController
+                                    .selectedAddress.value!.zipCode = value;
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            Get.close(1);
                           },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            backgroundColor: AppColors.shade1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            "Cancel",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.shade9,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            bool validate =
+                                bottomSheetFormKey.currentState!.validate();
+                            var address =
+                                profileController.selectedAddress.value;
+                            if (address!.lGA == null ||
+                                address.state == null ||
+                                !validate) {
+                              profileController
+                                  .showMyToast("Kindly complete the form");
+                            } else {
+                              isEdit
+                                  ? profileController.editAtDeliveryAddress()
+                                  : profileController.addAddressToAdresses();
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            backgroundColor: AppColors.main,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            isEdit! ? "Edit Address" : "Add Address",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () async {
-                          Get.close(1);
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 12),
-                          backgroundColor: AppColors.shade1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          "Cancel",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppColors.shade9,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          bool validate =
-                              bottomSheetFormKey.currentState!.validate();
-                          var address = profileController.selectedAddress.value;
-                          if (address!.lGA == null ||
-                              address.state == null ||
-                              !validate) {
-                            profileController
-                                .showMyToast("Kindly complete the form");
-                          } else {
-                            isEdit
-                                ? profileController.editAtDeliveryAddress()
-                                : profileController.addAddressToAdresses();
-                          }
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
-                          backgroundColor: AppColors.main,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          isEdit! ? "Edit Address" : "Add Address",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
