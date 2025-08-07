@@ -240,7 +240,7 @@ class _CardUIPageState extends State<CardUIPage> {
               hintText: "",
               labelText: "Card Number",
               textInputType:
-                  Platform.isIOS ? TextInputType.phone : TextInputType.number,
+                  Platform.isIOS ? TextInputType.text : TextInputType.number,
               labelColor: Colors.black,
               assetImage: assetImage,
               validator: (value) {
@@ -271,7 +271,7 @@ class _CardUIPageState extends State<CardUIPage> {
               labelText: "Expiry Date",
               hintText: "00/00",
               textInputType:
-                  Platform.isIOS ? TextInputType.phone : TextInputType.number,
+                  Platform.isIOS ? TextInputType.text : TextInputType.number,
               labelColor: Colors.black,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -299,7 +299,7 @@ class _CardUIPageState extends State<CardUIPage> {
               hintText: "",
               labelColor: Colors.black,
               textInputType:
-                  Platform.isIOS ? TextInputType.phone : TextInputType.number,
+                  Platform.isIOS ? TextInputType.text : TextInputType.number,
               onChanged: (value) {
                 if (value!.isNotEmpty) {
                   setState(() {

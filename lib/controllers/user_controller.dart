@@ -324,7 +324,12 @@ class UserController extends GetxController {
             bottom: screenHeight * 0.08,
           ),
         );
-        Get.offAll(() => const HomePage());
+        profileComplete();
+        Get.offAll(
+          () => isProfileComplete.value
+              ? const HomePage()
+              : const CompleteProfilePage(),
+        );
         return "success";
       } else {
         isLoading.value = false;
@@ -377,7 +382,6 @@ class UserController extends GetxController {
           ),
         );
         error.value = "";
-        Get.close(1);
         profileComplete();
         Get.offAll(
           () => isProfileComplete.value
@@ -855,8 +859,9 @@ class UserController extends GetxController {
 
   //to check if profile is complete
   profileComplete() {
-    if (userState.value!.fullname!.isNotEmpty &&
-        userState.value!.phoneNumber!.isNotEmpty) {
+    String? fullname = userState.value!.fullname ?? '';
+    String? phoneNumber = userState.value!.phoneNumber ?? '';
+    if (fullname.isNotEmpty && phoneNumber.isNotEmpty) {
       isProfileComplete.value = true;
     } else {
       isProfileComplete.value = false;

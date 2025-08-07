@@ -11,6 +11,7 @@ import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/models/order_model.dart';
 import 'package:hair_main_street/pages/orders_stuff/payment_successful_page.dart';
 import 'package:hair_main_street/widgets/loading.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 import 'package:string_validator/string_validator.dart' as validator;
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -395,297 +396,299 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          "Complete Payment",
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.w700,
-            fontFamily: "Lato",
-            color: Colors.black,
+    return KeyboardAutoDismiss(
+      scaffold: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          title: const Text(
+            "Complete Payment",
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.w700,
+              fontFamily: "Lato",
+              color: Colors.black,
+            ),
+          ),
+          centerTitle: true,
+          leading: IconButton(
+            onPressed: () => Get.back(),
+            icon: const Icon(
+              Symbols.arrow_back_ios_new_rounded,
+              size: 20,
+              color: Colors.black,
+            ),
           ),
         ),
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(
-            Symbols.arrow_back_ios_new_rounded,
-            size: 20,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      body: FutureBuilder(
-          future: userController.getUserDetails(widget.orderDetails!.buyerId!),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData ||
-                snapshot.connectionState == ConnectionState.waiting) {
-              return const LoadingWidget();
-            }
-            userEmail = snapshot.data!.email!;
-            return Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFf5f5f5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                "OrderID: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                  fontFamily: "Raleway",
+        backgroundColor: Colors.white,
+        body: FutureBuilder(
+            future:
+                userController.getUserDetails(widget.orderDetails!.buyerId!),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData ||
+                  snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingWidget();
+              }
+              userEmail = snapshot.data!.email!;
+              return Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFf5f5f5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                const Text(
+                                  "OrderID: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                    fontFamily: "Raleway",
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                "${widget.orderDetails!.orderId}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: "Lato",
+                                Text(
+                                  "${widget.orderDetails!.orderId}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Lato",
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Total Product Price: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                  ),
                                 ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Total Product Price: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              Text(
-                                "NGN${formatCurrency(widget.orderDetails!.totalPrice.toString())}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: "Lato",
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Amount Paid: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              Text(
-                                "NGN${formatCurrency(widget.orderDetails!.paymentPrice.toString())}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: "Lato",
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Amount Remaining: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              Text(
-                                "NGN${formatCurrency(amountRemaining.toString())}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: "Lato",
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "Installment Remaining: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              Text(
-                                "$installmentRemaining",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: "Lato",
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                "To be Paid Before: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  "${widget.expectedTimeToPay}",
+                                Text(
+                                  "NGN${formatCurrency(widget.orderDetails!.totalPrice.toString())}",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     fontFamily: "Lato",
                                   ),
                                 ),
-                              )
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Amount Paid: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                Text(
+                                  "NGN${formatCurrency(widget.orderDetails!.paymentPrice.toString())}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Lato",
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Amount Remaining: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                Text(
+                                  "NGN${formatCurrency(amountRemaining.toString())}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Lato",
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Installment Remaining: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                Text(
+                                  "$installmentRemaining",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Lato",
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "To be Paid Before: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    "${widget.expectedTimeToPay}",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: "Lato",
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 12,
-                    ),
-                    TextInputWidget(
-                      labelText: "Amount to Pay",
-                      fontSize: 18,
-                      hintText:
-                          "NGN${formatCurrency(installmentRemaining != 1 ? (amountRemaining / 2).toString() : amountRemaining.toString())}",
-                      textInputType: Platform.isIOS
-                          ? TextInputType.phone
-                          : TextInputType.number,
-                      controller: amountPaidController,
-                      asCurrency: true,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      validator: (val) {
-                        if (val!.isEmpty) {
-                          return "Please Enter an Amount";
-                        } else {
-                          val = returnOriginalVal(val);
-                          if (!validator.isNumeric(val!)) {
-                            return "Must be a number";
-                          } else if (installmentRemaining == 1 &&
-                              num.parse(val) < (amountRemaining)) {
-                            return "Must be the remaining amount to pay";
-                          } else if (installmentRemaining == 2 &&
-                              num.parse(val) < (amountRemaining * 0.5)) {
-                            return "Must be at least 50% of the remaining amount to pay";
-                          } else if (num.parse(val) > amountRemaining) {
-                            return "Cannot be greater than amount remaining";
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      TextInputWidget(
+                        labelText: "Amount to Pay",
+                        fontSize: 18,
+                        hintText:
+                            "NGN${formatCurrency(installmentRemaining != 1 ? (amountRemaining / 2).toString() : amountRemaining.toString())}",
+                        textInputType: TextInputType.number,
+                        controller: amountPaidController,
+                        asCurrency: true,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Please Enter an Amount";
+                          } else {
+                            val = returnOriginalVal(val);
+                            if (!validator.isNumeric(val!)) {
+                              return "Must be a number";
+                            } else if (installmentRemaining == 1 &&
+                                num.parse(val) < (amountRemaining)) {
+                              return "Must be the remaining amount to pay";
+                            } else if (installmentRemaining == 2 &&
+                                num.parse(val) < (amountRemaining * 0.5)) {
+                              return "Must be at least 50% of the remaining amount to pay";
+                            } else if (num.parse(val) > amountRemaining) {
+                              return "Cannot be greater than amount remaining";
+                            }
                           }
-                        }
-                        return null;
-                      },
-                      onChanged: (val) {
-                        val!.isEmpty ? "" : amountPaidController.text = val;
-                        amountPaid = num.parse(
-                            returnOriginalVal(amountPaidController.text)!);
-                      },
-                    ),
-                  ],
+                          return null;
+                        },
+                        onChanged: (val) {
+                          val!.isEmpty ? "" : amountPaidController.text = val;
+                          amountPaid = num.parse(
+                              returnOriginalVal(amountPaidController.text)!);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF673AB7),
-                padding: const EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              );
+            }),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF673AB7),
+                  padding: const EdgeInsets.all(8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-              onPressed: () async {
-                bool validated = formKey.currentState!.validate();
-                if (validated) {
-                  paystackController.isLoading.value = true;
-                  if (paystackController.isLoading.isTrue) {
-                    Get.dialog(
-                      const Center(child: LoadingWidget()),
-                    );
-                  }
-                  var sdkStatus = await paystackController.initializeSDK(
-                    publicKey: determinePublicKey() ?? publicKey!,
-                    enableLogging: true,
-                  );
-
-                  if (sdkStatus != null &&
-                      sdkStatus.contains("Initialized Sdk")) {
-                    await paystackController.initializePayment(
-                      amount: amountPaid,
-                      email: userEmail,
-                      reference: getReference(),
-                    );
-                    if (paystackController.accessCode.value.isNotEmpty) {
-                      var result = await paystackController.launchSdkUi(
-                          accessCode: paystackController.accessCode.value);
-                      if (result != null) {
-                        String reference =
-                            paystackController.responseReference.value;
-                        await updateOrder(
-                          reference: reference,
-                          paymentPrice: amountPaid,
-                        );
-                      }
+                onPressed: () async {
+                  bool validated = formKey.currentState!.validate();
+                  if (validated) {
+                    paystackController.isLoading.value = true;
+                    if (paystackController.isLoading.isTrue) {
+                      Get.dialog(
+                        const Center(child: LoadingWidget()),
+                      );
                     }
-                  } else {
-                    Get.close(1);
-                    paystackController.isLoading.value = false;
-                    paystackController.mySnackBar(
-                      title: "Error",
-                      message: "Failed to initialize SDK",
-                      color: Colors.red[400],
-                      textColor: Colors.white,
+                    var sdkStatus = await paystackController.initializeSDK(
+                      publicKey: determinePublicKey() ?? publicKey!,
+                      enableLogging: true,
                     );
+
+                    if (sdkStatus != null &&
+                        sdkStatus.contains("Initialized Sdk")) {
+                      await paystackController.initializePayment(
+                        amount: amountPaid,
+                        email: userEmail,
+                        reference: getReference(),
+                      );
+                      if (paystackController.accessCode.value.isNotEmpty) {
+                        var result = await paystackController.launchSdkUi(
+                            accessCode: paystackController.accessCode.value);
+                        if (result != null) {
+                          String reference =
+                              paystackController.responseReference.value;
+                          await updateOrder(
+                            reference: reference,
+                            paymentPrice: amountPaid,
+                          );
+                        }
+                      }
+                    } else {
+                      Get.close(1);
+                      paystackController.isLoading.value = false;
+                      paystackController.mySnackBar(
+                        title: "Error",
+                        message: "Failed to initialize SDK",
+                        color: Colors.red[400],
+                        textColor: Colors.white,
+                      );
+                    }
                   }
-                }
-              },
-              child: const Text(
-                "Pay Now",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontFamily: "Lato",
-                  fontWeight: FontWeight.w600,
+                },
+                child: const Text(
+                  "Pay Now",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontFamily: "Lato",
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

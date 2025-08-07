@@ -22,6 +22,7 @@ import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
+import 'package:keyboard_service/keyboard_service.dart';
 import 'package:material_symbols_icons/symbols.dart';
 // import 'package:monnify_payment_sdk/monnify_payment_sdk.dart';
 import 'package:string_validator/string_validator.dart' as validator;
@@ -695,657 +696,667 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
       onPopInvokedWithResult: (didPop, result) {
         userController.selectedAddress.value = null;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () {
-              userController.selectedAddress.value = null;
-              Get.back();
-            },
-            icon: const Icon(Symbols.arrow_back_ios_new_rounded,
-                size: 20, color: Colors.black),
-          ),
-          title: const Text(
-            'Installment Payment',
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Lato',
-              color: Colors.black,
+      child: KeyboardAutoDismiss(
+        scaffold: Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            leading: IconButton(
+              onPressed: () {
+                userController.selectedAddress.value = null;
+                Get.back();
+              },
+              icon: const Icon(Symbols.arrow_back_ios_new_rounded,
+                  size: 20, color: Colors.black),
             ),
+            title: const Text(
+              'Installment Payment',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Lato',
+                color: Colors.black,
+              ),
+            ),
+            centerTitle: false,
+            // flexibleSpace: Container(
+            //   decoration: BoxDecoration(gradient: appBarGradient),
+            // ),
+            backgroundColor: Colors.white,
+            scrolledUnderElevation: 0,
           ),
-          centerTitle: false,
-          // flexibleSpace: Container(
-          //   decoration: BoxDecoration(gradient: appBarGradient),
-          // ),
-          backgroundColor: Colors.white,
-          scrolledUnderElevation: 0,
-        ),
-        body: StreamBuilder(
-            stream: myStream ?? Stream.empty(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Error loading data',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                      if (kDebugMode) // Only show error details in debug mode
-                        Text(
-                          snapshot.error.toString(),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                    ],
-                  ),
-                );
-              }
-              if (!snapshot.hasData ||
-                  snapshot.connectionState == ConnectionState.waiting) {
-                return const LoadingWidget();
-              } else {
-                if (userController.deliveryAddresses.isNotEmpty &&
-                    userController.selectedAddress.value == null) {
-                  userController.selectedAddress.value =
-                      userController.deliveryAddresses.firstWhereOrNull(
-                              (value) => value!.isDefault == true) ??
-                          userController.deliveryAddresses.firstOrNull;
-                }
-                return Form(
-                  key: formKey,
-                  child: SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          body: StreamBuilder(
+              stream: myStream ?? Stream.empty(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Order Summary",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                const Color(0xFF673AB7).withValues(alpha: 0.75),
-                            fontFamily: 'Lato',
+                        const Text(
+                          'Error loading data',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        if (kDebugMode) // Only show error details in debug mode
+                          Text(
+                            snapshot.error.toString(),
+                            style: const TextStyle(fontSize: 12),
                           ),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Column(
-                          children:
-                              List.generate(widget.products.length, (index) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  width: 1,
-                                  color: const Color(0xFF673AB7)
-                                      .withValues(alpha: 0.45),
+                      ],
+                    ),
+                  );
+                }
+                if (!snapshot.hasData ||
+                    snapshot.connectionState == ConnectionState.waiting) {
+                  return const LoadingWidget();
+                } else {
+                  if (userController.deliveryAddresses.isNotEmpty &&
+                      userController.selectedAddress.value == null) {
+                    userController.selectedAddress.value =
+                        userController.deliveryAddresses.firstWhereOrNull(
+                                (value) => value!.isDefault == true) ??
+                            userController.deliveryAddresses.firstOrNull;
+                  }
+                  return Form(
+                    key: formKey,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Order Summary",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF673AB7)
+                                  .withValues(alpha: 0.75),
+                              fontFamily: 'Lato',
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Column(
+                            children:
+                                List.generate(widget.products.length, (index) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    width: 1,
+                                    color: const Color(0xFF673AB7)
+                                        .withValues(alpha: 0.45),
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
-                                    child: CachedNetworkImage(
-                                      imageUrl: product?.image?.isNotEmpty ==
-                                                  true &&
-                                              product!.image!.isNotEmpty
-                                          ? product.image!.first
-                                          : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
-                                      errorWidget: ((context, url, error) =>
-                                          const Text("Failed to Load Image")),
-                                      placeholder: ((context, url) =>
-                                          const Center(
-                                            child: CircularProgressIndicator(
-                                              color: Colors.black,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: CachedNetworkImage(
+                                        imageUrl: product?.image?.isNotEmpty ==
+                                                    true &&
+                                                product!.image!.isNotEmpty
+                                            ? product.image!.first
+                                            : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
+                                        errorWidget: ((context, url, error) =>
+                                            const Text("Failed to Load Image")),
+                                        placeholder: ((context, url) =>
+                                            const Center(
+                                              child: CircularProgressIndicator(
+                                                color: Colors.black,
+                                              ),
+                                            )),
+                                        imageBuilder:
+                                            (context, imageProvider) =>
+                                                Container(
+                                          height: 140,
+                                          width: 140,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
                                             ),
-                                          )),
-                                      imageBuilder: (context, imageProvider) =>
-                                          Container(
-                                        height: 140,
-                                        width: 140,
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: imageProvider,
-                                            fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    width: 6,
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${product!.name}',
-                                          maxLines: 2,
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                            fontFamily: 'Lato',
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 6,
-                                        ),
-                                        Visibility(
-                                          visible: widget.products[index]
-                                                      .optionName !=
-                                                  null &&
-                                              widget.products[index].optionName!
-                                                  .isNotEmpty,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(6),
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: Colors.black
-                                                    .withValues(alpha: 0.5),
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              '${widget.products[index].optionName}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                                fontFamily: 'Lato',
-                                                color: Colors.black
-                                                    .withValues(alpha: 0.65),
-                                              ),
+                                    const SizedBox(
+                                      width: 6,
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${product!.name}',
+                                            maxLines: 2,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black,
+                                              fontFamily: 'Lato',
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          height: 6,
-                                        ),
-                                        Text(
-                                          'Qty:${widget.products[index].quantity}pcs',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'Lato',
-                                            color: Colors.black
-                                                .withValues(alpha: 0.65),
+                                          const SizedBox(
+                                            height: 6,
                                           ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          "NGN ${formatCurrency(widget.products[index].price.toString())}",
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            fontFamily: 'Lato',
-                                            color: Color(0xFF673AB7),
+                                          Visibility(
+                                            visible: widget.products[index]
+                                                        .optionName !=
+                                                    null &&
+                                                widget.products[index]
+                                                    .optionName!.isNotEmpty,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(6),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.5),
+                                                  width: 0.5,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                '${widget.products[index].optionName}',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: 'Lato',
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.65),
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }),
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-                        Text(
-                          "Delivery Address",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                const Color(0xFF673AB7).withValues(alpha: 0.75),
-                            fontFamily: 'Lato',
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Row(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                Get.to(() => const AddDeliveryAddressPage());
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    width: 1,
-                                    color: const Color(0xFF673AB7)
-                                        .withValues(alpha: 0.65),
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                height: 130,
-                                width: 120,
-                                child: const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Icon(
-                                      Icons.add,
-                                      size: 35,
-                                      color: Color(0xFF673AB7),
-                                    ),
-                                    Text(
-                                      "Add new\naddress",
-                                      style: TextStyle(
-                                        fontFamily: 'Lato',
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w400,
+                                          const SizedBox(
+                                            height: 6,
+                                          ),
+                                          Text(
+                                            'Qty:${widget.products[index].quantity}pcs',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'Lato',
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.65),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            "NGN ${formatCurrency(widget.products[index].price.toString())}",
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              fontFamily: 'Lato',
+                                              color: Color(0xFF673AB7),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
+                              );
+                            }),
+                          ),
+                          const SizedBox(
+                            height: 14,
+                          ),
+                          Text(
+                            "Delivery Address",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF673AB7)
+                                  .withValues(alpha: 0.75),
+                              fontFamily: 'Lato',
                             ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            Obx(
-                              () => Expanded(
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: const BouncingScrollPhysics(),
-                                  child: Row(
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  Get.to(() => const AddDeliveryAddressPage());
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      width: 1,
+                                      color: const Color(0xFF673AB7)
+                                          .withValues(alpha: 0.65),
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  height: 130,
+                                  width: 120,
+                                  child: const Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: userController
-                                            .deliveryAddresses.isEmpty
-                                        ? [
-                                            Container(
-                                              margin: const EdgeInsets.only(
-                                                  left: 4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                border: Border.all(
-                                                  color: Colors.red[300]!,
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              padding: const EdgeInsets.all(8),
-                                              height: 130,
-                                              width: 250,
-                                              child: Center(
-                                                child: Text(
-                                                  "You need to\nadd a\nDelivery Address",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontFamily: 'Lato',
-                                                    color: Colors.red[300],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ]
-                                        : buildAddressCard(),
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Icon(
+                                        Icons.add,
+                                        size: 35,
+                                        color: Color(0xFF673AB7),
+                                      ),
+                                      Text(
+                                        "Add new\naddress",
+                                        style: TextStyle(
+                                          fontFamily: 'Lato',
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-                        Text(
-                          "Payment",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                const Color(0xFF673AB7).withValues(alpha: 0.75),
-                            fontFamily: 'Lato',
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 4),
-                          //margin: const EdgeInsets.symmetric(horizontal: 2),
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(10),
-                            ),
-                            color: Colors.grey[200],
-                            // border: Border.all(
-                            //     width: 0.5, color: Colors.black.withValues(alpha: 0.1)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "Total Amount:",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Lato',
-                                ),
+                              const SizedBox(
+                                width: 8,
                               ),
-                              Text(
-                                "NGN ${formatCurrency(totalPrice.toString())}",
-                                style: const TextStyle(
-                                  color: Color(0xFF673AB7),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: 'Lato',
+                              Obx(
+                                () => Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: userController
+                                              .deliveryAddresses.isEmpty
+                                          ? [
+                                              Container(
+                                                margin: const EdgeInsets.only(
+                                                    left: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  border: Border.all(
+                                                    color: Colors.red[300]!,
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                                height: 130,
+                                                width: 250,
+                                                child: Center(
+                                                  child: Text(
+                                                    "You need to\nadd a\nDelivery Address",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontFamily: 'Lato',
+                                                      color: Colors.red[300],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ]
+                                          : buildAddressCard(),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        const Text(
-                          "Number of Installments",
-                          style: TextStyle(
-                            color: Color(0xFF673AB7),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: 'Raleway',
+                          const SizedBox(
+                            height: 14,
                           ),
-                        ),
-                        const SizedBox(
-                          height: 4,
-                        ),
-                        DropdownButtonFormField<String>(
-                          elevation: 8,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          value: installmentValue,
-                          dropdownColor: AppColors.shade1,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          hint: const Text(
-                            "Select",
+                          Text(
+                            "Payment",
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 20,
                               fontWeight: FontWeight.w500,
+                              color: const Color(0xFF673AB7)
+                                  .withValues(alpha: 0.75),
                               fontFamily: 'Lato',
-                              color: Colors.black,
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please select an option';
-                            }
-                            return null;
-                          },
-                          items: List.generate(2, (index) {
-                            int newIndex = index + 2;
-                            return DropdownMenuItem(
-                              value: newIndex.toString(),
-                              child: Text(
-                                "$newIndex",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontFamily: 'Lato',
-                                ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 4),
+                            //margin: const EdgeInsets.symmetric(horizontal: 2),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(10),
                               ),
-                            );
-                          }),
-                          onChanged: (value) => updateInstallmentValue(value!),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        TextInputWidget(
-                          controller: amountController,
-                          fontSize: 16,
-                          labelColor:
-                              const Color(0xFF673AB7).withValues(alpha: 0.75),
-                          labelText: "Initial Installment Amount (NGN)",
-                          hintText: "NGN 0.0",
-                          textInputType: Platform.isIOS
-                              ? TextInputType.phone
-                              : TextInputType.number,
-                          onChanged: (value) => updateTotalPayableAmount(value),
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (val) {
-                            if (val!.isEmpty) {
-                              return "Enter an Amount";
-                            } else if (!validator.isNumeric(val)) {
-                              return "Must be a number";
-                            } else if (installmentValue == "2" &&
-                                num.parse(val) <
-                                    (widget.products.first.price! * 0.5)) {
-                              return "Must be at least 50% of total price";
-                            } else if (installmentValue == "3" &&
-                                num.parse(val) <
-                                    (widget.products.first.price! * 0.3)) {
-                              return "Must be at least 30% of total price";
-                            } else if (num.parse(val) >
-                                widget.products.first.price!) {
-                              return "Cannot be greater than the product price";
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-            }),
-        bottomNavigationBar: SafeArea(
-          child: BottomAppBar(
-            elevation: 0,
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
-            height: 78,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Total Payment Amount:",
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black.withValues(alpha: 0.70),
-                      ),
-                    ),
-                    Text(
-                      "NGN ${formatCurrency(totalPayableAmount.toString())}",
-                      style: const TextStyle(
-                        fontFamily: 'Lato',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF673AB7),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Total: NGN${formatCurrency(totalPrice.toString())}",
-                      style: const TextStyle(
-                        fontFamily: 'Lato',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF673AB7),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 2,
-                          horizontal: 20,
-                        ),
-                        //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
-                        shape: RoundedRectangleBorder(
-                          // side: const BorderSide(
-                          //   width: 1.2,
-                          //   color: Colors.black,
-                          // ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () async {
-                        bool validate = formKey.currentState!.validate();
-                        if (validate) {
-                          if (userController.selectedAddress.value == null) {
-                            userController.showMyToast(
-                                "Please Enter Your Delivery Address");
-                          } else {
-                            paystackController.isLoading.value = true;
-                            if (paystackController.isLoading.isTrue) {
-                              Get.dialog(
-                                const Center(child: LoadingWidget()),
-                              );
-                            }
-                            try {
-                              // Parse amount and installment number
-                              //int amount = int.parse(amountController.text);
-                              int installmentNumber =
-                                  int.parse(installmentValue!);
-                              // Perform payment initiation
-                              //FOR NOW MONNIFY DOES NOT WORK
-                              // !Platform.isIOS
-                              //     ? await showPaymentDialog(
-                              //         orderQuantity: widget
-                              //             .products.first.quantity
-                              //             .toString(),
-                              //         product: product,
-                              //         vendorID: product!.vendorId,
-                              //         paymentMethod: "installment",
-                              //         user: userController.userState.value,
-                              //         paymentPrice: totalPayableAmount.toInt(),
-                              //         installmentNumber: installmentNumber,
-                              //         email: userController
-                              //             .userState.value!.email!,
-                              //       )
-                              // await initializePaymentPaystack(
-                              //   orderQuantity:
-                              //       widget.products.first.quantity.toString(),
-                              //   product: product,
-                              //   vendorID: product!.vendorId,
-                              //   paymentMethod: "installment",
-                              //   user: userController.userState.value,
-                              //   paymentPrice: totalPayableAmount.toInt(),
-                              //   installmentNumber: installmentNumber,
-                              //   email: userController.userState.value!.email!,
-                              // );
-                              var sdkStatus =
-                                  await paystackController.initializeSDK(
-                                      publicKey:
-                                          determinePublicKey() ?? publicKey!,
-                                      enableLogging: true);
-
-                              if (sdkStatus != null &&
-                                  sdkStatus.contains("Initialized Sdk")) {
-                                await paystackController.initializePayment(
-                                  amount: totalPayableAmount,
-                                  email: userController.userState.value!.email!,
-                                  reference: _getReference(),
-                                );
-                                if (paystackController
-                                    .accessCode.value.isNotEmpty) {
-                                  var result =
-                                      await paystackController.launchSdkUi(
-                                          accessCode: paystackController
-                                              .accessCode.value);
-                                  if (result != null) {
-                                    String reference = paystackController
-                                        .responseReference.value;
-                                    await createOrder(
-                                      reference: reference,
-                                      orderQuantity: widget
-                                          .products.first.quantity
-                                          .toString(),
-                                      product: product,
-                                      vendorID: product!.vendorId,
-                                      paymentMethod: "installment",
-                                      user: userController.userState.value,
-                                      paymentPrice: totalPayableAmount.toInt(),
-                                      installmentNumber: installmentNumber,
-                                    );
-                                  }
-                                }
-                              } else {
-                                Get.close(1);
-                                paystackController.isLoading.value =
-                                    false; // Stop loading indicator
-                                paystackController.mySnackBar(
-                                  title: "Error",
-                                  message: "Failed to initialize SDK",
-                                  color: Colors.red[400],
-                                  textColor: Colors.white,
-                                );
+                              color: Colors.grey[200],
+                              // border: Border.all(
+                              //     width: 0.5, color: Colors.black.withValues(alpha: 0.1)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Total Amount:",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Lato',
+                                  ),
+                                ),
+                                Text(
+                                  "NGN ${formatCurrency(totalPrice.toString())}",
+                                  style: const TextStyle(
+                                    color: Color(0xFF673AB7),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: 'Lato',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          const Text(
+                            "Number of Installments",
+                            style: TextStyle(
+                              color: Color(0xFF673AB7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Raleway',
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          DropdownButtonFormField<String>(
+                            elevation: 8,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            value: installmentValue,
+                            dropdownColor: AppColors.shade1,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            hint: const Text(
+                              "Select",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Lato',
+                                color: Colors.black,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select an option';
                               }
-
-                              // Show loading indicator
-                            } catch (e) {
-                              // Handle and display error message
-                              Get.snackbar('Error!', e.toString(),
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: Colors.red[300]);
-                            }
-                          }
-                        }
-                      },
-                      child: const Text(
-                        "Pay Now",
+                              return null;
+                            },
+                            items: List.generate(2, (index) {
+                              int newIndex = index + 2;
+                              return DropdownMenuItem(
+                                value: newIndex.toString(),
+                                child: Text(
+                                  "$newIndex",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                    fontFamily: 'Lato',
+                                  ),
+                                ),
+                              );
+                            }),
+                            onChanged: (value) =>
+                                updateInstallmentValue(value!),
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          TextInputWidget(
+                            controller: amountController,
+                            fontSize: 16,
+                            labelColor:
+                                const Color(0xFF673AB7).withValues(alpha: 0.75),
+                            labelText: "Initial Installment Amount (NGN)",
+                            hintText: "NGN 0.0",
+                            textInputType: TextInputType.number,
+                            onChanged: (value) =>
+                                updateTotalPayableAmount(value),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            validator: (val) {
+                              if (val!.isEmpty) {
+                                return "Enter an Amount";
+                              } else if (!validator.isNumeric(val)) {
+                                return "Must be a number";
+                              } else if (installmentValue == "2" &&
+                                  num.parse(val) <
+                                      (widget.products.first.price! * 0.5)) {
+                                return "Must be at least 50% of total price";
+                              } else if (installmentValue == "3" &&
+                                  num.parse(val) <
+                                      (widget.products.first.price! * 0.3)) {
+                                return "Must be at least 30% of total price";
+                              } else if (num.parse(val) >
+                                  widget.products.first.price!) {
+                                return "Cannot be greater than the product price";
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              }),
+          bottomNavigationBar: SafeArea(
+            child: BottomAppBar(
+              elevation: 0,
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
+              height: 78,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Total Payment Amount:",
                         style: TextStyle(
                           fontFamily: 'Lato',
-                          fontSize: 16,
-                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black.withValues(alpha: 0.70),
                         ),
                       ),
-                    ),
-                  ],
-                )
-              ],
+                      Text(
+                        "NGN ${formatCurrency(totalPayableAmount.toString())}",
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF673AB7),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Total: NGN${formatCurrency(totalPrice.toString())}",
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF673AB7),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 2,
+                            horizontal: 20,
+                          ),
+                          //maximumSize: Size(screenWidth * 0.70, screenHeight * 0.10),
+                          shape: RoundedRectangleBorder(
+                            // side: const BorderSide(
+                            //   width: 1.2,
+                            //   color: Colors.black,
+                            // ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () async {
+                          bool validate = formKey.currentState!.validate();
+                          if (validate) {
+                            if (userController.selectedAddress.value == null) {
+                              userController.showMyToast(
+                                  "Please Enter Your Delivery Address");
+                            } else {
+                              paystackController.isLoading.value = true;
+                              if (paystackController.isLoading.isTrue) {
+                                Get.dialog(
+                                  const Center(child: LoadingWidget()),
+                                );
+                              }
+                              try {
+                                // Parse amount and installment number
+                                //int amount = int.parse(amountController.text);
+                                int installmentNumber =
+                                    int.parse(installmentValue!);
+                                // Perform payment initiation
+                                //FOR NOW MONNIFY DOES NOT WORK
+                                // !Platform.isIOS
+                                //     ? await showPaymentDialog(
+                                //         orderQuantity: widget
+                                //             .products.first.quantity
+                                //             .toString(),
+                                //         product: product,
+                                //         vendorID: product!.vendorId,
+                                //         paymentMethod: "installment",
+                                //         user: userController.userState.value,
+                                //         paymentPrice: totalPayableAmount.toInt(),
+                                //         installmentNumber: installmentNumber,
+                                //         email: userController
+                                //             .userState.value!.email!,
+                                //       )
+                                // await initializePaymentPaystack(
+                                //   orderQuantity:
+                                //       widget.products.first.quantity.toString(),
+                                //   product: product,
+                                //   vendorID: product!.vendorId,
+                                //   paymentMethod: "installment",
+                                //   user: userController.userState.value,
+                                //   paymentPrice: totalPayableAmount.toInt(),
+                                //   installmentNumber: installmentNumber,
+                                //   email: userController.userState.value!.email!,
+                                // );
+                                var sdkStatus =
+                                    await paystackController.initializeSDK(
+                                        publicKey:
+                                            determinePublicKey() ?? publicKey!,
+                                        enableLogging: true);
+
+                                if (sdkStatus != null &&
+                                    sdkStatus.contains("Initialized Sdk")) {
+                                  await paystackController.initializePayment(
+                                    amount: totalPayableAmount,
+                                    email:
+                                        userController.userState.value!.email!,
+                                    reference: _getReference(),
+                                  );
+                                  if (paystackController
+                                      .accessCode.value.isNotEmpty) {
+                                    var result =
+                                        await paystackController.launchSdkUi(
+                                            accessCode: paystackController
+                                                .accessCode.value);
+                                    if (result != null) {
+                                      String reference = paystackController
+                                          .responseReference.value;
+                                      await createOrder(
+                                        reference: reference,
+                                        orderQuantity: widget
+                                            .products.first.quantity
+                                            .toString(),
+                                        product: product,
+                                        vendorID: product!.vendorId,
+                                        paymentMethod: "installment",
+                                        user: userController.userState.value,
+                                        paymentPrice:
+                                            totalPayableAmount.toInt(),
+                                        installmentNumber: installmentNumber,
+                                      );
+                                    }
+                                  }
+                                } else {
+                                  Get.close(1);
+                                  paystackController.isLoading.value =
+                                      false; // Stop loading indicator
+                                  paystackController.mySnackBar(
+                                    title: "Error",
+                                    message: "Failed to initialize SDK",
+                                    color: Colors.red[400],
+                                    textColor: Colors.white,
+                                  );
+                                }
+
+                                // Show loading indicator
+                              } catch (e) {
+                                // Handle and display error message
+                                Get.snackbar('Error!', e.toString(),
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: Colors.red[300]);
+                              }
+                            }
+                          }
+                        },
+                        child: const Text(
+                          "Pay Now",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
