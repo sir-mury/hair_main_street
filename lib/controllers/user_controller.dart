@@ -44,11 +44,17 @@ class UserController extends GetxController {
         Get.put<ReferralController>(ReferralController());
 
     WishListController wishListController = Get.put(WishListController());
+    NotificationController notificationController =
+        Get.find<NotificationController>();
+    late CartController cartController = Get.find<CartController>();
+
     determineAuthState();
     // userState.listen(getRoleDynamically);
 
     ever(userState, (MyUser? newUser) {
       if (newUser != null) {
+        // cartController.fetchCart();
+        notificationController.getNotifications();
         wishListController.fetchWishList();
         referralController.getReferrals();
         isVendor.bindStream(determineIfVendor());

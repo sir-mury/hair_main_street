@@ -56,6 +56,10 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
     }
   }
 
+  bool determineIfLive() {
+    return adminController.adminSettings.value!.isLive == true ? true : false;
+  }
+
   String? determinePublicKey() {
     debugPrint(
         "publickey: ${adminController.adminSettings.value!.isLive == true ? livePublicKey : publicKey}");
@@ -892,7 +896,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                       // );
 
                       var sdkStatus = await paystackController.initializeSDK(
-                        publicKey: determinePublicKey() ?? publicKey!,
+                        publicKey: determinePublicKey()!,
                         enableLogging: true,
                       );
 
@@ -902,6 +906,7 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
                           amount: widget.products.first.price!,
                           email: userController.userState.value!.email!,
                           reference: _getReference(),
+                          isLive: determineIfLive(),
                         );
                         if (paystackController.accessCode.value.isNotEmpty) {
                           var result = await paystackController.launchSdkUi(
@@ -1081,8 +1086,12 @@ class _OnceCheckoutPageState extends State<OnceCheckoutPage> {
 
   Future<String> getAccessCode(
       String reference, String email, num amount) async {
-    String? accessCode =
-        await DataBaseService().initiateTransaction(amount, email, reference);
+    String? accessCode = await DataBaseService().initiateTransaction(
+      amount,
+      email,
+      reference,
+      isLive: determineIfLive(),
+    );
     return accessCode ?? "";
   }
 

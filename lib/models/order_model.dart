@@ -226,4 +226,30 @@ class DatabaseOrderResponse {
         "installment paid": installmentPaid,
         "order item": orderItem,
       };
+
+  Orders toOrders() {
+    return Orders(
+      orderId: orderId,
+      paymentPrice: paymentPrice,
+      buyerId: buyerId,
+      vendorId: vendorId,
+      totalPrice: totalPrice,
+      shippingAddress: shippingAddress,
+      installmentNumber: installmentNumber,
+      installmentPaid: installmentPaid,
+      orderStatus: orderStatus,
+      refundStatus: refundStatus,
+      createdAt: createdAt is Timestamp
+          ? createdAt
+          : Timestamp.fromMillisecondsSinceEpoch(createdAt),
+      updatedAt: updatedAt is Timestamp
+          ? updatedAt
+          : Timestamp.fromMillisecondsSinceEpoch(updatedAt),
+      recipientCode: recipientCode,
+      paymentMethod: paymentMethod,
+      paymentStatus: paymentStatus,
+      transactionID: transactionID,
+      isDeleted: isDeleted ?? false,
+    );
+  }
 }

@@ -62,6 +62,10 @@ class _CartCheckoutConfirmationPageState
     super.initState();
   }
 
+  bool determineIfLive() {
+    return adminController.adminSettings.value!.isLive == true ? true : false;
+  }
+
   String? determinePublicKey() {
     return adminController.adminSettings.value!.isLive == true
         ? livePublicKey
@@ -933,6 +937,7 @@ class _CartCheckoutConfirmationPageState
                               amount: widget.payableAmount!,
                               email: userController.userState.value!.email!,
                               reference: _getReference(),
+                              isLive: determineIfLive(),
                             );
                             if (paystackController
                                 .accessCode.value.isNotEmpty) {

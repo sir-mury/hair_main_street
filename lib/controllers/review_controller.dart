@@ -8,7 +8,7 @@ import 'package:hair_main_street/services/database.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ReviewController extends GetxController {
-  RxList<File> imageList = RxList<File>([]);
+  RxList<File?> imageList = RxList<File?>.filled(3, null);
   var myReviews = [].obs;
   num screenHeight = Get.height;
   RxList<String> selectedImageList = RxList([]);
@@ -30,12 +30,23 @@ class ReviewController extends GetxController {
   }
 
   //select image from file system
-  selectImage(ImageSource source, String imagePath) async {
+  selectImage(ImageSource source, String imagePath, int index) async {
     String? image = await DataBaseService().pickAndSaveImage(source, imagePath);
     if (image != null) {
       isImageSelected.value = true;
-      imageList.add(File(image));
-      debugPrint(imageList.toString());
+      imageList[index] = File(image);
+      // debugPrint(imageList.toString());
+    }
+  }
+
+  removeImage(int index) {
+    if (index >= 0 && index < imageList.length) {
+      imageList[index] = null;
+      if (imageList.isEmpty) {
+        isImageSelected.value = false;
+      }
+    } else {
+      debugPrint("Index out of range");
     }
   }
 
@@ -52,9 +63,11 @@ class ReviewController extends GetxController {
   }
 
   addAReview(Review review, String productID) async {
+    isLoading.value = true;
     var result = await DataBaseService().addAReview(review, productID);
     debugPrint(result);
     if (result == "success") {
+      isLoading.value = false;
       Get.snackbar(
         "Successful",
         "Review Submitted",
@@ -69,8 +82,12 @@ class ReviewController extends GetxController {
           bottom: screenHeight * 0.08,
         ),
       );
-      Get.back();
+      Get.close(2);
+      downloadUrls.clear();
+      imageList.fillRange(0, 2, null);
+      isImageSelected.value = false;
     } else {
+      isLoading.value = false;
       Get.snackbar(
         "Error",
         "Review Submission Failed",

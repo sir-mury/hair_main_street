@@ -48,8 +48,8 @@ void main() async {
   final showHome = await prefs.getBool("showHome") ?? false;
   await prefs.setBool("hasShownUpdateDialog", false);
   //await FirebaseMessaging.instance.getInitialMessage();
-  Get.put(UserController());
   Get.put(NotificationController());
+  Get.put(UserController());
   Get.put(AdminController());
   Get.put(UpdatesServiceController());
   Get.put<ChatController>(ChatController());
