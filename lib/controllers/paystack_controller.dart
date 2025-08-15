@@ -78,12 +78,17 @@ class PaystackController extends GetxController {
     required num amount,
     required String email,
     required String reference,
+    required bool isLive,
   }) async {
     isLoading.value = true;
     //first reset accessCode
     accessCode.value = '';
-    var response =
-        await DataBaseService().initiateTransaction(amount, email, reference);
+    var response = await DataBaseService().initiateTransaction(
+      amount,
+      email,
+      reference,
+      isLive: isLive,
+    );
     if (response != null && response.runtimeType == String) {
       accessCode.value = response;
       // You can now use this access code to redirect to Paystack payment page

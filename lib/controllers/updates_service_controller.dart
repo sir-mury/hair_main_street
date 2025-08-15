@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/admin_controller.dart';
 import 'package:hair_main_street/models/admin_variable_model.dart';
@@ -81,23 +82,26 @@ class UpdatesServiceController extends GetxController {
   }
 
   Future<String?> getStoreUrl() async {
+    await dotenv.load(fileName: ".env");
+
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String packageName = packageInfo.packageName;
     // String appName = packageInfo.appName;
 
     // NOTE: You'll need to manually get and store your Apple App ID.
     // It's not available through package_info_plus.
-    const String appleAppId =
-        'YOUR_APPLE_APP_ID'; // Replace with your actual App ID
+    String appleAppId = dotenv.env["APPLE_APP_ID"] ?? "";
 
     if (kIsWeb) {
       return null; // Not applicable for web
     }
 
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'https://play.google.com/store/apps/details?id=$packageName';
+      return adminController.adminSettings.value?.playStore ??
+          'https://play.google.com/store/apps/details?id=$packageName';
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return 'https://apps.apple.com/app/id$appleAppId';
+      return adminController.adminSettings.value?.appStore ??
+          'https://apps.apple.com/app/id$appleAppId';
     }
     return null;
   }

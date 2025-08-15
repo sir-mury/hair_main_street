@@ -14,7 +14,7 @@ import 'package:hair_main_street/widgets/loading.dart';
 
 class CartController extends GetxController {
   RxList<CartItem> cartItems = <CartItem>[].obs;
-  num screenHeight = Get.height;
+  // num screenHeight = Get.height;
   RxBool isLoading = false.obs;
   RxInt currentPrice = 0.obs;
   RxInt quantity = 0.obs;
@@ -26,6 +26,15 @@ class CartController extends GetxController {
   //   super.onInit();
   //   cartItems.bindStream(fetchCart());
   //   debugPrint("${cartItems}");
+  // }
+
+  // @override
+  // onReady() {
+  //   super.onReady();
+  //   UserController userController = Get.find<UserController>();
+  //   if (userController.userState.value != null) {
+  //     fetchCart();
+  //   }
   // }
 
   //get inventory of specific product
@@ -137,6 +146,7 @@ class CartController extends GetxController {
       );
     }
     var result = await DataBaseService().addToCart(cartItem);
+    num screenHeight = Get.height;
     if (result != "Success") {
       isLoading.value = false;
       Get.back();
@@ -175,8 +185,10 @@ class CartController extends GetxController {
   }
 
   void fetchCart() {
+    debugPrint("fetching cart");
     ProductController productController = Get.find<ProductController>();
     var result = DataBaseService().fetchCartItems();
+    num screenHeight = Get.height;
     if (result.runtimeType == Object) {
       Get.snackbar(
         "Error",
@@ -193,44 +205,53 @@ class CartController extends GetxController {
         ),
       );
     } else {
+      cartItems.clear();
       result.listen((cartItemsList) async {
+        debugPrint("this has been called");
         if ((cartItemsList.isEmpty)) {
           cartItems.clear();
-          update();
           return;
         } else {
+          // debugPrint("products at start: ${productController.products.length}");
           for (var cartItem in cartItemsList) {
-            if (productController.products
-                .any((product) => product!.productID == cartItem.productID)) {
-              // Check if the item already exists in cartItems
-              int index = cartItems
-                  .indexWhere((item) => item.cartItemID == cartItem.cartItemID);
-              if (index == -1) {
-                // If not found, add it
-                cartItems.add(cartItem);
-              } else {
-                // If found, update the existing item
-                cartItems[index] = cartItem;
-              }
+            if (productController.products.isEmpty) {
             } else {
-              var response =
-                  await DataBaseService().removeFromCart([cartItem.cartItemID]);
-              if (response == "success") {
-                Get.snackbar(
-                  "Warning",
-                  "Some items were removed from your cart as they no longer are available",
-                  snackPosition: SnackPosition.BOTTOM,
-                  duration: const Duration(seconds: 1, milliseconds: 800),
-                  forwardAnimationCurve: Curves.decelerate,
-                  reverseAnimationCurve: Curves.easeOut,
-                  backgroundColor: Colors.amber[200],
-                  colorText: Colors.black,
-                  margin: EdgeInsets.only(
-                    left: 12,
-                    right: 12,
-                    bottom: screenHeight * 0.16,
-                  ),
-                );
+              final productExists = productController.products.any((product) {
+                return product != null &&
+                    product.productID.toString() ==
+                        cartItem.productID.toString();
+              });
+              if (productExists) {
+                int index = cartItems.indexWhere(
+                    (item) => item.cartItemID == cartItem.cartItemID);
+                if (index == -1) {
+                  cartItems.add(cartItem);
+                } else {
+                  cartItems[index] = cartItem;
+                }
+              } else {
+                cartItems.removeWhere(
+                    (item) => item.cartItemID == cartItem.cartItemID);
+                var response = await DataBaseService()
+                    .removeFromCart([cartItem.cartItemID]);
+                // debugPrint("response: $response");
+                if (response == "success") {
+                  Get.snackbar(
+                    "Warning",
+                    "Some items were removed from your cart as they no longer are available",
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 1, milliseconds: 800),
+                    forwardAnimationCurve: Curves.decelerate,
+                    reverseAnimationCurve: Curves.easeOut,
+                    backgroundColor: Colors.amber[200],
+                    colorText: Colors.black,
+                    margin: EdgeInsets.only(
+                      left: 12,
+                      right: 12,
+                      bottom: screenHeight * 0.16,
+                    ),
+                  );
+                }
               }
             }
           }

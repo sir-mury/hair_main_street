@@ -175,6 +175,7 @@ class NotificationService {
   }
 
   _notificationHandlers() async {
+    //handles foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       // Handle foreground notification
       final notification = message.notification;
@@ -182,6 +183,7 @@ class NotificationService {
         return;
       } else {
         _showNotification(message);
+        navigateToNotifications();
         logger.i("Foreground Notification: ${message.notification!.title}");
       }
     });
@@ -229,7 +231,7 @@ class NotificationService {
 
       //making the settings
       var androidInitialize =
-          const AndroidInitializationSettings('@drawable/hms_main');
+          const AndroidInitializationSettings('@drawable/ic_notification');
       var iosInitialize = const DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,

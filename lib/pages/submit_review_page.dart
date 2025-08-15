@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/review_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/models/review.dart';
+import 'package:hair_main_street/widgets/loading.dart';
 import 'package:hair_main_street/widgets/text_input.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
 import 'package:iconify_flutter_plus/icons/ph.dart';
@@ -30,22 +31,6 @@ class SubmitReviewPageState extends State<SubmitReviewPage> {
   List<File?> selectedImages =
       List.filled(3, null); // Changed to File? to match image_picker
 
-  void _selectImage(int index) async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        selectedImages[index] = File(pickedFile.path);
-      });
-    }
-  }
-
-  void _removeImage(int index) {
-    setState(() {
-      selectedImages[index] = null;
-    });
-  }
-
   setReviewController() {
     Get.lazyPut(() => ReviewController());
   }
@@ -54,6 +39,18 @@ class SubmitReviewPageState extends State<SubmitReviewPage> {
   Widget build(BuildContext context) {
     setReviewController();
     ReviewController reviewController = Get.find<ReviewController>();
+
+    void selectImage(int index) async {
+      reviewController.selectImage(
+        ImageSource.gallery,
+        "review_images/${widget.productID}/${DateTime.now().millisecondsSinceEpoch}.jpg",
+        index,
+      );
+    }
+
+    void removeImage(int index) {
+      reviewController.removeImage(index);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -89,14 +86,19 @@ class SubmitReviewPageState extends State<SubmitReviewPage> {
                   labelColor: Colors.black,
                   controller: displayNameController,
                   labelText: "Display Name (optional)",
+                  autofillHints: [AutofillHints.name],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   fontSize: 18,
                   hintText: "Display name",
-                  // validator: (value) {
-                  //   if (value == null || value.isEmpty) {
-                  //     return 'Please enter your display name';
-                  //   }
-                  //   return null;
-                  // },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return null;
+                    }
+                    if (value.length > 15) {
+                      return 'Max characters Exceeded (15)';
+                    }
+                    return null;
+                  },
                   onChanged: (value) {
                     review.displayName = value!;
                   },
@@ -139,7 +141,7 @@ class SubmitReviewPageState extends State<SubmitReviewPage> {
                       children: List.generate(
                         3,
                         (index) => GestureDetector(
-                          onTap: () => _selectImage(index),
+                          onTap: () => selectImage(index),
                           child: Container(
                             margin: const EdgeInsets.only(right: 12),
                             width: 88,
@@ -149,27 +151,46 @@ class SubmitReviewPageState extends State<SubmitReviewPage> {
                               border:
                                   Border.all(color: Colors.black, width: 0.8),
                             ),
-                            child: selectedImages[index] != null
-                                ? Stack(
-                                    children: [
-                                      Image.file(selectedImages[index]!),
-                                      Positioned(
-                                        top: 0,
-                                        right: 0,
-                                        child: GestureDetector(
-                                          onTap: () => _removeImage(index),
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            color: Colors.black
-                                                .withValues(alpha: 0.5),
-                                            child: const Icon(Icons.close,
-                                                color: Colors.white),
+                            child: Obx(
+                              () => reviewController.imageList[index] != null
+                                  ? Stack(
+                                      children: [
+                                        SizedBox(
+                                          width: 86,
+                                          height: 86,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            child: Image.file(
+                                              reviewController
+                                                  .imageList[index]!,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  )
-                                : const Icon(Icons.add, size: 40),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: GestureDetector(
+                                            onTap: () => removeImage(index),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.65),
+                                              ),
+                                              padding: const EdgeInsets.all(4),
+                                              child: const Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : const Icon(Icons.add, size: 40),
+                            ),
                           ),
                         ),
                       ),
@@ -235,8 +256,27 @@ class SubmitReviewPageState extends State<SubmitReviewPage> {
                 _formKey.currentState!.save();
                 //review.productID = widget.productID;
 
-                review.userID = userController.userState.value!.uid!;
-                await reviewController.addAReview(review, widget.productID!);
+                reviewController.isLoading.value = true;
+                if (reviewController.isLoading.isTrue) {
+                  Get.dialog(LoadingWidget(), barrierDismissible: false);
+                }
+                List<File?> reviewImageList = reviewController.imageList
+                    .where((image) => image != null)
+                    .toList();
+
+                if (reviewImageList.isNotEmpty) {
+                  await reviewController.uploadImage(reviewImageList);
+                  review.reviewImages = reviewController.downloadUrls.isNotEmpty
+                      ? reviewController.downloadUrls
+                      : null;
+                  review.userID = userController.userState.value!.uid!;
+                  await reviewController.addAReview(review, widget.productID!);
+                } else {
+                  review.reviewImages = null; // No images selected
+                  review.userID = userController.userState.value!.uid!;
+                  await reviewController.addAReview(review, widget.productID!);
+                }
+
                 // Here you can handle the submission of the review
                 // For example, you can send the review to Firestore
                 // and then navigate back to the previous screen

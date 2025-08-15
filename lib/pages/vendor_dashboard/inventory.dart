@@ -76,7 +76,7 @@ class _InventoryPageState extends State<InventoryPage>
     String generateProductLink(String productID, String productName) {
       // Replace 'your_domain.com' with your actual domain
       final formattedName = productName.toLowerCase().replaceAll(' ', '_');
-      return 'https://hairmainstreet.com/products/$productID/$formattedName';
+      return 'https://app.hairmainstreet.com/products/$productID/$formattedName';
     }
 
     showBottomSheetHere(

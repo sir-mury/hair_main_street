@@ -75,6 +75,10 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
     });
   }
 
+  bool determineIfLive() {
+    return adminController.adminSettings.value!.isLive == true ? true : false;
+  }
+
   String? determinePublicKey() {
     return adminController.adminSettings.value!.isLive == true
         ? livePublicKey
@@ -1297,6 +1301,7 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                                     email:
                                         userController.userState.value!.email!,
                                     reference: _getReference(),
+                                    isLive: determineIfLive(),
                                   );
                                   if (paystackController
                                       .accessCode.value.isNotEmpty) {

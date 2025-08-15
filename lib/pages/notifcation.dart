@@ -6,10 +6,12 @@ import 'package:hair_main_street/controllers/notification_controller.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
 import 'package:hair_main_street/controllers/product_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
+import 'package:hair_main_street/models/notifications_model.dart';
 import 'package:hair_main_street/models/order_model.dart';
 import 'package:hair_main_street/pages/menu/order_detail.dart';
 import 'package:hair_main_street/pages/refund.dart';
 import 'package:hair_main_street/pages/submit_review_page.dart';
+import 'package:hair_main_street/pages/vendor_dashboard/edit_product_preview.dart';
 import 'package:hair_main_street/pages/vendor_dashboard/order_details.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:intl/intl.dart';
@@ -93,7 +95,54 @@ class NotificationsPage extends StatelessWidget {
           ),
         );
       } else {
-        notificationController.getNotifications();
+        handleNotificationTap(
+          List<Notifications> notification,
+          int index,
+        ) async {
+          debugPrint(notification[index].extraData!["orderID"]!);
+          await checkOutController
+              .getSingleOrder(notification[index].extraData!["orderID"]!);
+          DatabaseOrderResponse? order = checkOutController.singleOrder.value;
+          var product = productController
+              .getSingleProduct(order!.orderItem!.first.productId!);
+          bool isVendor =
+              notification[index].extraData!["receiver"] == 'vendor';
+          bool isBuyer = notification[index].extraData!["receiver"] == 'buyer';
+
+          if (notification[index]
+                  .title!
+                  .toLowerCase()
+                  .contains("low stock alert") &&
+              isVendor) {
+            Get.to(
+              () => ProductEditPreview(
+                productName: product!.name,
+                productID: product.productID,
+              ),
+            );
+          } else {
+            if (isBuyer) {
+              Get.to(
+                () => OrderDetailsPage(
+                  product: product,
+                  orderID: order.orderId,
+                  vendorID: order.vendorId,
+                ),
+              );
+            } else if (isVendor) {
+              Get.to(
+                () => VendorOrderDetailsPage(
+                  product: product,
+                  orderDetails: order,
+                ),
+              );
+            }
+          }
+
+          // var user = await userController
+          //     .getUserDetails(notification[index].userID!);
+        }
+        // notificationController.getNotifications();
 
         return Scaffold(
           appBar: AppBar(
@@ -155,36 +204,7 @@ class NotificationsPage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () async {
-                          debugPrint(
-                              notification[index].extraData!["orderID"]!);
-
-                          await checkOutController.getSingleOrder(
-                              notification[index].extraData!["orderID"]!);
-                          DatabaseOrderResponse? order =
-                              checkOutController.singleOrder.value;
-                          var product = productController.getSingleProduct(
-                              order!.orderItem!.first.productId!);
-                          // var user = await userController
-                          //     .getUserDetails(notification[index].userID!);
-                          if (notification[index].extraData!["receiver"] ==
-                              'buyer') {
-                            Get.to(
-                              () => OrderDetailsPage(
-                                product: product,
-                                orderID: order.orderId,
-                                vendorID: order.vendorId,
-                              ),
-                            );
-                          } else if (notification[index]
-                                  .extraData!["receiver"] ==
-                              'vendor') {
-                            Get.to(
-                              () => VendorOrderDetailsPage(
-                                product: product,
-                                orderDetails: order,
-                              ),
-                            );
-                          }
+                          handleNotificationTap(notification, index);
                         },
                         child: Container(
                           padding: const EdgeInsets.all(8),

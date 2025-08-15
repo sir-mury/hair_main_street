@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hair_main_street/models/admin_variable_model.dart';
@@ -954,6 +955,7 @@ class DataBaseService {
   //update order
   Future updateOrder(Orders? order) async {
     try {
+      debugPrint("order: ${order!.toJson()}");
       var role = await verifyRole();
       if (role!.keys.contains("Buyer")) {
         Timestamp createdAt = order!.createdAt!;
@@ -1358,6 +1360,8 @@ class DataBaseService {
         // If 30 or fewer vendors, use the simple query.
         return productsCollection
             .where("vendorID", whereIn: vendorIds)
+            .where("isDeleted", isEqualTo: false)
+            .where("isAvailable", isEqualTo: true)
             .snapshots()
             .map(convertToProduct);
       } else {
@@ -1369,10 +1373,14 @@ class DataBaseService {
           final chunk = vendorIds.sublist(i, min(i + 30, vendorIds.length));
 
           // Step 2: Create a product stream for each chunk.
-          productStreams.add(productsCollection
-              .where("vendorID", whereIn: chunk)
-              .snapshots()
-              .map(convertToProduct));
+          productStreams.add(
+            productsCollection
+                .where("vendorID", whereIn: chunk)
+                .where("isDeleted", isEqualTo: false)
+                .where("isAvailable", isEqualTo: true)
+                .snapshots()
+                .map(convertToProduct),
+          );
         }
 
         // Step 3: Combine all the product streams into one.
@@ -2277,7 +2285,8 @@ class DataBaseService {
   }
 
   Future<String?> initiateTransaction(
-      num amount, String email, String reference) async {
+      num amount, String email, String reference,
+      {required bool isLive}) async {
     final num resolvedAmount = amount;
     final String resolvedEmail = email;
     const String callbackUrl = "https://api-hhhpti4wta-uc.a.run.app/";
@@ -2290,6 +2299,7 @@ class DataBaseService {
         'email': resolvedEmail,
         'callbackUrl': callbackUrl,
         'reference': reference,
+        'isLive': isLive,
       });
 
       final String accessCode = response.data['accessCode'];

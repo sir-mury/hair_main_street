@@ -68,6 +68,10 @@ class _PaymentPageState extends State<PaymentPage> {
     super.initState();
   }
 
+  bool determineIfLive() {
+    return adminController.adminSettings.value!.isLive == true ? true : false;
+  }
+
   String? determinePublicKey() {
     return adminController.adminSettings.value!.isLive == true
         ? livePublicKey
@@ -656,6 +660,7 @@ class _PaymentPageState extends State<PaymentPage> {
                         amount: amountPaid,
                         email: userEmail,
                         reference: getReference(),
+                        isLive: determineIfLive(),
                       );
                       if (paystackController.accessCode.value.isNotEmpty) {
                         var result = await paystackController.launchSdkUi(

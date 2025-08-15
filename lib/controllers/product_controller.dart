@@ -6,8 +6,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:hair_main_street/controllers/admin_controller.dart';
 import 'package:hair_main_street/controllers/cart_controller.dart';
+import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/models/product_model.dart';
 import 'package:hair_main_street/models/review.dart';
+import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/models/vendors_model.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/utils/app_colors.dart';
@@ -36,17 +38,25 @@ class ProductController extends GetxController {
   var dismissible = true;
   var quantity = 1.obs;
   var isImageValid = false.obs;
+  RxBool isProductLoaded = false.obs;
+  Timer? fetchCartDebounce;
 
   @override
   void onInit() {
     super.onInit();
-    Get.put(CartController());
 
+    Get.put(CartController());
     var productList = fetchProducts();
     productList.listen((elements) {
-      products.assignAll(elements);
+      if (elements.isEmpty) {
+        isProductLoaded.value = false;
+        return;
+      } else {
+        products.assignAll(elements);
+        isProductLoaded.value = true;
+        filterTheproductsList(elements);
+      }
       // cartController.refresh();
-      filterTheproductsList(elements);
     });
     vendorsList.bindStream(getVendors());
     if (products.isEmpty) {
@@ -58,8 +68,52 @@ class ProductController extends GetxController {
 
   @override
   void onReady() {
-    super.onInit();
+    super.onReady();
     getCategories();
+    UserController userController = Get.find<UserController>();
+    CartController cartController = Get.find<CartController>();
+
+    // bool isLoggedIn = userController.userState.value != null;
+    void safeFetchCart() {
+      // Cancel previous pending call
+      fetchCartDebounce?.cancel();
+
+      // Schedule new call with 300ms delay
+      fetchCartDebounce = Timer(const Duration(milliseconds: 300), () {
+        if (userController.userState.value != null &&
+            isProductLoaded.value &&
+            products.isNotEmpty) {
+          cartController.fetchCart();
+        }
+      });
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Initial fetch
+      safeFetchCart();
+    });
+
+// Then modify your ever() listeners:
+    ever(userController.userState, (user) => safeFetchCart());
+    ever(isProductLoaded, (loaded) => safeFetchCart());
+    ever(products, (products) => safeFetchCart());
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    // Clean up resources if needed
+    fetchCartDebounce?.cancel();
+    vendorsList.close();
+    products.close();
+    filteredSearchVendorsList.close();
+    filteredSearchProducts.close();
+    reviews.close();
+    productMap.close();
+    imageList.close();
+    categories.close();
+    downloadUrls.close();
+    isLoading.close();
   }
 
   //get categories

@@ -7,6 +7,8 @@ class AdminVariables {
   bool? allowVendors;
   bool? isLive;
   AdminVariablesUpdates? updates;
+  String? appStore;
+  String? playStore;
 
   AdminVariables({
     this.brands,
@@ -17,6 +19,8 @@ class AdminVariables {
     this.allowVendors,
     this.isLive,
     this.updates,
+    this.appStore,
+    this.playStore,
   });
 
   factory AdminVariables.fromJson(Map<String, dynamic> json) => AdminVariables(
@@ -29,6 +33,8 @@ class AdminVariables {
         installmentDuration: json["installment duration"],
         allowVendors: json["allow vendors"],
         isLive: json["isLive"],
+        appStore: json["app store"],
+        playStore: json["playstore"],
         updates: json["updates"] != null
             ? AdminVariablesUpdates.fromJson(json["updates"])
             : null,
@@ -40,6 +46,8 @@ class AdminVariables {
         "brands": brands!.toList(),
         "expired fee": expiredFee,
         "isLive": isLive,
+        "app store": appStore,
+        "playstore": playStore,
         "installment duration": installmentDuration,
         "allow vendors": allowVendors,
         "updates": updates?.toJson(),

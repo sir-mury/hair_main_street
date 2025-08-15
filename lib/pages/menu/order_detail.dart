@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/models/vendors_model.dart';
@@ -8,6 +9,7 @@ import 'package:hair_main_street/pages/cancellation_page.dart';
 import 'package:hair_main_street/pages/orders_stuff/payment_page.dart';
 import 'package:hair_main_street/pages/product_page.dart';
 import 'package:hair_main_street/pages/submit_review_page.dart';
+import 'package:hair_main_street/utils/app_colors.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 
 import 'package:intl/intl.dart';
@@ -175,12 +177,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       (orderDetails!.orderStatus == "delivered").obs;
                   var isVisible2 =
                       (orderDetails!.orderStatus == "confirmed").obs;
-                  Orders order = Orders(
-                    orderId: orderDetails!.orderId,
-                    paymentStatus: orderDetails!.paymentStatus,
-                    paymentMethod: orderDetails!.paymentMethod,
-                    shippingAddress: orderDetails!.shippingAddress,
-                  );
+                  Orders order = orderDetails!.toOrders();
                   return SingleChildScrollView(
                     //padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     child: Column(
@@ -751,7 +748,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                                 'confirmed' ||
                                             orderDetails!.orderStatus ==
                                                 "delivered"
-                                        ? "Shipped"
+                                        ? "Delivered"
                                         : "Waiting to be delivered by vendor",
                                     subtitle:
                                         "The vendor has until ${resolveTimestamp(orderDetails!.createdAt, 3)} to deliver the item.",
@@ -811,18 +808,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                             : false,
                                     isLast: true,
                                     icon: Icons.circle,
-                                    iconColor: orderDetails!.orderStatus ==
-                                                'confirmed' ||
-                                            orderDetails!.orderStatus ==
-                                                "delivered"
-                                        ? Colors.green
-                                        : Colors.grey.shade400,
-                                    title: orderDetails!.orderStatus !=
-                                                'confirmed' ||
-                                            orderDetails!.orderStatus !=
-                                                "delivered"
-                                        ? "Item Delivered"
-                                        : "Item Delivered",
+                                    iconColor:
+                                        orderDetails!.orderStatus == 'confirmed'
+                                            ? Colors.green
+                                            : Colors.grey.shade400,
+                                    title:
+                                        orderDetails!.orderStatus != 'confirmed'
+                                            ? "Item Not Confirmed"
+                                            : "Item Confirmed",
                                   ),
                                 ],
                               ),
@@ -927,7 +920,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                     ),
                                     Text(
                                       resolveTimestamp(
-                                          orderDetails!.createdAt, 3),
+                                          orderDetails!.createdAt, 7),
                                       style: TextStyle(
                                         fontFamily: 'Raleway',
                                         fontSize: 14,
@@ -1043,32 +1036,28 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             return Visibility(
                               visible: isVisible.value,
                               child: Container(
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    width: 2,
-                                    color: Colors.black,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color(0xFF000000),
-                                      blurStyle: BlurStyle.normal,
-                                      offset: Offset.fromDirection(-4.0),
-                                      blurRadius: 2,
-                                    ),
-                                  ],
+                                  color: AppColors.offWhite,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Column(
                                   children: [
                                     const Text(
                                       "Your Order has been marked as delivered by the vendor",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.shade9,
                                       ),
+                                    ),
+                                    const SizedBox(
+                                      height: 8,
                                     ),
                                     SizedBox(
                                       width: double.infinity,
@@ -1082,17 +1071,22 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                         ),
                                         onPressed: () async {
                                           order.orderStatus = "confirmed";
+
+                                          // debugPrint(
+                                          //     "order: ${order.toJson()}");
                                           await checkOutController
                                               .updateOrder(order);
                                           isVisible.value = false;
+                                          await checkOutController
+                                              .getSingleOrder(order.orderId!);
                                         },
                                         child: Text(
                                           "Confirm",
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 16,
+                                            fontSize: 18,
                                             fontFamily: 'Lato',
-                                            fontWeight: FontWeight.w500,
+                                            // fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ),

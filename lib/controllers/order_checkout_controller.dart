@@ -11,7 +11,7 @@ import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/services/database.dart';
 
 class CheckOutController extends GetxController {
-  CartController cartController = Get.find<CartController>();
+  late CartController cartController = Get.find<CartController>();
   Rx<CheckoutItem> checkOutItem = CheckoutItem().obs;
   Rx<DatabaseOrderResponse?> singleOrder = Rx<DatabaseOrderResponse?>(null);
   //var checkoutList = <CheckOutTickBoxModel>[].obs;

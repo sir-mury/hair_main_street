@@ -1046,7 +1046,7 @@ class CartCard extends StatelessWidget {
       RxInt currentPrice = 0.obs;
 
       fetchProduct() {
-        product = productController.products.firstWhere((element) {
+        product = productController.products.firstWhereOrNull((element) {
           return element!.productID! == cartItem!.productID;
         });
         quantity.value = cartController
@@ -1116,7 +1116,7 @@ class CartCard extends StatelessWidget {
                 const SizedBox(
                   width: 1,
                 ),
-                buildProductImage(product!),
+                buildProductImage(product),
                 const SizedBox(
                   width: 12,
                 ),
@@ -1126,7 +1126,7 @@ class CartCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${product!.name}",
+                        "${product?.name}",
                         maxLines: 1,
                         style: const TextStyle(
                           fontSize: 15,
@@ -1262,7 +1262,7 @@ class CartCard extends StatelessWidget {
                           Get.to(
                             () => ClientShopPage(
                               vendorID: productController
-                                  .clientGetVendorName(product!.vendorId)
+                                  .clientGetVendorName(product?.vendorId)
                                   .userID,
                             ),
                           );
@@ -1288,7 +1288,7 @@ class CartCard extends StatelessWidget {
                               ),
                               Flexible(
                                 child: Text(
-                                  "${productController.clientGetVendorName(product!.vendorId).shopName}",
+                                  "${productController.clientGetVendorName(product?.vendorId ?? "").shopName}",
                                   style: const TextStyle(
                                     fontFamily: 'Lato',
                                     fontSize: 15,
@@ -1326,7 +1326,7 @@ class CartCard extends StatelessWidget {
     });
   }
 
-  Widget buildProductImage(Product product) {
+  Widget buildProductImage(Product? product) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: CachedNetworkImage(
@@ -1341,8 +1341,8 @@ class CartCard extends StatelessWidget {
           ),
         ),
         fit: BoxFit.cover,
-        imageUrl: product.image?.isNotEmpty == true
-            ? product.image!.first
+        imageUrl: product?.image?.isNotEmpty == true
+            ? product?.image!.first
             : 'https://firebasestorage.googleapis.com/v0/b/hairmainstreet.appspot.com/o/productImage%2FImage%20Not%20Available.jpg?alt=media&token=0104c2d8-35d3-4e4f-a1fc-d5244abfeb3f',
         errorWidget: (context, url, error) =>
             const Text("Failed to Load Image"),
@@ -1823,6 +1823,10 @@ class OrderCard extends StatelessWidget {
           return AppColors.cancelled;
         case "confirmed":
           return AppColors.confirmed;
+        case "delivered":
+          return AppColors.delivered;
+        case "not delivered":
+          return AppColors.notDelivered;
         default:
           return AppColors.background;
       }
@@ -1833,11 +1837,15 @@ class OrderCard extends StatelessWidget {
         case "created":
           return AppColors.shade9;
         case "cancelled":
-          return Colors.grey[50];
+          return Colors.white;
         case "confirmed":
-          return Colors.grey[50];
+          return Colors.white;
         case "expired":
-          return Colors.grey[50];
+          return Colors.white;
+        case "delivered":
+          return Colors.white;
+        case "not delivered":
+          return AppColors.shade9;
         default:
           return AppColors.background;
       }
@@ -2513,56 +2521,30 @@ class ReviewCard extends StatelessWidget {
       ),
       elevation: 0,
       color: Colors.grey[300],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: List.generate(
-                review.stars.round(),
-                (index) => const Icon(
-                  Icons.star,
-                  size: 24,
-                  color: Color(0xFF673AB7),
+      child: SizedBox(
+        width: 300,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: List.generate(
+                  review.stars.round(),
+                  (index) => const Icon(
+                    Icons.star,
+                    size: 24,
+                    color: Color(0xFF673AB7),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 2,
-            ),
-            Text(
-              resolveTimestampWithoutAdding(review.createdAt),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Raleway',
-                color: Color(0xFF673AB7),
+              const SizedBox(
+                height: 2,
               ),
-            ),
-            const SizedBox(
-              height: 2,
-            ),
-            Text(
-              review.comment,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Raleway',
-                color: Color(0xFF673AB7),
-              ),
-            ),
-            const SizedBox(
-              height: 2,
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "-${review.displayName}",
+              Text(
+                resolveTimestampWithoutAdding(review.createdAt),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -2570,8 +2552,189 @@ class ReviewCard extends StatelessWidget {
                   color: Color(0xFF673AB7),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(
+                height: 2,
+              ),
+              Text(
+                review.comment,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Raleway',
+                  color: Color(0xFF673AB7),
+                ),
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              Visibility(
+                visible: review.displayName != null &&
+                    review.displayName!.isNotEmpty,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    "-${review.displayName}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Raleway',
+                      color: Color(0xFF673AB7),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FullReviewCard extends StatelessWidget {
+  final int? index;
+  const FullReviewCard({super.key, this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    String resolveTimestampWithoutAdding(Timestamp timestamp) {
+      DateTime dateTime = timestamp.toDate();
+      String formattedDate =
+          DateFormat('dd MMM yyyy', 'en_US').format(dateTime);
+      return formattedDate;
+    }
+
+    ProductController productController = Get.find<ProductController>();
+    Review review = productController.reviews[index!]!;
+    // num screenHeight = MediaQuery.of(context).size.height;
+    // num screenWidth = MediaQuery.of(context).size.width;
+    return Card(
+      //height: screenHeight * 0.16,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      elevation: 0,
+      color: Colors.grey[300],
+      child: SizedBox(
+        // width: 300,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: List.generate(
+                  review.stars.round(),
+                  (index) => const Icon(
+                    Icons.star,
+                    size: 24,
+                    color: Color(0xFF673AB7),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              Text(
+                resolveTimestampWithoutAdding(review.createdAt),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Raleway',
+                  color: Color(0xFF673AB7),
+                ),
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              Text(
+                review.comment,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Raleway',
+                  color: Color(0xFF673AB7),
+                ),
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              Visibility(
+                visible: review.displayName != null &&
+                    review.displayName!.isNotEmpty,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "-${review.displayName}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Raleway',
+                      color: Color(0xFF673AB7),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              Visibility(
+                visible: review.reviewImages != null &&
+                    review.reviewImages!.isNotEmpty,
+                child: SizedBox(
+                  height: 88,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: review.reviewImages?.length ?? 0,
+                    itemBuilder: (context, imageIndex) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: CachedNetworkImage(
+                            imageBuilder: (context, imageProvider) => Container(
+                              height: 88,
+                              width: 88,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: imageProvider,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            fit: BoxFit.fill,
+                            imageUrl: review.reviewImages![imageIndex],
+                            errorWidget: ((context, url, error) => const Text(
+                                  "Failed to Load Image",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 14,
+                                  ),
+                                )),
+                            placeholder: ((context, url) => Container(
+                                  alignment: Alignment.center,
+                                  height: 88,
+                                  width: 88,
+                                  child: const CircularProgressIndicator(),
+                                )),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+            ],
+          ),
         ),
       ),
     );

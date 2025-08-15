@@ -63,7 +63,7 @@ class ReviewPage extends StatelessWidget {
               shrinkWrap: true,
               itemCount: reviews!.length,
               itemBuilder: (context, index) {
-                return ReviewCard(
+                return FullReviewCard(
                   index: index,
                 );
               },
@@ -309,7 +309,7 @@ class _EditReviewPageState extends State<EditReviewPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Add/Edit Image",
+                      "Review Images",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
