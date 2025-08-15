@@ -25,6 +25,7 @@ app.use(cors({ origin: true }))
 app.use(express.json())
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
+const PAYSTACK_LIVE_SECRET_KEY = process.env.PAYSTACK_LIVE_SECRET_KEY
 const paystackApi = axios.create({
   baseURL: 'https://api.paystack.co',
   headers: {
@@ -126,6 +127,8 @@ async function notifyUser({
   if (email) {
     await sendEmail(email, emailSubject, emailBody)
   }
+
+  return 'success'
 }
 
 exports.notifyBuyerOnOrderStatusChange = onDocumentUpdated(
@@ -1316,7 +1319,7 @@ async function makeTransfersLocallyForExpiredOrders({
 
 //function to initialize transaction and send access code
 exports.initiateTransaction = onCall(async request => {
-  const { amount, email, callbackUrl, reference } = request.data
+  const { amount, email, callbackUrl, reference, isLive } = request.data
 
   try {
     const response = await axios.post(
@@ -1329,7 +1332,9 @@ exports.initiateTransaction = onCall(async request => {
       },
       {
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${
+            isLive ? PAYSTACK_LIVE_SECRET_KEY : PAYSTACK_SECRET_KEY
+          }`,
           'Content-Type': 'application/json'
         }
       }
@@ -1413,6 +1418,48 @@ app.post('/makeTransfer', async (req, res) => {
       success: false,
       message: 'Transfer failed',
       error: error.message
+    })
+  }
+})
+
+app.post('/notifyUser', async (req, res) => {
+  const {
+    userID,
+    orderID,
+    receiver,
+    fcmTitle,
+    fcmBody,
+    email,
+    emailSubject,
+    emailBody
+  } = req.body
+
+  try {
+    const notificationResult = await notifyUser({
+      userID,
+      orderID,
+      receiver,
+      fcmTitle,
+      fcmBody,
+      email,
+      emailSubject,
+      emailBody
+    })
+
+    if (notificationResult === 'success') {
+      return res.status(200).json({
+        message: 'User notified successfully',
+        success: true
+      })
+    } else {
+      throw new Error('error notifying user')
+    }
+  } catch (error) {
+    logger.error('Error notifying user:', error)
+    return res.status(500).json({
+      message: 'Error notifying user',
+      error: error.message,
+      success: false
     })
   }
 })
