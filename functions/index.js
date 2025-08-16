@@ -444,23 +444,28 @@ exports.updateProductStockOnOrderPlacement = onDocumentCreated(
           const orderRef = db.collection('orders').doc(orderId)
           const orderData = (await orderRef.get()).data()
           const vendorID = orderData.vendorID
+          const productDoc = await db
+            .collection('products')
+            .doc(orderItemData['productID'])
+            .get()
           const vendorDoc = await db
             .collection('userProfile')
             .doc(vendorID)
             .get()
           const vendorData = vendorDoc.data()
+          const productData = productDoc.data()
           await notifyUser({
             userID: vendorID,
             orderID: orderId,
             receiver: 'vendor',
             fcmTitle: 'Low Stock Alert',
-            fcmBody: `The stock for product ${orderItemData['productID']} is running low. Only ${newQuantity} left.`,
+            fcmBody: `The stock for product "${productData['name']}" is running low. Only ${newQuantity} left.`,
             email: vendorData['email'],
             emailSubject: 'Low Stock Alert',
             emailBody: `
         <h2 style="font-size: 24px color:#673AB7">Hair Main Street</h2>
         <p style="font-size: 16px">Dear ${vendorData['fullname']},</p>
-        <p style="font-size: 16px">The stock for product ${orderItemData['productID']} is running low. Only ${newQuantity} left.</p>
+        <p style="font-size: 16px">The stock for product ${productData['name']} is running low. Only ${newQuantity} left.</p>
       `
           })
         }
