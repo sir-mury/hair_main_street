@@ -958,7 +958,7 @@ class DataBaseService {
       debugPrint("order: ${order!.toJson()}");
       var role = await verifyRole();
       if (role!.keys.contains("Buyer")) {
-        Timestamp createdAt = order!.createdAt!;
+        Timestamp createdAt = order.createdAt!;
         Map<String, dynamic> updatedFields = order.toJson();
         updatedFields["updated at"] = FieldValue.serverTimestamp();
         updatedFields["created at"] = createdAt;
