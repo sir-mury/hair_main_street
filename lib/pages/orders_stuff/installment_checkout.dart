@@ -1094,7 +1094,7 @@ class _InstallmentCheckoutPageState extends State<InstallmentCheckoutPage> {
                           DropdownButtonFormField<String>(
                             elevation: 8,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            value: installmentValue,
+                            initialValue: installmentValue,
                             dropdownColor: AppColors.shade1,
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,

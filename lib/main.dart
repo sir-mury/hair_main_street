@@ -14,7 +14,6 @@ import 'package:hair_main_street/controllers/notification_controller.dart';
 import 'package:hair_main_street/controllers/updates_service_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/firebase_options.dart';
-import 'package:hair_main_street/pages/authentication/authentication.dart';
 import 'package:hair_main_street/pages/authentication/create_account.dart';
 import 'package:hair_main_street/pages/authentication/reset_password.dart';
 import 'package:hair_main_street/pages/client_shop_page.dart';

@@ -9,7 +9,6 @@ import 'package:hair_main_street/controllers/cart_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/models/product_model.dart';
 import 'package:hair_main_street/models/review.dart';
-import 'package:hair_main_street/models/userModel.dart';
 import 'package:hair_main_street/models/vendors_model.dart';
 import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/utils/app_colors.dart';

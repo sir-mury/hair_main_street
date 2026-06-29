@@ -5,7 +5,6 @@ import 'package:hair_main_street/controllers/cart_controller.dart';
 import 'package:hair_main_street/controllers/order_checkout_controller.dart';
 import 'package:hair_main_street/controllers/user_controller.dart';
 import 'package:hair_main_street/pages/orders_stuff/cart_checkout.dart';
-import 'package:hair_main_street/services/database.dart';
 import 'package:hair_main_street/widgets/cards.dart';
 import 'package:hair_main_street/widgets/loading.dart';
 import 'package:iconify_flutter_plus/iconify_flutter_plus.dart';
