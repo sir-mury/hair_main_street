@@ -3350,10 +3350,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                                 ),
                                 searchFieldProps: TextFieldProps(
                                   //expands: true,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 0,
-                                    vertical: 6,
-                                  ),
+
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 8,
@@ -3411,7 +3408,7 @@ class _ShopDetailsCardState extends State<ShopDetailsCard> {
                                 }
                                 return null;
                               },
-                              onChanged: (value) {
+                              onSaved: (value) {
                                 setState(() {
                                   bankName = value.toString();
                                 });

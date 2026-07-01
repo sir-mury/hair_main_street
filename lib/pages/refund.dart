@@ -524,10 +524,7 @@ class _RefundPageState extends State<RefundPage> {
                           ),
                           searchFieldProps: TextFieldProps(
                             //expands: true,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 0,
-                              vertical: 6,
-                            ),
+
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 8,

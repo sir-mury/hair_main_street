@@ -32,10 +32,10 @@ Future handleBackgroundNotification(RemoteMessage message) async {
   final notification = message.notification;
   if (notification != null) {
     await flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      NotificationDetails(
+      id: notification.hashCode,
+      title: notification.title,
+      body: notification.body,
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           androidChannel.id,
           androidChannel.name,
@@ -155,10 +155,10 @@ class NotificationService {
         contentTitle: notification.title!,
         htmlFormatContentTitle: true);
     flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             androidChannel.id,
             androidChannel.name,
@@ -242,7 +242,7 @@ class NotificationService {
           android: androidInitialize, iOS: iosInitialize);
 
       await flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
+        settings: initializationSettings,
         onDidReceiveNotificationResponse: (details) => Get.to(
           () => NotificationsPage(
             data: details.payload,

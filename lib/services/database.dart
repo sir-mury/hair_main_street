@@ -1055,9 +1055,8 @@ class DataBaseService {
       var appDirectoryPath = await getApplicationDocumentsDirectory();
 
       //pickFiles
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowMultiple: true,
         allowedExtensions: ["png", "jpg", "jpeg"],
       );
 
